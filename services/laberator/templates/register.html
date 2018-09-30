@@ -24,22 +24,13 @@
                 <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
             </li>
         </ul>
-        {{ if .Login }}
-            <a class="btn btn-outline-success my-2 my-sm-0" role="button" href="/logout">Log Out</a>
-        {{ else }}
-            <a class="btn btn-outline-success my-2 my-sm-0" role="button" href="/register_page">Register</a>
-        {{ end }}
+        <a class="btn btn-outline-success my-2 my-sm-0" role="button" href="/login_page">Log In</a>
     </div>
 </nav>
 
 <main role="main">
     <p>
-        {{ if .Login }}
-            {{.Login}} Authorized!
-        {{else}}
-            Not authorized!
-            Login form will be here!
-        {{end}}
+        Register here!
     </p>
 </main>
 

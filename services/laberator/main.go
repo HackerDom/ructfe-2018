@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/websocket"
 	"html/template"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -51,15 +54,79 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func Exec(w io.Writer, filename string, state *State) {
+	t := template.New("")
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic("Exec error: " + err.Error())
+	}
+	t.Parse(string(data))
+	t.Execute(w, *state)
+}
+
 func Main(w http.ResponseWriter, r *http.Request) {
 	ok, login := sm.ValidateSession(r.Cookies())
+	var logged string
 	if ok {
-		t := template.New("tmpl")
-		t.ParseFiles("templates/main.html")
-		t.ExecuteTemplate(w, "login", login)
+		logged = login
 	} else {
-		fmt.Fprint(w, "Not authorized!")
+		logged = ""
 	}
+	Exec(w, "templates/main.html", &State{Login:logged})
+}
+
+func RegisterPage(w http.ResponseWriter, r *http.Request) {
+	ok, _ := sm.ValidateSession(r.Cookies())
+	if ok {
+		Redirect(w, r, "/main")
+	} else {
+		Exec(w, "templates/register.html", &State{})
+	}
+}
+
+var upgrader = websocket.Upgrader{} // use default options
+
+func Echo(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+	for {
+		mt, message, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+		log.Printf("recv: %s", message)
+		err = c.WriteMessage(mt, message)
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
+	}
+}
+
+func Ws(w http.ResponseWriter, r *http.Request) {
+	t := template.New("")
+	t.ParseFiles("templates/ws.html")
+	t.ExecuteTemplate(w, "url", "ws://" + r.Host + "/echo")
+}
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	ok, cookies := sm.DeleteSession(r.Cookies())
+	if !ok {
+		w.WriteHeader(400)
+	} else {
+		http.SetCookie(w, &cookies[0])
+		http.SetCookie(w, &cookies[1])
+		Redirect(w, r, "/main")
+	}
+}
+
+type State struct {
+	Login string
 }
 
 func main() {
@@ -67,11 +134,15 @@ func main() {
 	sm.Init()
 	defer dbApi.db.Close()
 
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
 	http.HandleFunc("/register", Register)
-
 	http.HandleFunc("/login", Login)
-
 	http.HandleFunc("/main", Main)
+	http.HandleFunc("/ws", Ws)
+	http.HandleFunc("/echo", Echo)
+	http.HandleFunc("/logout", Logout)
+	http.HandleFunc("/register_page", RegisterPage)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

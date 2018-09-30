@@ -63,3 +63,16 @@ func (sm *SessionManager) ValidateSession(cookies []*http.Cookie) (bool, string)
 	salt := sm.client.Get(login).Val()
 	return generateSessionId(login, salt) == sid, login
 }
+
+func (sm *SessionManager) DeleteSession(cookies []*http.Cookie) (bool, []http.Cookie) {
+	ok, login := sm.ValidateSession(cookies)
+	if !ok {
+		return false, []http.Cookie{}
+	} else {
+		sm.client.Del(login)
+		cookies := make([]http.Cookie, 2)
+		cookies[0] = http.Cookie{Name: "login", Value: "", Expires: time.Now()}
+		cookies[1] = http.Cookie{Name: "sid", Value: "", Expires: time.Now()}
+		return true, cookies
+	}
+}
