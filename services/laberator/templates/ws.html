@@ -20,17 +20,17 @@
                 ws = new WebSocket("{{.}}");
                 ws.onopen = function(evt) {
                     print("OPEN");
-                }
+                };
                 ws.onclose = function(evt) {
                     print("CLOSE");
                     ws = null;
-                }
+                };
                 ws.onmessage = function(evt) {
                     print("RESPONSE: " + evt.data);
-                }
+                };
                 ws.onerror = function(evt) {
                     print("ERROR: " + evt.data);
-                }
+                };
                 return false;
             };
             document.getElementById("send").onclick = function(evt) {

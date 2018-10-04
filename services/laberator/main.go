@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 var dbApi DBApi
@@ -65,6 +66,7 @@ func Exec(w io.Writer, filename string, state *State) {
 }
 
 func Main(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.Host)
 	ok, login := sm.ValidateSession(r.Cookies())
 	var logged string
 	if ok {
@@ -108,6 +110,28 @@ func Echo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func IsRegistered(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+	for {
+		mt, login, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read error:", err)
+			break
+		}
+		isRegistered := dbApi.IsUserExist(string(login))
+		err = c.WriteMessage(mt, []byte(strconv.FormatBool(isRegistered)))
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
+	}
+}
+
 func Ws(w http.ResponseWriter, r *http.Request) {
 	t := template.New("")
 	t.ParseFiles("templates/ws.html")
@@ -140,7 +164,7 @@ func main() {
 	http.HandleFunc("/login", Login)
 	http.HandleFunc("/main", Main)
 	http.HandleFunc("/ws", Ws)
-	http.HandleFunc("/echo", Echo)
+	http.HandleFunc("/isreg", IsRegistered)
 	http.HandleFunc("/logout", Logout)
 	http.HandleFunc("/register_page", RegisterPage)
 
