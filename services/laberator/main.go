@@ -66,7 +66,6 @@ func Exec(w io.Writer, filename string, state *State) {
 }
 
 func Main(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Host)
 	ok, login := sm.ValidateSession(r.Cookies())
 	var logged string
 	if ok {

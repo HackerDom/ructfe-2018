@@ -12,12 +12,19 @@ function register() {
     window.location.replace("/register?login=" + loginField.val() + "&password=" + passwordField.val());
 }
 
-function checkLogin() {
-    let loginField = $('#login-fld');
+function checkLoginExisting() {
+    let rLoginField = $('#r-login-fld');
     ws.onmessage = function (e) {
-        alert(e.data);
+        if (e.data === "true") {
+            rLoginField.tooltip({
+                trigger: "manual",
+                title: "This login is already exist."
+            }).tooltip("show");
+        } else {
+            rLoginField.tooltip("hide");
+        }
     };
-    ws.send(loginField.val());
+    ws.send(rLoginField.val());
 }
 
 $(document).ready(function () {
@@ -25,7 +32,6 @@ $(document).ready(function () {
     loginBtn.on("click", login);
     let registerBtn = $('#register-btn');
     registerBtn.on("click", register);
-    let registerFld = $("#login-fld");
-    registerFld.on("change", checkLogin);
-    ws = new WebSocket("ws://0.0.0.0:8080/isreg");
+    $("#r-login-fld").on("change", checkLoginExisting);
+    ws = new WebSocket("ws://" + location.host + "/isreg");
 });
