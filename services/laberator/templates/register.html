@@ -31,11 +31,13 @@
             <div class="col-sm-4 my-auto">
                 <label>Login</label>
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Login" id="r-login-fld" autofocus data-toggle="tooltip" data-placement="right">
+                    <input type="text" class="form-control" placeholder="Login" id="r-l-fld" data-toggle="tooltip" data-placement="right" value="login">
+                    <span class="help-block text-danger" id="r-l-err"></span>
                 </div>
                 <label>Password</label>
                 <div class="form-group pass_show">
-                    <input type="password" class="form-control" placeholder="Password" id="password-fld">
+                    <input type="password" class="form-control" placeholder="Password" id="p-fld" value="password">
+                    <span class="help-block text-danger" id="p-err"></span>
                 </div>
                 <button type="submit" class="btn btn-primary" onclick="register()">Login</button>
             </div>

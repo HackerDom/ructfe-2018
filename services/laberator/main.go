@@ -23,10 +23,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	login := r.Form.Get("login")
 	password := r.Form.Get("password")
 	if len(login) == 0 || len(password) == 0 {
-		fmt.Fprintf(w, "empty password or login")
 		w.WriteHeader(400)
 	} else if dbApi.IsUserExist(login) {
-		fmt.Fprintf(w, "this login is already used")
 		w.WriteHeader(400)
 	} else {
 		dbApi.Register(&login, &password)
@@ -86,28 +84,6 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 }
 
 var upgrader = websocket.Upgrader{} // use default options
-
-func Echo(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Print("upgrade:", err)
-		return
-	}
-	defer c.Close()
-	for {
-		mt, message, err := c.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-			break
-		}
-		log.Printf("recv: %s", message)
-		err = c.WriteMessage(mt, message)
-		if err != nil {
-			log.Println("write:", err)
-			break
-		}
-	}
-}
 
 func IsRegistered(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
