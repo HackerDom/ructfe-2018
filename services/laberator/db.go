@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 type User struct {
@@ -53,7 +53,7 @@ func (api *DBApi) Validate(login, password *string) bool {
 
 func (api *DBApi) Init() {
 	var err error
-	api.db, err = gorm.Open("sqlite3", "test.db")
+	api.db, err = gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=laberator password=nicepassword")
 	if err != nil {
 		panic("failed to connect database")
 	}
