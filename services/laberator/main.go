@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 var dbApi DBApi
 var sm SessionManager
+var executor = CommandExecutor{&dbApi}
 
 func Redirect(w http.ResponseWriter, r *http.Request, url string) {
 	fmt.Fprintf(w, `<html><head></head><body><script>window.location.replace("%v")</script></body></html>`, url)
@@ -24,7 +24,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 	if len(login) == 0 || len(password) == 0 {
 		w.WriteHeader(400)
-	} else if dbApi.IsUserExist(login) {
+	} else if dbApi.IsUserExist(&login) {
 		w.WriteHeader(400)
 	} else {
 		dbApi.Register(&login, &password)
@@ -85,7 +85,7 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 
 var upgrader = websocket.Upgrader{} // use default options
 
-func IsRegistered(w http.ResponseWriter, r *http.Request) {
+func ProcessCommand(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
@@ -93,15 +93,19 @@ func IsRegistered(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 	for {
-		mt, login, err := c.ReadMessage()
+		mt, data, err := c.ReadMessage()
 		if err != nil {
-			log.Println("read error:", err)
+			log.Println("reading error:", err)
 			break
 		}
-		isRegistered := dbApi.IsUserExist(string(login))
-		err = c.WriteMessage(mt, []byte(strconv.FormatBool(isRegistered)))
+		result, err := executor.Execute(data)
 		if err != nil {
-			log.Println("write:", err)
+			log.Println("executing error:", err)
+			break
+		}
+		err = c.WriteMessage(mt, result)
+		if err != nil {
+			log.Println("writing error:", err)
 			break
 		}
 	}
@@ -139,7 +143,7 @@ func main() {
 	http.HandleFunc("/login", Login)
 	http.HandleFunc("/main", Main)
 	http.HandleFunc("/ws", Ws)
-	http.HandleFunc("/isreg", IsRegistered)
+	http.HandleFunc("/isreg", ProcessCommand)
 	http.HandleFunc("/logout", Logout)
 	http.HandleFunc("/register_page", RegisterPage)
 

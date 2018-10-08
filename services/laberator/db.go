@@ -22,9 +22,9 @@ func (err DBApiError) Error() string {
 	return fmt.Sprintf("Database api error: %v", string(err))
 }
 
-func (api *DBApi) IsUserExist(login string) bool {
+func (api *DBApi) IsUserExist(login *string) bool {
 	var users []User
-	api.db.Where("Login = ?", login).Find(&users)
+	api.db.Where("Login = ?", *login).Find(&users)
 	return len(users) != 0
 }
 
