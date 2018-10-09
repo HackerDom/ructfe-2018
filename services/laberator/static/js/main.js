@@ -8,6 +8,18 @@ let invalidFontTextError = "Label font must match the regex '" + fontPattern + "
 let tooLargeLabelTextError =  "Label text can not be greater than 100 symbols";
 let invalidLabelSizeError =  "Label size must be in range [10, 100]";
 
+function waitSocket(socket, callback) {
+    setTimeout(
+        function () {
+            if (socket.readyState === 1) {
+                callback();
+            } else {
+                waitSocket(socket, callback);
+            }
+        },
+    5);
+}
+
 function getErrorField(fieldId) {
     return $("#" + fieldId.substring(0, fieldId.length - 4) + "-err");
 }
@@ -129,6 +141,30 @@ function createLabel() {
         "Font": fontFld.val(),
         "Size": Number(sizeFld.val())
     }));
+}
+
+function showTable() {
+    waitSocket(ws, function(){
+        ws.onmessage = function (e) {
+            JSON.parse(e.data).forEach(function (label) {
+                var textTd = document.createElement('td');
+                var fontTd = document.createElement('td');
+                var sizeTd = document.createElement('td');
+                var tr = document.createElement("tr");
+                textTd.innerText = label.Text;
+                fontTd.innerText = label.Font;
+                sizeTd.innerText = label.Size;
+                tr.appendChild(textTd);
+                tr.appendChild(fontTd);
+                tr.appendChild(sizeTd);
+                $("#l-t").append(tr);
+            })
+        };
+        ws.send("list" + JSON.stringify({
+            "RawCookies": document.cookie,
+            "Offset": 0
+        }));
+    });
 }
 
 $(document).ready(function () {

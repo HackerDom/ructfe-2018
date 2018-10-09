@@ -28,6 +28,11 @@ type CreatingData struct {
 	RawCookies string
 }
 
+type ListingData struct {
+	Offset uint
+	RawCookies string
+}
+
 type CommandExecutor struct {
 	dbApi *DBApi
 	sm *SessionManager
@@ -70,6 +75,24 @@ var Commands = map[string]interface{} {
 			ex.dbApi.CreateLabel(creatingData.Text, creatingData.Font, creatingData.Size, login)
 		}
 		return []byte(strconv.FormatBool(ok)), nil
+	},
+	"list": func(ex *CommandExecutor, data []byte) ([]byte, error) {
+		var listingData ListingData
+		err := json.Unmarshal(data, &listingData)
+		if err != nil {
+			return nil, errors.New("unmarshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
+		}
+		cookies := parseCookies(listingData.RawCookies)
+		ok, login := ex.sm.ValidateSession(cookies)
+		if ok {
+			labels := ex.dbApi.Listing(0, login)
+			rawResponse, err := json.Marshal(labels)
+			if err != nil {
+				return nil, errors.New("marshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
+			}
+			return rawResponse, nil
+		}
+		return []byte("false"), nil
 	},
 }
 

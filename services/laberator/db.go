@@ -6,6 +6,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
+const LISTING_LIMIT = 20
+
 type User struct {
 	gorm.Model
 	Login string
@@ -19,7 +21,7 @@ type DBApi struct {
 type DBApiError string
 
 type Label struct {
-	gorm.Model
+	ID uint `gorm:"primary_key"`
 	Text string
 	Font string
 	Size uint
@@ -62,6 +64,12 @@ func (api *DBApi) Validate(login, password *string) bool {
 func (api *DBApi) CreateLabel(text, font string, size uint, owner string) {
 	label := Label{Text: text, Font: font, Size: size, Owner: owner}
 	api.db.Create(&label)
+}
+
+func (api *DBApi) Listing(offset uint, owner string) *[]Label {
+	var labels []Label
+	api.db.Where("owner = ?", owner).Limit(LISTING_LIMIT).Find(&labels)
+	return &labels
 }
 
 func (api *DBApi) Init() {

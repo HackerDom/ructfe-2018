@@ -18,25 +18,30 @@
     <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="/main">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-link active" href="/main">Home</a>
             </li>
             {{ if .Login }}
-            <li class="nav-item active">
-                <a class="nav-link" href="/create_page">Create a new label<span class="sr-only">(current)</span></a>
+            <li class="nav-item">
+                <a class="nav-link" href="/create_page">Create a new label</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/listing">My labels</a>
             </li>
             {{ end }}
         </ul>
         {{ if .Login }}
-            <a class="btn btn-outline-success my-2 my-sm-0" role="button" href="/logout">Log Out</a>
+            <a class="btn btn-outline-success" role="button" href="/logout">Log Out</a>
         {{ else }}
-            <a class="btn btn-outline-success my-2 my-sm-0" role="button" href="/register_page">Register</a>
+            <a class="btn btn-outline-success" role="button" href="/register_page">Register</a>
         {{ end }}
     </div>
 </nav>
 
 <main role="main" class="wrapper">
     {{ if .Login }}
-        {{.Login}} Authorized!
+        <p class="text-center">
+            Hello! In Laberator you can create awesome labels with custom text, font and size.
+        </p>
     {{else}}
         <div class="container">
             <div class="row h-100">
@@ -58,11 +63,5 @@
         </div>
     {{end}}
 </main>
-
-<footer class="footer align-content-center">
-    <div class="container text-center">
-        <p>&copy; HackerDom</p>
-    </div>
-</footer>
 </body>
 </html>

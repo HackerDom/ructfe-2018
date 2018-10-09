@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Create</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/main.css" rel="stylesheet">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script>
+        $(document).ready(showTable);
+    </script>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/main">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/create_page">Create a new label</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="/listing">My labels</a>
+            </li>
+        </ul>
+        <a class="btn btn-outline-success my-2 my-sm-0" role="button" href="/logout">Log Out</a>
+    </div>
+</nav>
+
+<main role="main" class="wrapper">
+    <div class="container">
+        <div class="row h-100">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10 my-auto">
+                <table class="table table-condensed">
+                    <thead>
+                    <tr>
+                        <th>Text</th>
+                        <th>Font</th>
+                        <th>Size</th>
+                    </tr>
+                    </thead>
+                    <tbody id="l-t">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

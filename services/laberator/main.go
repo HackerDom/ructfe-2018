@@ -43,7 +43,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	for _, cookie := range cookies {
 		http.SetCookie(w, &cookie)
 	}
-	Redirect(w, r, "/main")
+	Redirect(w, r, "/")
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +59,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		for _, cookie := range cookies {
 			http.SetCookie(w, &cookie)
 		}
-		Redirect(w, r, "/main")
+		Redirect(w, r, "/")
 	}
 }
 
@@ -87,7 +87,7 @@ func Main(w http.ResponseWriter, r *http.Request) {
 func RegisterPage(w http.ResponseWriter, r *http.Request) {
 	ok, _ := sm.ValidateSession(r.Cookies())
 	if ok {
-		Redirect(w, r, "/main")
+		Redirect(w, r, "/")
 	} else {
 		Exec(w, "templates/register.html", &State{})
 	}
@@ -98,7 +98,16 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		Exec(w, "templates/create.html", &State{})
 	} else {
-		Redirect(w, r, "/main")
+		Redirect(w, r, "/")
+	}
+}
+
+func ListingPage(w http.ResponseWriter, r *http.Request) {
+	ok, _ := sm.ValidateSession(r.Cookies())
+	if ok {
+		Exec(w, "templates/listing.html", &State{})
+	} else {
+		Redirect(w, r, "/")
 	}
 }
 
@@ -143,7 +152,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.SetCookie(w, &cookies[0])
 		http.SetCookie(w, &cookies[1])
-		Redirect(w, r, "/main")
+		Redirect(w, r, "/")
 	}
 }
 
@@ -158,13 +167,14 @@ func main() {
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	http.HandleFunc("/register", Register)
-	http.HandleFunc("/login", Login)
 	http.HandleFunc("/", Main)
 	http.HandleFunc("/cmdexec", ProcessCommand)
-	http.HandleFunc("/logout", Logout)
-	http.HandleFunc("/register_page", RegisterPage)
 	http.HandleFunc("/create_page", CreatePage)
+	http.HandleFunc("/listing", ListingPage)
+	http.HandleFunc("/login", Login)
+	http.HandleFunc("/logout", Logout)
+	http.HandleFunc("/register", Register)
+	http.HandleFunc("/register_page", RegisterPage)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
