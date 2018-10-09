@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 )
 
@@ -20,8 +21,23 @@ type LoginData struct {
 	Login string
 }
 
+type CreatingData struct {
+	Text string
+	Font string
+	Size uint
+	RawCookies string
+}
+
 type CommandExecutor struct {
 	dbApi *DBApi
+	sm *SessionManager
+}
+
+func parseCookies(data string) []*http.Cookie {
+	header := http.Header{}
+	header.Add("Cookie", data)
+	req := http.Request{Header: header}
+	return req.Cookies()
 }
 
 var Commands = map[string]interface{} {
@@ -29,7 +45,7 @@ var Commands = map[string]interface{} {
 		var pairData PairData
 		err := json.Unmarshal(data, &pairData)
 		if err != nil {
-			return nil, errors.New("Executing error: " + err.Error())
+			return nil, errors.New("unmarshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
 		}
 		result := ex.dbApi.Validate(&pairData.Login, &pairData.Password)
 		return []byte(strconv.FormatBool(result)), nil
@@ -38,9 +54,22 @@ var Commands = map[string]interface{} {
 		var loginData LoginData
 		err := json.Unmarshal(data, &loginData)
 		if err != nil {
-			return nil, errors.New("Executing error: " + err.Error() + fmt.Sprintf(" data=(%v), loginData=(%v)", string(data), loginData))
+			return nil, errors.New("unmarshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
 		}
 		return []byte(strconv.FormatBool(ex.dbApi.IsUserExist(&loginData.Login))), nil
+	},
+	"create": func(ex *CommandExecutor, data []byte) ([]byte, error) {
+		var creatingData CreatingData
+		err := json.Unmarshal(data, &creatingData)
+		if err != nil {
+			return nil, errors.New("unmarshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
+		}
+		cookies := parseCookies(creatingData.RawCookies)
+		ok, login := ex.sm.ValidateSession(cookies)
+		if ok {
+			ex.dbApi.CreateLabel(creatingData.Text, creatingData.Font, creatingData.Size, login)
+		}
+		return []byte(strconv.FormatBool(ok)), nil
 	},
 }
 

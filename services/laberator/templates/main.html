@@ -20,6 +20,11 @@
             <li class="nav-item active">
                 <a class="nav-link" href="/main">Home <span class="sr-only">(current)</span></a>
             </li>
+            {{ if .Login }}
+            <li class="nav-item active">
+                <a class="nav-link" href="/create_page">Create a new label<span class="sr-only">(current)</span></a>
+            </li>
+            {{ end }}
         </ul>
         {{ if .Login }}
             <a class="btn btn-outline-success my-2 my-sm-0" role="button" href="/logout">Log Out</a>

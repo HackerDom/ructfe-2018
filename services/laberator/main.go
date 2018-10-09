@@ -8,11 +8,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 )
 
 var dbApi DBApi
 var sm SessionManager
-var executor = CommandExecutor{&dbApi}
+var executor = CommandExecutor{&dbApi, &sm}
+var pattern, _ = regexp.Compile("^\\w{1,16}$")
 
 func Redirect(w http.ResponseWriter, r *http.Request, url string) {
 	fmt.Fprintf(w, `<html><head></head><body><script>window.location.replace("%v")</script></body></html>`, url)
@@ -24,16 +26,24 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 	if len(login) == 0 || len(password) == 0 {
 		w.WriteHeader(400)
-	} else if dbApi.IsUserExist(&login) {
-		w.WriteHeader(400)
-	} else {
-		dbApi.Register(&login, &password)
-		cookies := sm.CreateSession(login)
-		for _, cookie := range cookies {
-			http.SetCookie(w, &cookie)
-		}
-		Redirect(w, r, "/main")
+		return
 	}
+
+	if !pattern.Match([]byte(password)) || !pattern.Match([]byte(login)) {
+		w.WriteHeader(400)
+		return
+	}
+
+	if dbApi.IsUserExist(&login) {
+		w.WriteHeader(400)
+		return
+	}
+	dbApi.Register(&login, &password)
+	cookies := sm.CreateSession(login)
+	for _, cookie := range cookies {
+		http.SetCookie(w, &cookie)
+	}
+	Redirect(w, r, "/main")
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +90,15 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 		Redirect(w, r, "/main")
 	} else {
 		Exec(w, "templates/register.html", &State{})
+	}
+}
+
+func CreatePage(w http.ResponseWriter, r *http.Request) {
+	ok, _ := sm.ValidateSession(r.Cookies())
+	if ok {
+		Exec(w, "templates/create.html", &State{})
+	} else {
+		Redirect(w, r, "/main")
 	}
 }
 
@@ -141,11 +160,11 @@ func main() {
 
 	http.HandleFunc("/register", Register)
 	http.HandleFunc("/login", Login)
-	http.HandleFunc("/main", Main)
-	http.HandleFunc("/ws", Ws)
-	http.HandleFunc("/isreg", ProcessCommand)
+	http.HandleFunc("/", Main)
+	http.HandleFunc("/cmdexec", ProcessCommand)
 	http.HandleFunc("/logout", Logout)
 	http.HandleFunc("/register_page", RegisterPage)
+	http.HandleFunc("/create_page", CreatePage)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

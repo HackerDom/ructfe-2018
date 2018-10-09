@@ -2,12 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Register</title>
+    <title>Create</title>
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/css/main.css" rel="stylesheet">
-
     <script src="/static/js/jquery.min.js"></script>
-    <script src="/static/js/popper.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/main.js"></script>
 </head>
@@ -21,25 +19,31 @@
                 <a class="nav-link" href="/main">Home <span class="sr-only">(current)</span></a>
             </li>
         </ul>
+        <a class="btn btn-outline-success my-2 my-sm-0" role="button" href="/logout">Log Out</a>
     </div>
 </nav>
 
 <main role="main" class="wrapper">
     <div class="container">
         <div class="row h-100">
-            <div class="col-sm-4"></div>
-            <div class="col-sm-4 my-auto">
-                <label>Login</label>
+            <div class="col-sm-3"></div>
+            <div class="col-sm-5 my-auto">
+                <label>Text</label>
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Login" id="r-l-fld" data-toggle="tooltip" data-placement="right" value="login">
-                    <span class="help-block text-danger" id="r-l-err"></span>
+                    <input type="text" class="form-control" placeholder="text" value="Example" id="t-fld" pattern="^\w*$" title="Kek!">
+                    <span class="help-block text-danger" id="t-err"></span>
                 </div>
-                <label>Password</label>
-                <div class="form-group pass_show">
-                    <input type="password" class="form-control" placeholder="Password" id="p-fld" value="password">
-                    <span class="help-block text-danger" id="p-err"></span>
+                <label>Font</label>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="font" value="Arial" id="f-fld">
+                    <span class="help-block text-danger" id="f-err"></span>
                 </div>
-                <button type="submit" class="btn btn-primary" disabled onclick="register()">Create an account</button>
+                <label>Size</label>
+                <div class="form-group">
+                    <input type="number" class="form-control" placeholder="size" value="20" min="10" max="90" id="s-fld">
+                    <span class="help-block text-danger" id="s-err"></span>
+                </div>
+                <button type="submit" class="btn btn-primary" onclick="createLabel()">Create</button>
             </div>
         </div>
     </div>

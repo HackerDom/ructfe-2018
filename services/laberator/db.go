@@ -18,6 +18,14 @@ type DBApi struct {
 
 type DBApiError string
 
+type Label struct {
+	gorm.Model
+	Text string
+	Font string
+	Size uint
+	Owner string
+}
+
 func (err DBApiError) Error() string {
 	return fmt.Sprintf("Database api error: %v", string(err))
 }
@@ -51,6 +59,11 @@ func (api *DBApi) Validate(login, password *string) bool {
 	return false
 }
 
+func (api *DBApi) CreateLabel(text, font string, size uint, owner string) {
+	label := Label{Text: text, Font: font, Size: size, Owner: owner}
+	api.db.Create(&label)
+}
+
 func (api *DBApi) Init() {
 	var err error
 	api.db, err = gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=laberator password=nicepassword")
@@ -58,4 +71,5 @@ func (api *DBApi) Init() {
 		panic("failed to connect database")
 	}
 	api.db.AutoMigrate(&User{})
+	api.db.AutoMigrate(&Label{})
 }
