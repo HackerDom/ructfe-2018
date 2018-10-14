@@ -143,10 +143,11 @@ function createLabel() {
     }));
 }
 
-function showTable() {
+function extendTable() {
     waitSocket(ws, function(){
         ws.onmessage = function (e) {
-            JSON.parse(e.data).forEach(function (label) {
+            let tableElements = JSON.parse(e.data);
+            tableElements.forEach(function (label) {
                 var textTd = document.createElement('td');
                 var fontTd = document.createElement('td');
                 var sizeTd = document.createElement('td');
@@ -158,11 +159,14 @@ function showTable() {
                 tr.appendChild(fontTd);
                 tr.appendChild(sizeTd);
                 $("#l-t").append(tr);
-            })
+            });
+            if (tableElements.length === 0) {
+                $("#e-b").remove();
+            }
         };
         ws.send("list" + JSON.stringify({
             "RawCookies": document.cookie,
-            "Offset": 0
+            "Offset": $("#l-t tr").length
         }));
     });
 }

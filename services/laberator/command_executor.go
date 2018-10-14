@@ -85,7 +85,7 @@ var Commands = map[string]interface{} {
 		cookies := parseCookies(listingData.RawCookies)
 		ok, login := ex.sm.ValidateSession(cookies)
 		if ok {
-			labels := ex.dbApi.Listing(0, login)
+			labels := ex.dbApi.Listing(listingData.Offset, login)
 			rawResponse, err := json.Marshal(labels)
 			if err != nil {
 				return nil, errors.New("marshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
