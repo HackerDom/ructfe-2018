@@ -169,8 +169,9 @@ function viewLabel(labelId) {
             context.fillText(label.Text, 0, 100);
             image.src = canvas.toDataURL();
             image.width = canvas.width;
-            $("#l-l").html("Font: " + label.Font +
-                "<br>Size: " + label.Size + "<br>Text: " + label.Text);
+            $("#l-text").text(label.Text);
+            $("#l-size").text(label.Size);
+            $("#l-font").text(label.Font);
         };
         ws.send(createCommandRequest("view", {
             "LabelId": labelId,
