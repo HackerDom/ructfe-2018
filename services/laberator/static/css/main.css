@@ -39,3 +39,7 @@ html, body {
 .footer, .push {
     height: 40px; /* .push must be the same height as .footer */
 }
+
+canvas {
+    display: none;
+}

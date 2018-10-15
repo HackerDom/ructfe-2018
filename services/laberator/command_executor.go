@@ -32,6 +32,11 @@ type ListingData struct {
 	RawCookies string
 }
 
+type ViewData struct {
+	LabelId uint
+	RawCookies string
+}
+
 type CmdRequest struct {
 	Command string
 	Data string
@@ -96,11 +101,32 @@ var Commands = map[string]interface{} {
 			labels := ex.dbApi.Listing(listingData.Offset, login)
 			rawResponse, err := json.Marshal(labels)
 			if err != nil {
-				return nil, createUnmarshallingError(err, data)
+				return nil, errors.New(fmt.Sprintf("marshalling error: %v, data=(%v)", err.Error(), labels))
 			}
 			return rawResponse, nil
 		}
 		return []byte("false"), nil
+	},
+	"view": func(ex *CommandExecutor, data []byte) ([]byte, error) {
+		var viewData ViewData
+		err := json.Unmarshal(data, &viewData)
+		if err != nil {
+			return nil, createUnmarshallingError(err, data)
+		}
+		cookies := parseCookies(viewData.RawCookies)
+		ok, _ := ex.sm.ValidateSession(cookies)
+		if !ok {
+			return nil, errors.New("invalid session")
+		}
+		label, err := ex.dbApi.ViewLabel(viewData.LabelId)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("db request error: %v, labelId=(%v)", err.Error(), viewData.LabelId))
+		}
+		rawLabel, err := json.Marshal(*label)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("marshalling error: %v, label=(%v)", err.Error(), *label))
+		}
+		return rawLabel, nil
 	},
 }
 

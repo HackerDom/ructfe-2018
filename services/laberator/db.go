@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -70,6 +71,15 @@ func (api *DBApi) Listing(offset uint, owner string) *[]Label {
 	var labels []Label
 	api.db.Where("owner = ?", owner).Offset(offset).Limit(LISTING_LIMIT).Find(&labels)
 	return &labels
+}
+
+func (api *DBApi) ViewLabel(labelId uint) (*Label, error) {
+	var labels []Label
+	api.db.Where("id = ?", labelId).Find(&labels)
+	if len(labels) != 1 {
+		return nil, errors.New(fmt.Sprintf("len(labels with id=%v) = %v", labelId, len(labels)))
+	}
+	return &labels[0], nil
 }
 
 func (api *DBApi) CheckLabelOwner(owner string, labelId uint64) bool {

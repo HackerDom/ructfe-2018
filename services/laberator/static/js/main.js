@@ -6,13 +6,17 @@ let incorrectPairErrorText = "Incorrect login or password.";
 let fontPattern = /^[\w\s]{1,100}$/;
 let invalidFontTextError = "Label font must match the regex '" + fontPattern + "'.";
 let tooLargeLabelTextError =  "Label text can not be greater than 100 symbols";
-let invalidLabelSizeError =  "Label size must be in range [10, 100]";
+let invalidLabelSizeError =  "Label size must be in range [10, 80]";
 
 function waitSocket(socket, callback) {
     setTimeout(
         function () {
-            if (socket.readyState === 1) {
-                callback();
+            if (socket) {
+                if (socket.readyState === 1) {
+                    callback();
+                } else {
+                    waitSocket(socket, callback);
+                }
             } else {
                 waitSocket(socket, callback);
             }
@@ -122,7 +126,7 @@ function validateLabel() {
     } else {
         unsetError(fontFld, invalidFontTextError);
     }
-    if (Number(sizeFld.val()) < 0 || Number(sizeFld.val()) > 100) {
+    if (Number(sizeFld.val()) < 0 || Number(sizeFld.val()) > 80) {
         setError(sizeFld, invalidLabelSizeError);
         return false;
     } else {
@@ -154,8 +158,29 @@ function createLabel() {
     }));
 }
 
+function viewLabel(labelId) {
+    waitSocket(ws, function() {
+        ws.onmessage = function (e) {
+            let label = JSON.parse(e.data);
+            let canvas = $("#l-c")[0];
+            let context = canvas.getContext("2d");
+            let image = $("#l-i")[0];
+            context.font = label.Size + "px " + label.Font;
+            context.fillText(label.Text, 0, 100);
+            image.src = canvas.toDataURL();
+            image.width = canvas.width;
+            $("#l-l").html("Font: " + label.Font +
+                "<br>Size: " + label.Size + "<br>Text: " + label.Text);
+        };
+        ws.send(createCommandRequest("view", {
+            "LabelId": labelId,
+            "RawCookies": document.cookie,
+        }));
+    });
+}
+
 function extendTable() {
-    waitSocket(ws, function(){
+    waitSocket(ws, function() {
         ws.onmessage = function (e) {
             let tableElements = JSON.parse(e.data);
             tableElements.forEach(function (label) {
