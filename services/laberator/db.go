@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha1"
 	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
@@ -12,7 +14,7 @@ const LISTING_LIMIT = 10
 type User struct {
 	gorm.Model
 	Login string
-	Password string
+	PasswordHash []byte
 }
 
 type DBApi struct {
@@ -45,7 +47,8 @@ func (api *DBApi) Register(login, password *string) error {
 	if len(users) != 0 {
 		return DBApiError(fmt.Sprintf("User with login '%s' is already exist", *login))
 	}
-	user := User{Login: *login, Password: *password}
+	passwordHash := sha1.Sum(([]byte)(*password))
+	user := User{Login: *login, PasswordHash: passwordHash[:]}
 	api.db.Create(&user)
 	return nil
 }
@@ -56,7 +59,8 @@ func (api *DBApi) Validate(login, password *string) bool {
 	if len(users) != 1 {
 		return false
 	}
-	if users[0].Password == *password {
+	passwordHash := sha1.Sum([]byte(*password))
+	if bytes.Equal(users[0].PasswordHash, passwordHash[:]) {
 		return true
 	}
 	return false
