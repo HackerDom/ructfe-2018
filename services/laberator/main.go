@@ -15,7 +15,7 @@ import (
 var dbApi DBApi
 var sm SessionManager
 var executor = CommandExecutor{&dbApi, &sm}
-var pattern, _ = regexp.Compile("^\\w{1,16}$")
+var pattern, _ = regexp.Compile("^\\w{1,40}$")
 
 func Redirect(w http.ResponseWriter, r *http.Request, url string) {
 	fmt.Fprintf(w, `<html><head></head><body><script>window.location.replace("%v")</script></body></html>`, url)

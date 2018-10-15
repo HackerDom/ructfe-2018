@@ -1,5 +1,5 @@
 var ws;
-let pattern = /^\w{1,16}$/;
+let pattern = /^\w{1,40}$/;
 let patternErrorText = "This field must match the regex '" + pattern + "'.";
 let existingErrorText = "This login is already used.";
 let incorrectPairErrorText = "Incorrect login or password.";
