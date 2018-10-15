@@ -5,7 +5,7 @@ let existingErrorText = "This login is already used.";
 let incorrectPairErrorText = "Incorrect login or password.";
 let fontPattern = /^[\w\s]{1,100}$/;
 let invalidFontTextError = "Label font must match the regex '" + fontPattern + "'.";
-let tooLargeLabelTextError =  "Label text can not be greater than 100 symbols";
+let tooLargeLabelTextError =  "Label text can not be greater than 40 symbols";
 let invalidLabelSizeError =  "Label size must be in range [10, 80]";
 
 function waitSocket(socket, callback) {
@@ -114,7 +114,7 @@ function validateLabel() {
     let textFld = $("#t-fld");
     let fontFld = $("#f-fld");
     let sizeFld = $("#s-fld");
-    if (textFld.val().length > 100) {
+    if (textFld.val().length > 40) {
         setError(textFld, tooLargeLabelTextError);
         return false;
     } else {
@@ -143,11 +143,6 @@ function createLabel() {
     let fontFld = $("#f-fld");
     let sizeFld = $("#s-fld");
     ws.onmessage = function (e) {
-        if (e.data === "true") {
-            alert("Label has been successfully created");
-        } else {
-            alert("Label has not been successfully created");
-        }
         window.location.replace("/");
     };
     ws.send(createCommandRequest("create", {
@@ -168,10 +163,9 @@ function viewLabel(labelId) {
             context.font = label.Size + "px " + label.Font;
             context.fillText(label.Text, 0, 100);
             image.src = canvas.toDataURL();
-            image.width = canvas.width;
-            $("#l-text").text(label.Text);
-            $("#l-size").text(label.Size);
-            $("#l-font").text(label.Font);
+            $("#l-text").text("Text: " + label.Text);
+            $("#l-size").text("Size: " + label.Size);
+            $("#l-font").text("Font: " + label.Font);
         };
         ws.send(createCommandRequest("view", {
             "LabelId": labelId,
