@@ -40,6 +40,13 @@ function unsetError(field, errorText) {
     }
 }
 
+function createCommandRequest(command, data) {
+    return JSON.stringify({
+        "Command": command,
+        "Data": JSON.stringify(data),
+    });
+}
+
 function login() {
     let loginField = $('#l-fld');
     let passwordField = $('#p-fld');
@@ -51,7 +58,10 @@ function login() {
                 setError(loginField, incorrectPairErrorText);
             }
         };
-        ws.send("validate" + JSON.stringify({"Login": loginField.val(), "Password": passwordField.val()}));
+        ws.send(createCommandRequest("validate", {
+            "Login": loginField.val(),
+            "Password": passwordField.val()
+        }));
     }
     return false;
 }
@@ -71,7 +81,6 @@ function register() {
 }
 
 function checkLoginExisting() {
-    console.log("Calling check existing, this=" + $(this));
     let rLoginField = $('#r-l-fld');
     ws.onmessage = function (e) {
         if (e.data === "true") {
@@ -80,7 +89,9 @@ function checkLoginExisting() {
             unsetError(rLoginField, existingErrorText);
         }
     };
-    ws.send("check-existence" + JSON.stringify({"Login": rLoginField.val()}));
+    ws.send(createCommandRequest("check-existence", {
+        "Login": rLoginField.val()
+    }));
 }
 
 function checkPattern() {
@@ -135,7 +146,7 @@ function createLabel() {
         }
         window.location.replace("/");
     };
-    ws.send("create" + JSON.stringify({
+    ws.send(createCommandRequest("create", {
         "RawCookies": document.cookie,
         "Text": textFld.val(),
         "Font": fontFld.val(),
@@ -148,11 +159,11 @@ function extendTable() {
         ws.onmessage = function (e) {
             let tableElements = JSON.parse(e.data);
             tableElements.forEach(function (label) {
-                var textTd = document.createElement('td');
-                var fontTd = document.createElement('td');
-                var sizeTd = document.createElement('td');
-                var tr = document.createElement("tr");
-                var link = document.createElement("a");
+                let textTd = document.createElement('td');
+                let fontTd = document.createElement('td');
+                let sizeTd = document.createElement('td');
+                let tr = document.createElement("tr");
+                let link = document.createElement("a");
                 link.setAttribute("href", "/labels/" + label.ID);
                 link.innerText = label.Text;
                 textTd.innerHTML = $(link).prop("outerHTML");
@@ -168,7 +179,7 @@ function extendTable() {
                 $("#e-b").remove();
             }
         };
-        ws.send("list" + JSON.stringify({
+        ws.send(createCommandRequest("list", {
             "RawCookies": document.cookie,
             "Offset": $("#l-t tr").length
         }));

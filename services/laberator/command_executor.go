@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,6 +32,11 @@ type ListingData struct {
 	RawCookies string
 }
 
+type CmdRequest struct {
+	Command string
+	Data string
+}
+
 type CommandExecutor struct {
 	dbApi *DBApi
 	sm *SessionManager
@@ -45,12 +49,16 @@ func parseCookies(data string) []*http.Cookie {
 	return req.Cookies()
 }
 
+func createUnmarshallingError(err error, data []byte) error {
+	return errors.New(fmt.Sprintf("unmarshalling error: %v, data=(%v)", err.Error(), string(data)))
+}
+
 var Commands = map[string]interface{} {
 	"validate": func(ex *CommandExecutor, data []byte) ([]byte, error) {
 		var pairData PairData
 		err := json.Unmarshal(data, &pairData)
 		if err != nil {
-			return nil, errors.New("unmarshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
+			return nil, createUnmarshallingError(err, data)
 		}
 		result := ex.dbApi.Validate(&pairData.Login, &pairData.Password)
 		return []byte(strconv.FormatBool(result)), nil
@@ -59,7 +67,7 @@ var Commands = map[string]interface{} {
 		var loginData LoginData
 		err := json.Unmarshal(data, &loginData)
 		if err != nil {
-			return nil, errors.New("unmarshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
+			return nil, createUnmarshallingError(err, data)
 		}
 		return []byte(strconv.FormatBool(ex.dbApi.IsUserExist(&loginData.Login))), nil
 	},
@@ -67,7 +75,7 @@ var Commands = map[string]interface{} {
 		var creatingData CreatingData
 		err := json.Unmarshal(data, &creatingData)
 		if err != nil {
-			return nil, errors.New("unmarshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
+			return nil, createUnmarshallingError(err, data)
 		}
 		cookies := parseCookies(creatingData.RawCookies)
 		ok, login := ex.sm.ValidateSession(cookies)
@@ -80,7 +88,7 @@ var Commands = map[string]interface{} {
 		var listingData ListingData
 		err := json.Unmarshal(data, &listingData)
 		if err != nil {
-			return nil, errors.New("unmarshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
+			return nil, createUnmarshallingError(err, data)
 		}
 		cookies := parseCookies(listingData.RawCookies)
 		ok, login := ex.sm.ValidateSession(cookies)
@@ -88,7 +96,7 @@ var Commands = map[string]interface{} {
 			labels := ex.dbApi.Listing(listingData.Offset, login)
 			rawResponse, err := json.Marshal(labels)
 			if err != nil {
-				return nil, errors.New("marshalling error: " + err.Error() + fmt.Sprintf(" data=(%v)", string(data)))
+				return nil, createUnmarshallingError(err, data)
 			}
 			return rawResponse, nil
 		}
@@ -97,10 +105,14 @@ var Commands = map[string]interface{} {
 }
 
 func (ex *CommandExecutor) Execute(data []byte) ([]byte, error) {
-	for command, execFunc := range Commands {
-		if bytes.HasPrefix(data, []byte(command)) {
-			return execFunc.(func(ex *CommandExecutor, data []byte) ([]byte, error))(ex, data[len(command):])
-		}
+	var cmdRequest CmdRequest
+	err := json.Unmarshal(data, &cmdRequest)
+	if err != nil {
+		return nil, createUnmarshallingError(err, data)
 	}
-	return nil, errors.New("unknown command")
+	execFunc := Commands[cmdRequest.Command]
+	if execFunc != nil {
+		return execFunc.(func(ex *CommandExecutor, data []byte) ([]byte, error))(ex, []byte(cmdRequest.Data))
+	}
+	return nil, errors.New(fmt.Sprintf("unknown command: %s", cmdRequest.Command))
 }
