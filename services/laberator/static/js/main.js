@@ -152,9 +152,13 @@ function extendTable() {
                 var fontTd = document.createElement('td');
                 var sizeTd = document.createElement('td');
                 var tr = document.createElement("tr");
-                textTd.innerText = label.Text;
+                var link = document.createElement("a");
+                link.setAttribute("href", "/labels/" + label.ID);
+                link.innerText = label.Text;
+                textTd.innerHTML = $(link).prop("outerHTML");
                 fontTd.innerText = label.Font;
                 sizeTd.innerText = label.Size;
+
                 tr.appendChild(textTd);
                 tr.appendChild(fontTd);
                 tr.appendChild(sizeTd);

@@ -72,6 +72,15 @@ func (api *DBApi) Listing(offset uint, owner string) *[]Label {
 	return &labels
 }
 
+func (api *DBApi) CheckLabelOwner(owner string, labelId uint64) bool {
+	var labels []Label
+	api.db.Where("id = ?", labelId).Find(&labels)
+	if len(labels) != 1 {
+		return false
+	}
+	return labels[0].Owner == owner
+}
+
 func (api *DBApi) Init() {
 	var err error
 	api.db, err = gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=laberator password=nicepassword")

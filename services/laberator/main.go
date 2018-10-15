@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 )
 
 var dbApi DBApi
@@ -111,6 +112,24 @@ func ListingPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func ViewLabel(w http.ResponseWriter, r *http.Request) {
+	labelId, err := strconv.ParseUint(r.URL.Path[len("/labels/"):], 10, 64)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+	ok, login := sm.ValidateSession(r.Cookies())
+	if ok {
+		if !dbApi.CheckLabelOwner(login, labelId) {
+			w.WriteHeader(400)
+		} else {
+			Exec(w, "templates/view.html", &State{LabelId: labelId})
+		}
+	} else {
+		Redirect(w, r, "/")
+	}
+}
+
 var upgrader = websocket.Upgrader{} // use default options
 
 func ProcessCommand(w http.ResponseWriter, r *http.Request) {
@@ -158,6 +177,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 
 type State struct {
 	Login string
+	LabelId uint64
 }
 
 func main() {
@@ -175,6 +195,7 @@ func main() {
 	http.HandleFunc("/logout", Logout)
 	http.HandleFunc("/register", Register)
 	http.HandleFunc("/register_page", RegisterPage)
+	http.HandleFunc("/labels/", ViewLabel)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
