@@ -4,7 +4,6 @@ let patternErrorText = "This field must match the regex '" + pattern + "'.";
 let existingErrorText = "This login is already used.";
 let incorrectPairErrorText = "Incorrect login or password.";
 let fontPattern = /^[\w\s]{1,100}$/;
-let idPattern = /^\d+$/;
 let invalidFontTextError = "Label font must match the regex '" + fontPattern + "'.";
 let tooLargeLabelTextError =  "Label text can not be greater than 40 symbols";
 let invalidLabelSizeError =  "Label size must be in range [10, 80]";
@@ -198,7 +197,7 @@ function extendTable() {
                 if (!validateLabel(label.Text, label.Font, label.Size)) {
                     return;
                 }
-                if (!label.ID.match(idPattern)) {
+                if (!typeof(label.ID)) {
                     return;
                 }
                 let tr = document.createElement("tr");
