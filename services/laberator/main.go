@@ -196,6 +196,8 @@ func main() {
 	http.HandleFunc("/register", Register)
 	http.HandleFunc("/register_page", RegisterPage)
 	http.HandleFunc("/labels/", ViewLabel)
+	http.HandleFunc("/favicon.ico", func(writer http.ResponseWriter, request *http.Request) {})
 
+	fmt.Println("Start server")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
