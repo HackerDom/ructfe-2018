@@ -1,9 +1,10 @@
-var ws;
+let ws;
 let pattern = /^\w{1,40}$/;
 let patternErrorText = "This field must match the regex '" + pattern + "'.";
 let existingErrorText = "This login is already used.";
 let incorrectPairErrorText = "Incorrect login or password.";
 let fontPattern = /^[\w\s]{1,100}$/;
+let idPattern = /^\d+$/;
 let invalidFontTextError = "Label font must match the regex '" + fontPattern + "'.";
 let tooLargeLabelTextError =  "Label text can not be greater than 40 symbols";
 let invalidLabelSizeError =  "Label size must be in range [10, 80]";
@@ -11,13 +12,14 @@ let invalidLabelSizeError =  "Label size must be in range [10, 80]";
 function waitSocket(socket, callback) {
     setTimeout(
         function () {
+            let done = false;
             if (socket) {
                 if (socket.readyState === 1) {
                     callback();
-                } else {
-                    waitSocket(socket, callback);
+                    done = true;
                 }
-            } else {
+            }
+            if (!done) {
                 waitSocket(socket, callback);
             }
         },
@@ -110,7 +112,7 @@ function enableButton() {
     $('button[type="submit"]').prop("disabled", false);
 }
 
-function validateLabel() {
+function validateLabelWithErrors() {
     let textFld = $("#t-fld");
     let fontFld = $("#f-fld");
     let sizeFld = $("#s-fld");
@@ -135,8 +137,16 @@ function validateLabel() {
     return true;
 }
 
+function validateLabel(text, font, size) {
+    if (text.length > 40)
+        return false;
+    if (!font.match(fontPattern))
+        return false;
+    return !(Number(size) < 0 || Number(size) > 80);
+}
+
 function createLabel() {
-    if (!validateLabel()) {
+    if (!validateLabelWithErrors()) {
         return false;
     }
     let textFld = $("#t-fld");
@@ -163,6 +173,9 @@ function viewLabel(labelId) {
             context.font = label.Size + "px " + label.Font;
             context.fillText(label.Text, 0, 100);
             image.src = canvas.toDataURL();
+            if (!validateLabel(label.Text, label.Size, label.Font)) {
+                return;
+            }
             $("#l-text").text("Text: " + label.Text);
             $("#l-size").text("Size: " + label.Size);
             $("#l-font").text("Font: " + label.Font);
@@ -182,6 +195,12 @@ function extendTable() {
                 let textTd = document.createElement('td');
                 let fontTd = document.createElement('td');
                 let sizeTd = document.createElement('td');
+                if (!validateLabel(label.Text, label.Font, label.Size)) {
+                    return;
+                }
+                if (!label.ID.match(idPattern)) {
+                    return;
+                }
                 let tr = document.createElement("tr");
                 let link = document.createElement("a");
                 link.setAttribute("href", "/labels/" + label.ID);
@@ -221,8 +240,8 @@ $(document).ready(function () {
     rLoginFld.on("change", enableButton);
     passwordFld.on("change", checkPattern);
     passwordFld.on("change", enableButton);
-    labelTextFld.on("change", validateLabel);
-    fontFld.on("change", validateLabel);
-    sizeFld.on("change", validateLabel);
+    labelTextFld.on("change", validateLabelWithErrors);
+    fontFld.on("change", validateLabelWithErrors);
+    sizeFld.on("change", validateLabelWithErrors);
     ws = new WebSocket("ws://" + location.host + "/cmdexec");
 });
