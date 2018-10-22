@@ -172,7 +172,7 @@ function viewLabel(labelId) {
             context.font = label.Size + "px " + label.Font;
             context.fillText(label.Text, 0, 100);
             image.src = canvas.toDataURL();
-            if (!validateLabel(label.Text, label.Size, label.Font)) {
+            if (!validateLabel(label.Text, label.Font, label.Size)) {
                 return;
             }
             $("#l-text").text("Text: " + label.Text);
