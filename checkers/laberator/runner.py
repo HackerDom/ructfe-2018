@@ -6,6 +6,7 @@ from subprocess import check_output, CalledProcessError
 from time import sleep
 
 ALPH = ascii_uppercase + digits
+MAX_REQUESTS = 10 ** 6
 
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 CODES = {
@@ -22,8 +23,7 @@ def generate_flag():
 
 
 def main():
-    while True:
-        sleep(1)
+    for i in range(MAX_REQUESTS):
         flag = generate_flag()
         try:
             check_output(["python3", "./checker.py", "put", "localhost", "dummy flag id", flag, "1"])
