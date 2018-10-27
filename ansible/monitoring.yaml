@@ -1,6 +1,5 @@
-- hosts: vpn
+- hosts: monitoring
   roles:
     - common
-    - vpn
+    - monitoring
     - monitoring_client
-#    - logging_client
