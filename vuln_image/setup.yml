@@ -1,0 +1,22 @@
+---
+- hosts: all
+  become: yes
+
+  # From http://docs.ansible.com/ansible/latest/intro_installation.html#managed-node-requirements
+  gather_facts: no
+  pre_tasks:
+    - name: 'Install python2'
+      raw: sudo apt-get -y install python-simplejson
+      changed_when: False
+
+  roles:
+    - base_image
+    - laberator
+#    - system
+#    - lighting
+#    - feedback
+#    - trafficlights
+#    - cityparking
+#    - flightdispatcher
+#    - railway
+#    - docs

@@ -1,0 +1,48 @@
+---
+- name: Install dependencies (Go and postgres)
+  apt:
+    name:
+     - golang
+     - postgresql
+    state: latest
+    update_cache: yes
+
+- name: Provision postgres  
+  become_user: postgres
+  shell: '{{ item }}'
+  with_items:
+    - psql -c "ALTER USER postgres PASSWORD 'nicepassword'"
+    - (psql --list  | grep laberator) || createdb laberator
+
+- name: Create user
+  user:
+    name: laberator
+    createhome: yes
+    system: yes
+    shell: /usr/sbin/nologin
+
+- name: Install laberator service
+  copy:
+    src: ../services/laberator/
+    dest: /home/laberator/
+    owner: laberator
+    group: laberator
+    mode: u=rx,g=,o=
+  notify: restart laberator service
+
+- name: Install Go dependencies
+  become_user: laberator
+  command: go get -d
+  args:
+    chdir: /home/laberator/
+
+- name: Install laberator systemd service
+  copy: src=laberator.service dest=/etc/systemd/system/laberator.service
+  notify: restart laberator service
+
+- name: Enable laberator service
+  systemd:
+    name: laberator
+    enabled: yes
+    state: started
+    daemon_reload: yes

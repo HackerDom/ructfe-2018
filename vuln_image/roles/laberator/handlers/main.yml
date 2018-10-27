@@ -1,0 +1,5 @@
+---
+
+- name: Restart laberator service
+  service: name=laberator state=restarted
+  listen: "restart laberator service"
