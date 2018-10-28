@@ -34,6 +34,7 @@
     - teamcheck
     - networkclosed
     - antidos
+    - dump
 
 - name: create cloud user
   user: name=cloud shell=/bin/bash
@@ -166,3 +167,20 @@
     - add_trafdump_rules.sh
     - del_trafdump_rules.sh
     - check_trafdump_rules.sh
+    - get_pkg_stat.sh
+
+- name: install tshark package
+  apt: name=tshark state=latest
+
+- name: create dump directory
+  file: path=/home/dump state=directory
+
+- copy: src=dump/{{item}} dest=/home/dump/ owner=dump group=dump mode=0755
+  with_items:
+    - rotate_dump.sh
+    - start_dump.sh
+  notify: enable and restart dump
+
+- name: copy dump systemd service
+  copy: src=dump/dump.service dest=/etc/systemd/system/dump.service
+  notify: enable and restart dump
