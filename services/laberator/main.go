@@ -182,6 +182,7 @@ type State struct {
 
 func main() {
 	dbApi.Init(&DBConfig{
+		name: "laberator",
 		user: "postgres",
 		password: "nicepassword",
 		host: "localhost",
