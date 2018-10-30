@@ -24,6 +24,7 @@ def generate_flag():
 
 def main():
     for i in range(MAX_REQUESTS):
+        sleep(1)
         flag = generate_flag()
         try:
             check_output(["python3", "./checker.py", "put", "localhost", "dummy flag id", flag, "1"])
