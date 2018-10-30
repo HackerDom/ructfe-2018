@@ -10,7 +10,7 @@ import fcntl
 DB_PATH="/cloud/backend/db"
 SCRIPTS_PATH="/cloud/backend"
 
-DEV_MODE = False
+DEV_MODE = True
 
 DOMAIN = "cloud.ructfe.org"
 
