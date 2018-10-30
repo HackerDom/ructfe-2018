@@ -181,8 +181,17 @@ type State struct {
 }
 
 func main() {
-	dbApi.Init()
-	sm.Init()
+	dbApi.Init(&DBConfig{
+		user: "postgres",
+		password: "nicepassword",
+		host: "localhost",
+		port: 5432,
+	})
+	sm.Init(&SMConfig{
+		host: "localhost",
+		port: 6379,
+		password: "",
+	})
 	defer dbApi.db.Close()
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

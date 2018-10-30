@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha512"
 	"encoding/base64"
+	"fmt"
 	"github.com/go-redis/redis"
 	"math/rand"
 	"net/http"
@@ -15,8 +16,18 @@ type SessionManager struct {
 	client *redis.Client
 }
 
-func (sm *SessionManager) Init() {
-	sm.client = redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+type SMConfig struct {
+	host string
+	port uint
+	password string
+}
+
+func (sm *SessionManager) Init(config *SMConfig) {
+	sm.client = redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%d", config.host, config.port),
+		Password: config.password,
+		DB: 0,
+	})
 }
 
 func generateSessionId(login, salt string) string {
