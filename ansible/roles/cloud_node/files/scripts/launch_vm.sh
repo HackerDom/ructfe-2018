@@ -21,6 +21,7 @@ fi
 
 if ! VBoxManage list runningvms | grep -qP "\W${vm}\W"; then
   VBoxManage modifyvm "$vm" --bridgeadapter1 "$br_dev"
+  VBoxManage modifyvm "$vm" --usbehci=off
 fi
 
 VBoxManage guestproperty set "$vm" team "${TEAM}"
