@@ -28,7 +28,13 @@
             </li>
             {{ end }}
         </ul>
+
         {{ if .Login }}
+            <nav class="navbar navbar-dark bg-dark">
+                <span class="navbar-text">
+                    Hello, {{ .Login }}!
+                </span>
+            </nav>
             <a class="btn btn-outline-success" role="button" href="/logout">Log Out</a>
         {{ else }}
             <a class="btn btn-outline-success" role="button" href="/register_page">Register</a>

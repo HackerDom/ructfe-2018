@@ -82,7 +82,7 @@ func Main(w http.ResponseWriter, r *http.Request) {
 	} else {
 		logged = ""
 	}
-	Exec(w, "templates/main.html", &State{Login:logged})
+	Exec(w, "templates/main.html", &State{Login: logged})
 }
 
 func RegisterPage(w http.ResponseWriter, r *http.Request) {
@@ -95,18 +95,18 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePage(w http.ResponseWriter, r *http.Request) {
-	ok, _ := sm.ValidateSession(r.Cookies())
+	ok, login := sm.ValidateSession(r.Cookies())
 	if ok {
-		Exec(w, "templates/create.html", &State{})
+		Exec(w, "templates/create.html", &State{Login: login})
 	} else {
 		Redirect(w, r, "/")
 	}
 }
 
 func ListingPage(w http.ResponseWriter, r *http.Request) {
-	ok, _ := sm.ValidateSession(r.Cookies())
+	ok, login := sm.ValidateSession(r.Cookies())
 	if ok {
-		Exec(w, "templates/listing.html", &State{})
+		Exec(w, "templates/listing.html", &State{Login: login})
 	} else {
 		Redirect(w, r, "/")
 	}
@@ -123,7 +123,7 @@ func ViewLabel(w http.ResponseWriter, r *http.Request) {
 		if !dbApi.CheckLabelOwner(login, labelId) {
 			w.WriteHeader(400)
 		} else {
-			Exec(w, "templates/view.html", &State{LabelId: labelId})
+			Exec(w, "templates/view.html", &State{LabelId: labelId, Login: login})
 		}
 	} else {
 		Redirect(w, r, "/")

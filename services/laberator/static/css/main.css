@@ -43,3 +43,7 @@ html, body {
 canvas {
     display: none;
 }
+
+.navbar-text {
+    padding: 0;
+}
