@@ -20,6 +20,7 @@ if ! VBoxManage showvminfo "$vm" &>/dev/null; then
 fi
 
 if ! VBoxManage list runningvms | grep -qP "\W${vm}\W"; then
+  VBoxManage modifyvm "$vm" --nic1 bridged
   VBoxManage modifyvm "$vm" --bridgeadapter1 "$br_dev"
   VBoxManage modifyvm "$vm" --usbehci=off
 fi
