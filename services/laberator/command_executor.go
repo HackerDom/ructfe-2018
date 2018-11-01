@@ -128,6 +128,14 @@ var Commands = map[string]interface{}{
 		}
 		return rawLabel, nil
 	},
+	"last_users":  func(ex *CommandExecutor, _ []byte) ([]byte, error) {
+		users := ex.dbApi.GetLastUsers()
+		rawUsers, err := json.Marshal(*users)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("marshalling error: %v, users=(%v)", err.Error(), *users))
+		}
+		return rawUsers, nil
+	},
 }
 
 func (ex *CommandExecutor) Execute(data []byte) ([]byte, error) {

@@ -9,10 +9,10 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-const LISTING_LIMIT = 10
+const ListingLimit = 10
 
 type User struct {
-	gorm.Model
+	ID           uint `gorm:"primary_key"`
 	Login        string
 	PasswordHash []byte
 }
@@ -81,7 +81,7 @@ func (api *DBApi) CreateLabel(text, font string, size uint, owner string) {
 
 func (api *DBApi) Listing(offset uint, owner string) *[]Label {
 	var labels []Label
-	api.db.Where("owner = ?", owner).Offset(offset).Limit(LISTING_LIMIT).Find(&labels)
+	api.db.Where("owner = ?", owner).Offset(offset).Limit(ListingLimit).Find(&labels)
 	return &labels
 }
 
@@ -92,6 +92,12 @@ func (api *DBApi) ViewLabel(labelId uint) (*Label, error) {
 		return nil, errors.New(fmt.Sprintf("len(labels with id=%v) = %v", labelId, len(labels)))
 	}
 	return &labels[0], nil
+}
+
+func (api *DBApi) GetLastUsers() *[]User {
+	var users []User
+	api.db.Order("ID DESC").Limit(ListingLimit).Find(&users)
+	return &users
 }
 
 func (api *DBApi) CheckLabelOwner(owner string, labelId uint64) bool {

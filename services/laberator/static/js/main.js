@@ -200,6 +200,23 @@ function viewLabel(labelId) {
     });
 }
 
+function fillLastUsers() {
+    waitSocket(ws, function() {
+        ws.onmessage = function (e) {
+            let tableElements = JSON.parse(e.data);
+            $("#u-t").empty();
+            tableElements.forEach(function (user) {
+                let td = document.createElement('td');
+                td.innerText = user.Login;
+                let tr = document.createElement("tr");
+                tr.appendChild(td);
+                $("#u-t").append(tr);
+            });
+        };
+        ws.send(createCommandRequest("last_users", {}));
+    });
+}
+
 function extendTable() {
     waitSocket(ws, function() {
         ws.onmessage = function (e) {
@@ -236,6 +253,11 @@ function extendTable() {
             "Offset": $("#l-t tr").length
         }));
     });
+}
+
+function setPollingInterval() {
+    setInterval(fillLastUsers, 1000);
+    fillLastUsers();
 }
 
 $(document).ready(function () {
