@@ -18,7 +18,7 @@
   user: name=cloud shell=/bin/bash
 
 - name: add keys to cloud user
-  authorized_key: user=cloud key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDY1Exi0TwlJezDkeD0A5iYHNjN4sGwWzveBU8KNhUwwG8UGTF/eB92QOEEL5RzUS7NMNd+xzs/AOExH2bNwh2OW+iKUpMF2kbatwj8uHsL+I09EA93b3c3i1yPouwvXbIlezWru1xpxyiWwGtgOl3SHh0lkfZWhqJ4IB1GCCmrF0ZzNPWRgiKZnjMJq7ggmHLrgjtoZfkFCg50Lxn9iIwJ+0k5LDeib3vsyCbvmrN3Jsy07/hIq7Ipou1mXQjc6ZgD5P8EzBaFeajnDexIk7oj6yqqJeyCAfxuMtzYgEPr2M+1fC36vhsMqY1ApMZP5Gt5I7sIy1SqwjjouNR/Vlht bay@baysnotebook"
+  authorized_key: user=cloud key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7DGByd2Rcf9HVtA0/LxePI8+cYHgGg5IPPKuKJACKmstwlNVIIe6cfl6XRwfzaALz+DRdmRqdLDelsCEJnEdZl+J5KCdKVKiRyrDV2iM2hcwBzjuF9HWyC5u/x1K3Pd4J4e8dk/qaI5gkmjoGxpu9Ngi+eEfWh6kwqWx97RgmmDOm43xhe3LJlNc8bxsvGSAv1oTOdEp+sLLIrifhpO33KCar44dFs4XCoY1Nuw4fmzJz4AjbPN5upniONpYidUYqXlsKYdJJ/cyR32daVpWEyuJLdNQq8WQUiHpF3f036TR3EB0X/kTLhMvdfb5Tst4eR6PzOF3bufjTOy4t6VvP bay@baysnotebook"
 
 - name: copy sudo_cloud
   copy: src=sudo_cloud dest=/etc/sudoers.d/ mode=0640
