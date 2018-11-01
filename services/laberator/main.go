@@ -163,7 +163,7 @@ func ProcessCommand(w http.ResponseWriter, r *http.Request) {
 func Ws(w http.ResponseWriter, r *http.Request) {
 	t := template.New("")
 	t.ParseFiles("templates/ws.html")
-	t.ExecuteTemplate(w, "url", "ws://" + r.Host + "/echo")
+	t.ExecuteTemplate(w, "url", "ws://"+r.Host+"/echo")
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
@@ -178,7 +178,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 type State struct {
-	Login string
+	Login   string
 	LabelId uint64
 }
 

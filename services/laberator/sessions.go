@@ -24,9 +24,9 @@ type RedisConfig struct {
 
 func (sm *SessionManager) Init(config *RedisConfig) {
 	sm.client = redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", config.Host, config.Port),
+		Addr:     fmt.Sprintf("%s:%d", config.Host, config.Port),
 		Password: config.Password,
-		DB: 0,
+		DB:       0,
 	})
 }
 

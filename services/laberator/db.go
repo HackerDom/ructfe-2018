@@ -13,7 +13,7 @@ const LISTING_LIMIT = 10
 
 type User struct {
 	gorm.Model
-	Login string
+	Login        string
 	PasswordHash []byte
 }
 
@@ -24,10 +24,10 @@ type DBApi struct {
 type DBApiError string
 
 type Label struct {
-	ID uint `gorm:"primary_key"`
-	Text string
-	Font string
-	Size uint
+	ID    uint `gorm:"primary_key"`
+	Text  string
+	Font  string
+	Size  uint
 	Owner string
 }
 
