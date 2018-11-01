@@ -3,4 +3,4 @@
     - common
     - vpn
     - monitoring_client
-#    - logging_client
+    - logging_client
