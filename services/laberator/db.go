@@ -32,11 +32,11 @@ type Label struct {
 }
 
 type DBConfig struct {
-	name string
-	host string
-	port uint
-	user string
-	password string
+	Name     string
+	Host     string
+	Port     uint
+	User     string
+	Password string
 }
 
 func (err DBApiError) Error() string {
@@ -105,7 +105,7 @@ func (api *DBApi) CheckLabelOwner(owner string, labelId uint64) bool {
 
 func (api *DBApi) Init(config *DBConfig) {
 	var err error
-	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=localhost port=%d user=%s dbname=%s password=%s", config.port, config.user, config.name, config.password))
+	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=localhost port=%d user=%s dbname=%s password=%s", config.Port, config.User, config.Name, config.Password))
 	if err != nil {
 		panic(fmt.Sprintf("failed to connect database: %s", err))
 	}

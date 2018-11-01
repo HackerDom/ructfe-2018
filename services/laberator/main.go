@@ -12,6 +12,8 @@ import (
 	"strconv"
 )
 
+const ConfigPath = "config"
+
 var dbApi DBApi
 var sm SessionManager
 var executor = CommandExecutor{&dbApi, &sm}
@@ -181,18 +183,12 @@ type State struct {
 }
 
 func main() {
-	dbApi.Init(&DBConfig{
-		name: "laberator",
-		user: "postgres",
-		password: "nicepassword",
-		host: "localhost",
-		port: 5432,
-	})
-	sm.Init(&SMConfig{
-		host: "localhost",
-		port: 6379,
-		password: "",
-	})
+	config, err := ParseConfig(ConfigPath)
+	if err != nil {
+		panic("config parsing error: " + err.Error())
+	}
+	dbApi.Init(&config.DBConfig)
+	sm.Init(&config.RedisConfig)
 	defer dbApi.db.Close()
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -209,5 +205,5 @@ func main() {
 	http.HandleFunc("/favicon.ico", func(writer http.ResponseWriter, request *http.Request) {})
 
 	fmt.Println("Start server")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil))
 }

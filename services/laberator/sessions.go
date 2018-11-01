@@ -16,16 +16,16 @@ type SessionManager struct {
 	client *redis.Client
 }
 
-type SMConfig struct {
-	host string
-	port uint
-	password string
+type RedisConfig struct {
+	Host     string
+	Port     uint
+	Password string
 }
 
-func (sm *SessionManager) Init(config *SMConfig) {
+func (sm *SessionManager) Init(config *RedisConfig) {
 	sm.client = redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", config.host, config.port),
-		Password: config.password,
+		Addr: fmt.Sprintf("%s:%d", config.Host, config.Port),
+		Password: config.Password,
 		DB: 0,
 	})
 }
