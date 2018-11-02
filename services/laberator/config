@@ -1,6 +1,6 @@
 {
-  "DBConfig": {
-    "Name": "laberator",
+  "PostgresConfig": {
+    "DBName": "laberator",
     "Host": "localhost",
     "Port": 5432,
     "User": "postgres",

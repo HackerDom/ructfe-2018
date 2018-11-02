@@ -7,9 +7,9 @@ import (
 )
 
 type Config struct {
-	DBConfig    DBConfig
-	RedisConfig RedisConfig
-	Port        uint32
+	PostgresConfig PostgresConfig
+	RedisConfig    RedisConfig
+	Port           uint32
 }
 
 func ParseConfig(path string) (*Config, error) {

@@ -187,7 +187,7 @@ func main() {
 	if err != nil {
 		panic("config parsing error: " + err.Error())
 	}
-	dbApi.Init(&config.DBConfig)
+	dbApi.Init(&config.PostgresConfig)
 	sm.Init(&config.RedisConfig)
 	defer dbApi.db.Close()
 
