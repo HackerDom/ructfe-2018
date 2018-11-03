@@ -1,4 +1,5 @@
 #include <time.h>
+#include <poll.h>
 
 #include "common.h"
 
@@ -78,21 +79,68 @@ struct hb_daemon {
 	}
 };
 
+#define CT_IDLE 0
+#define CT_RECV 1
+#define CT_SEND 2
+
+struct controller {
+	pc_connection conn;
+	int state = CT_IDLE;
+
+	controller() = default;
+	controller(int socket) {
+		conn = pc_connection(socket);
+	}
+
+	bool tick() {
+		int result;
+		pc_log("controller: tick!");
+
+		switch (state) {
+
+			case CT_IDLE:
+
+				conn.receive();
+				state = CT_RECV;
+				break;
+
+			case CT_RECV:
+
+				result = conn.poll_receive();
+				if (result < 0) {
+					pc_log("Error: a control connection was closed unexpectedly.");
+					return false;
+				}
+				else if (result) {
+					pc_log("Received command: '%s'.", conn.recv_buffer);
+					state = CT_IDLE;
+				}
+				break;
+		}
+
+		return true;
+	}
+};
+
 bool parse_args(char *master_endpoint_str, const char *control_port_str, addrinfo **master_address, ushort *control_port) {
 	
-	char *ip_str = strtok(master_endpoint_str, ":");
-	char *port_str = strtok(NULL, ":");
-
-	if (ip_str == NULL || port_str == NULL)
-		return false;
-
-	if (getaddrinfo(ip_str, port_str, NULL, master_address) != 0)
+	if (!pc_parse_endpoint(master_endpoint_str, master_address))
 		return false;
 
 	*control_port = atoi(control_port_str);
 
 	return true;
 }
+
+int find_empty_slot(pollfd *fds, int length) {
+	for (int i = 0; i < length; i++) {
+		if (!fds[i].fd)
+			return i;
+	}
+	return -1;
+}
+
+#define FDS_CT 8
 
 int main(int argc, char **argv) {
 
@@ -114,10 +162,56 @@ int main(int argc, char **argv) {
 		ntohs(((sockaddr_in *)master_address->ai_addr)->sin_port), 
 		control_port);
 
+	int server_sock = pc_start_server(control_port);
+
+	pollfd fds[FDS_CT + 1];
+	memset(&fds, 0, sizeof(fds));
+	int used_fds = FDS_CT + 1;
+
+	fds[0].fd = server_sock;
+	fds[0].events = POLLIN;
+
 	hb_daemon hb(*master_address);
+	controller controllers[FDS_CT];
+
 	while (true) {
+
 		hb.tick();
 		pc_log("Master: %s, state: %d", hb.master_available ? "available" : "unavailable", hb.state);
+
+		int result = poll(fds, used_fds, 100);
+		if (result < 0)
+			pc_fatal("main: poll() failed unexpectedly.");
+
+		for (int i = 0; i < used_fds; i++) {
+			if (fds[i].revents != POLLIN)
+				continue;
+
+			if (i == 0) {
+				int client_idx = find_empty_slot(fds + 1, FDS_CT);
+
+				if (client_idx >= 0) {
+					int client_sock = pc_accept_client(server_sock);
+					if (client_sock) {
+						controllers[client_idx] = controller(client_sock);
+						fds[client_idx + 1].fd = client_sock;
+						fds[client_idx + 1].events = POLLIN;
+					}
+					pc_log("main: accepted a new controlling connection.");
+				}
+				else {
+					pc_log("main: cannot accept more controlling connections.");
+					fds[0].events = 0;
+				}
+				continue;
+			}
+
+			if (!controllers[i - 1].tick()) {
+				controllers[i - 1].~controller();
+				bzero(&fds[i], sizeof(pollfd));
+				fds[0].events = POLLIN;
+			}
+		}
 	}
 
 	pc_shutdown_logging();
