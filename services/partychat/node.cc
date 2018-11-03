@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "common.h"
 
 typedef unsigned short ushort;
 
@@ -37,10 +29,16 @@ int main(int argc, char **argv) {
 		exit(-1);
 	}
 
-	printf("Running with args: %s:%d %d\n", 
+	char log_file[64];
+	sprintf(log_file, "%s.log", argv[0]);
+	pc_init_logging(log_file, true);
+
+	pc_log("Running with args: %s:%d %d\n", 
 		inet_ntoa(((sockaddr_in *)master_address->ai_addr)->sin_addr), 
 		ntohs(((sockaddr_in *)master_address->ai_addr)->sin_port), 
 		control_port);
+
+	pc_shutdown_logging();
 
 	return 0;
 }
