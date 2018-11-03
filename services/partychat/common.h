@@ -32,7 +32,7 @@
 		int send_index = 0;
 		int send_length = 0;
 
-		bool alive = true;
+		bool alive = false;
 
 		pc_connection() = default;
 		pc_connection(int sock);

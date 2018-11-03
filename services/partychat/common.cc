@@ -61,6 +61,9 @@
 		vsprintf(message, format, args);
 		va_end(args);
 
+		if (pc_log_stream)
+			fflush(pc_log_stream);
+
 		printf("Fatal: %s\n", message);
 		exit(-1);
 	}
@@ -73,6 +76,7 @@
 		socket = sock;
 		recv_buffer = new char[CONN_BUFFER_LENGTH];
 		send_buffer = new char[CONN_BUFFER_LENGTH];
+		alive = true;
 	}
 
 	pc_connection::~pc_connection() {
@@ -90,6 +94,9 @@
 	}
 
 	void pc_connection::send(const char *message) {
+		if (!alive)
+			return;
+
 		if (send_length != 0)
 			pc_fatal("pc_connection::send: previous send operation has not completed.");
 
@@ -108,14 +115,17 @@
 		if (send_length == 0)
 			pc_fatal("pc_connection::poll_send: there is no active send operation.");
 
-		pc_log("poll_send: sock: %d, msg: %s, idx: %d, len: %d", socket, send_buffer, send_index, send_length);
-
 		int result = write(socket, send_buffer + send_index, send_length - send_index);
 		if (result < 0) {
-			pc_log("poll_send: failure: result: %d, errno: %d", result, errno);
-
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
 				return 0;
+
+			pc_log("Error: poll_send: errno = %d.", result, errno);
+			alive = false;
+			return -1;
+		}
+		if (result == 0) {
+			pc_log("Error: poll_send: connection was closed.");
 			alive = false;
 			return -1;
 		}
@@ -125,11 +135,17 @@
 			send_length = send_index = 0;
 			return 1;
 		}
+
+		return 0;
 	}
 
 	void pc_connection::receive() {
-		if (recv_length != 0)
+		if (!alive)
+			return;
+		
+		if (recv_length != 0) {
 			pc_fatal("pc_connection::receive: previous receive operation has not completed.");
+		}
 
 		recv_length = CONN_BUFFER_LENGTH - 1;
 	}
@@ -138,14 +154,17 @@
 		if (recv_length == 0)
 			pc_fatal("pc_connection::poll_receive: there is no active receive operation.");
 
-		pc_log("poll_receive: sock: %d, msg: %s, idx: %d, len: %d", socket, recv_buffer, recv_index, recv_length);
-
 		int result = read(socket, recv_buffer + recv_index, recv_length - recv_index);
 		if (result < 0) {
-			pc_log("poll_receive: failure: result: %d, errno: %d", result, errno);
-
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
 				return 0;
+
+			pc_log("Error: poll_receive: errno = %d.", result, errno);
+			alive = false;
+			return -1;
+		}
+		if (result == 0) {
+			pc_log("Error: poll_receive: connection was closed.");
 			alive = false;
 			return -1;
 		}
@@ -165,16 +184,18 @@
 			alive = false;
 			return -1;
 		}
+
+		return 0;
 	}
 
 	bool pc_connect(const addrinfo &endpoint, pc_connection &connection) {
 		int sock = socket(AF_INET, SOCK_STREAM, 0);
 		if (sock < 0)
 			pc_fatal("pc_connect: failed to create socket.");
-		pc_log("sock: %d", sock);
 
 		if (connect(sock, endpoint.ai_addr, sizeof(*endpoint.ai_addr)) < 0) {
 			pc_log("Error: pc_connect: failed to connect to remote endpoint.");
+			close(sock);
 			return false;
 		}
 
