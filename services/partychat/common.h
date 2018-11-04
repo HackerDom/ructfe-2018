@@ -50,3 +50,6 @@
 	void pc_make_nonblocking(int socket);
 
 	bool pc_parse_endpoint(const char *str, addrinfo **endpoint);
+
+	int pc_start_server(int port);
+	int pc_accept_client(int server_sock);

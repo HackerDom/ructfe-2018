@@ -61,8 +61,7 @@
 		vsprintf(message, format, args);
 		va_end(args);
 
-		if (pc_log_stream)
-			fflush(pc_log_stream);
+		pc_shutdown_logging();
 
 		printf("Fatal: %s\n", message);
 		exit(-1);
@@ -230,4 +229,45 @@
 			return false;
 
 		return true;
+	}
+
+	int pc_start_server(int port) {
+
+		int server_sock = socket(AF_INET, SOCK_STREAM, 0);
+		if (server_sock < 0) 
+			pc_fatal("pc_start_server: failed to create socket.");
+
+		int reuse = 1;
+		setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int));
+
+		sockaddr_in server_addr;
+		bzero(&server_addr, sizeof(server_addr));
+
+		server_addr.sin_family = AF_INET;
+		server_addr.sin_port = htons(port);
+
+		if (bind(server_sock, (sockaddr *)&server_addr, sizeof(server_addr)) < 0) 
+			pc_fatal("pc_start_server: failed to bind server socket.");
+
+		pc_make_nonblocking(server_sock);
+
+		if (listen(server_sock, 8) < 0)
+			pc_fatal("pc_start_server: failed to listen on server socket.");
+
+		return server_sock;
+	}
+
+	int pc_accept_client(int server_sock) {
+
+		sockaddr_in client_addr;
+		socklen_t client_len = sizeof(client_addr);
+
+		int client_sock = accept(server_sock, (sockaddr *)&client_addr, &client_len);
+		if (client_sock < 0) {
+			pc_log("Error: pc_accept_client: failed to accept client.");
+			return 0;
+		}
+
+		pc_make_nonblocking(client_sock);
+		return client_sock;
 	}
