@@ -1,0 +1,14 @@
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\bin\Debug\netcoreapp2.1\api.deps.json
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\bin\Debug\netcoreapp2.1\api.runtimeconfig.json
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\bin\Debug\netcoreapp2.1\api.runtimeconfig.dev.json
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\bin\Debug\netcoreapp2.1\api.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\bin\Debug\netcoreapp2.1\api.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\obj\Debug\netcoreapp2.1\api.csproj.CoreCompileInputs.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\obj\Debug\netcoreapp2.1\api.RazorAssemblyInfo.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\obj\Debug\netcoreapp2.1\api.RazorAssemblyInfo.cs
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\obj\Debug\netcoreapp2.1\api.AssemblyInfoInputs.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\obj\Debug\netcoreapp2.1\api.AssemblyInfo.cs
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\obj\Debug\netcoreapp2.1\api.RazorTargetAssemblyInfo.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\obj\Debug\netcoreapp2.1\api.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\obj\Debug\netcoreapp2.1\api.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\api\obj\Debug\netcoreapp2.1\api.csprojAssemblyReference.cache

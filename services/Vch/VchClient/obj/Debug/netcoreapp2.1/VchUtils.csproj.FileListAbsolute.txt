@@ -1,0 +1,14 @@
+C:\Users\d.lukshto\source\repos\Vch\VchClient\bin\Debug\netcoreapp2.1\VchUtils.deps.json
+C:\Users\d.lukshto\source\repos\Vch\VchClient\bin\Debug\netcoreapp2.1\VchUtils.dll
+C:\Users\d.lukshto\source\repos\Vch\VchClient\bin\Debug\netcoreapp2.1\VchUtils.pdb
+C:\Users\d.lukshto\source\repos\Vch\VchClient\bin\Debug\netcoreapp2.1\NTPTools.dll
+C:\Users\d.lukshto\source\repos\Vch\VchClient\bin\Debug\netcoreapp2.1\Vch.Core.dll
+C:\Users\d.lukshto\source\repos\Vch\VchClient\bin\Debug\netcoreapp2.1\Vch.Core.pdb
+C:\Users\d.lukshto\source\repos\Vch\VchClient\bin\Debug\netcoreapp2.1\NTPTools.pdb
+C:\Users\d.lukshto\source\repos\Vch\VchClient\obj\Debug\netcoreapp2.1\VchUtils.csprojAssemblyReference.cache
+C:\Users\d.lukshto\source\repos\Vch\VchClient\obj\Debug\netcoreapp2.1\VchUtils.csproj.CoreCompileInputs.cache
+C:\Users\d.lukshto\source\repos\Vch\VchClient\obj\Debug\netcoreapp2.1\VchUtils.AssemblyInfoInputs.cache
+C:\Users\d.lukshto\source\repos\Vch\VchClient\obj\Debug\netcoreapp2.1\VchUtils.AssemblyInfo.cs
+C:\Users\d.lukshto\source\repos\Vch\VchClient\obj\Debug\netcoreapp2.1\VchUtils.csproj.CopyComplete
+C:\Users\d.lukshto\source\repos\Vch\VchClient\obj\Debug\netcoreapp2.1\VchUtils.dll
+C:\Users\d.lukshto\source\repos\Vch\VchClient\obj\Debug\netcoreapp2.1\VchUtils.pdb

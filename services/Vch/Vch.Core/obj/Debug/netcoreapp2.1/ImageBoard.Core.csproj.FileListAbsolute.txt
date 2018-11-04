@@ -1,0 +1,15 @@
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\obj\Debug\netcoreapp2.1\ImageBoard.Core.csprojAssemblyReference.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\obj\Debug\netcoreapp2.1\ImageBoard.Core.csproj.CoreCompileInputs.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\obj\Debug\netcoreapp2.1\ImageBoard.Core.AssemblyInfoInputs.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\obj\Debug\netcoreapp2.1\ImageBoard.Core.AssemblyInfo.cs
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\bin\Debug\netcoreapp2.1\ImageBoard.Core.deps.json
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\bin\Debug\netcoreapp2.1\ImageBoard.Core.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\bin\Debug\netcoreapp2.1\ImageBoard.Core.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\bin\Debug\netcoreapp2.1\NTPTools.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\bin\Debug\netcoreapp2.1\NTPTools.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\obj\Debug\netcoreapp2.1\ImageBoard.Core.csproj.CopyComplete
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\obj\Debug\netcoreapp2.1\ImageBoard.Core.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\obj\Debug\netcoreapp2.1\ImageBoard.Core.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\bin\Debug\netcoreapp2.1\Newtonsoft.Json.Schema.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\bin\Debug\netcoreapp2.1\Newtonsoft.Json.Schema.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\ImageBoard.Core\bin\Debug\netcoreapp2.1\Newtonsoft.Json.Schema.xml

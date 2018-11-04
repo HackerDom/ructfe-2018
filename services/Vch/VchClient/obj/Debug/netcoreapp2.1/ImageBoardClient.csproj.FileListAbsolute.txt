@@ -1,0 +1,14 @@
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\bin\Debug\netcoreapp2.1\ImageBoardClient.deps.json
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\bin\Debug\netcoreapp2.1\ImageBoardClient.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\bin\Debug\netcoreapp2.1\ImageBoardClient.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\obj\Debug\netcoreapp2.1\ImageBoardClient.csprojAssemblyReference.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\obj\Debug\netcoreapp2.1\ImageBoardClient.csproj.CoreCompileInputs.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\obj\Debug\netcoreapp2.1\ImageBoardClient.AssemblyInfoInputs.cache
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\obj\Debug\netcoreapp2.1\ImageBoardClient.AssemblyInfo.cs
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\obj\Debug\netcoreapp2.1\ImageBoardClient.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\obj\Debug\netcoreapp2.1\ImageBoardClient.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\bin\Debug\netcoreapp2.1\ImageBoard.Core.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\bin\Debug\netcoreapp2.1\NTPTools.dll
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\bin\Debug\netcoreapp2.1\ImageBoard.Core.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\bin\Debug\netcoreapp2.1\NTPTools.pdb
+C:\Users\d.lukshto\source\repos\PIPBoyUpdateService\client\obj\Debug\netcoreapp2.1\ImageBoardClient.csproj.CopyComplete
