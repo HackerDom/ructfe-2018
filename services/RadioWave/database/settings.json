@@ -1,4 +1,4 @@
 {
-  "port": 8000,
-  "cleanup_in_secs": 30
+  "host": "localhost:8000",
+  "cleanup_in_secs": 120
 }

@@ -42,7 +42,7 @@ impl Database {
     }
 
     pub fn clear(&self) {
-        let len_before = self.database.len();
+        info!("keys before {}", self.database.len());
         let now = Instant::now();
 
         let del_time = UTC::now() - self.cleanup_duration;
@@ -60,10 +60,12 @@ impl Database {
             });
         
         self.database.retain(|_, v| v.len() != 0);
+        self.database.shrink_to_fit();
         
         let then = now.elapsed();
         let elapsed = then.as_secs() * 1000 + then.subsec_nanos() as u64 / 1_000_000;
-        println!("CleanUp! elapsed: {}ms, msg deleted: {}, keys deleted: {}",
-                 elapsed, del_count, len_before - self.database.len());
+        info!("CleanUp! elapsed: {}ms, msg deleted: {}", elapsed, del_count);
+        info!("keys after {}", self.database.len());
+        println!("CleanUp! elapsed: {}ms, msg deleted: {}", elapsed, del_count);
     }
 }
