@@ -4,7 +4,7 @@ import socketserver
 
 with open('docs.txt') as file:
     docs = file.read()
-    HTTP_DOCS = b'HTTP/1.1 200 OK\nContent-Type: text/markdown\n\n ' + docs.encode()
+    HTTP_DOCS = b'HTTP/1.1 200 OK\nContent-Type: text/plain\n\n ' + docs.encode()
 
 
 class PerfThreadingTCPServer(ThreadingTCPServer):
