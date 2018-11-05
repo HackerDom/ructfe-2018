@@ -111,7 +111,7 @@ func (api *DBApi) CheckLabelOwner(owner string, labelId uint64) bool {
 
 func (api *DBApi) Init(config *PostgresConfig) {
 	var err error
-	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=localhost port=%d user=%s dbname=%s sslmode=disable", config.Port, config.User, config.DBName))
+	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=localhost port=%d user=%s dbname=%s password=%s", config.Port, config.User, config.DBName, config.Password))
 	if err != nil {
 		panic(fmt.Sprintf("failed to connect database: %s", err))
 	}
