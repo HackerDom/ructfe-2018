@@ -12,6 +12,8 @@ import (
 	"strconv"
 )
 
+const ConfigPath = "config"
+
 var dbApi DBApi
 var sm SessionManager
 var executor = CommandExecutor{&dbApi, &sm}
@@ -82,7 +84,7 @@ func Main(w http.ResponseWriter, r *http.Request) {
 	} else {
 		logged = ""
 	}
-	Exec(w, "templates/main.html", &State{Login:logged})
+	Exec(w, "templates/main.html", &State{Login: logged})
 }
 
 func RegisterPage(w http.ResponseWriter, r *http.Request) {
@@ -95,18 +97,18 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePage(w http.ResponseWriter, r *http.Request) {
-	ok, _ := sm.ValidateSession(r.Cookies())
+	ok, login := sm.ValidateSession(r.Cookies())
 	if ok {
-		Exec(w, "templates/create.html", &State{})
+		Exec(w, "templates/create.html", &State{Login: login})
 	} else {
 		Redirect(w, r, "/")
 	}
 }
 
 func ListingPage(w http.ResponseWriter, r *http.Request) {
-	ok, _ := sm.ValidateSession(r.Cookies())
+	ok, login := sm.ValidateSession(r.Cookies())
 	if ok {
-		Exec(w, "templates/listing.html", &State{})
+		Exec(w, "templates/listing.html", &State{Login: login})
 	} else {
 		Redirect(w, r, "/")
 	}
@@ -123,7 +125,7 @@ func ViewLabel(w http.ResponseWriter, r *http.Request) {
 		if !dbApi.CheckLabelOwner(login, labelId) {
 			w.WriteHeader(400)
 		} else {
-			Exec(w, "templates/view.html", &State{LabelId: labelId})
+			Exec(w, "templates/view.html", &State{LabelId: labelId, Login: login})
 		}
 	} else {
 		Redirect(w, r, "/")
@@ -161,7 +163,7 @@ func ProcessCommand(w http.ResponseWriter, r *http.Request) {
 func Ws(w http.ResponseWriter, r *http.Request) {
 	t := template.New("")
 	t.ParseFiles("templates/ws.html")
-	t.ExecuteTemplate(w, "url", "ws://" + r.Host + "/echo")
+	t.ExecuteTemplate(w, "url", "ws://"+r.Host+"/echo")
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
@@ -176,13 +178,17 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 type State struct {
-	Login string
+	Login   string
 	LabelId uint64
 }
 
 func main() {
-	dbApi.Init()
-	sm.Init()
+	config, err := ParseConfig(ConfigPath)
+	if err != nil {
+		panic("config parsing error: " + err.Error())
+	}
+	dbApi.Init(&config.PostgresConfig)
+	sm.Init(&config.RedisConfig)
 	defer dbApi.db.Close()
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -199,5 +205,5 @@ func main() {
 	http.HandleFunc("/favicon.ico", func(writer http.ResponseWriter, request *http.Request) {})
 
 	fmt.Println("Start server")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil))
 }

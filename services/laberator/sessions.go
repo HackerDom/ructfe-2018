@@ -1,9 +1,10 @@
 package main
 
 import (
-	"crypto/sha512"
 	"encoding/base64"
+	"fmt"
 	"github.com/go-redis/redis"
+	"github.com/werelaxe/fast-hash"
 	"math/rand"
 	"net/http"
 	"time"
@@ -15,12 +16,22 @@ type SessionManager struct {
 	client *redis.Client
 }
 
-func (sm *SessionManager) Init() {
-	sm.client = redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+type RedisConfig struct {
+	Host     string
+	Port     uint
+	Password string
+}
+
+func (sm *SessionManager) Init(config *RedisConfig) {
+	sm.client = redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", config.Host, config.Port),
+		Password: config.Password,
+		DB:       0,
+	})
 }
 
 func generateSessionId(login, salt string) string {
-	hash := sha512.Sum512([]byte(login + salt))
+	hash := hasher.GetHash([]byte(login + salt))
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
 

@@ -9,6 +9,9 @@
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/main.js"></script>
+    <script>
+        $(document).ready(setPollingInterval);
+    </script>
 </head>
 
 <body>
@@ -28,7 +31,13 @@
             </li>
             {{ end }}
         </ul>
+
         {{ if .Login }}
+            <nav class="navbar navbar-dark bg-dark">
+                <span class="navbar-text">
+                    Hello, {{ .Login }}!
+                </span>
+            </nav>
             <a class="btn btn-outline-success" role="button" href="/logout">Log Out</a>
         {{ else }}
             <a class="btn btn-outline-success" role="button" href="/register_page">Register</a>
@@ -41,6 +50,20 @@
         <p class="text-center">
             Hello! In Laberator you can create awesome labels with custom text, font and size.
         </p>
+        <div class="row h-50">
+            <div class="col-sm-4"></div>
+            <div class="col-sm-4 my-auto">
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
+                    <tbody id="u-t">
+                    </tbody>
+                </table>
+            </div>
+        </div>
     {{else}}
         <div class="container">
             <div class="row h-100">

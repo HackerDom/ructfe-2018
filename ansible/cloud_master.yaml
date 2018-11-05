@@ -1,0 +1,6 @@
+- hosts: cloud-master
+  roles:
+    - common
+    - cloud_master
+    - monitoring_client
+    - logging_client

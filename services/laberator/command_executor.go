@@ -12,7 +12,7 @@ const VALIDATE_PAIR_CMD string = "validate"
 const CHECK_EXISTENCE_CMD string = "check-existence"
 
 type PairData struct {
-	Login string
+	Login    string
 	Password string
 }
 
@@ -21,30 +21,30 @@ type LoginData struct {
 }
 
 type CreatingData struct {
-	Text string
-	Font string
-	Size uint
+	Text       string
+	Font       string
+	Size       uint
 	RawCookies string
 }
 
 type ListingData struct {
-	Offset uint
+	Offset     uint
 	RawCookies string
 }
 
 type ViewData struct {
-	LabelId uint
+	LabelId    uint
 	RawCookies string
 }
 
 type CmdRequest struct {
 	Command string
-	Data string
+	Data    string
 }
 
 type CommandExecutor struct {
 	dbApi *DBApi
-	sm *SessionManager
+	sm    *SessionManager
 }
 
 func parseCookies(data string) []*http.Cookie {
@@ -58,7 +58,7 @@ func createUnmarshallingError(err error, data []byte) error {
 	return errors.New(fmt.Sprintf("unmarshalling error: %v, data=(%v)", err.Error(), string(data)))
 }
 
-var Commands = map[string]interface{} {
+var Commands = map[string]interface{}{
 	"validate": func(ex *CommandExecutor, data []byte) ([]byte, error) {
 		var pairData PairData
 		err := json.Unmarshal(data, &pairData)
@@ -127,6 +127,14 @@ var Commands = map[string]interface{} {
 			return nil, errors.New(fmt.Sprintf("marshalling error: %v, label=(%v)", err.Error(), *label))
 		}
 		return rawLabel, nil
+	},
+	"last_users":  func(ex *CommandExecutor, _ []byte) ([]byte, error) {
+		users := ex.dbApi.GetLastUsers()
+		rawUsers, err := json.Marshal(*users)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("marshalling error: %v, users=(%v)", err.Error(), *users))
+		}
+		return rawUsers, nil
 	},
 }
 

@@ -136,6 +136,17 @@ function validateLabelWithErrors() {
     return true;
 }
 
+function getLoginFromCookies() {
+    let result = "";
+    document.cookie.split("; ").forEach(function (rawCookie) {
+        let cookie = rawCookie.split("=");
+        if (cookie[0] === "login") {
+            result = cookie[1];
+        }
+    });
+    return result;
+}
+
 function validateLabel(text, font, size) {
     if (text.length > 40)
         return false;
@@ -166,6 +177,9 @@ function viewLabel(labelId) {
     waitSocket(ws, function() {
         ws.onmessage = function (e) {
             let label = JSON.parse(e.data);
+            if (label.Owner !== getLoginFromCookies()) {
+                return;
+            }
             let canvas = $("#l-c")[0];
             let context = canvas.getContext("2d");
             let image = $("#l-i")[0];
@@ -183,6 +197,23 @@ function viewLabel(labelId) {
             "LabelId": labelId,
             "RawCookies": document.cookie,
         }));
+    });
+}
+
+function fillLastUsers() {
+    waitSocket(ws, function() {
+        ws.onmessage = function (e) {
+            let tableElements = JSON.parse(e.data);
+            $("#u-t").empty();
+            tableElements.forEach(function (user) {
+                let td = document.createElement('td');
+                td.innerText = user.Login;
+                let tr = document.createElement("tr");
+                tr.appendChild(td);
+                $("#u-t").append(tr);
+            });
+        };
+        ws.send(createCommandRequest("last_users", {}));
     });
 }
 
@@ -222,6 +253,11 @@ function extendTable() {
             "Offset": $("#l-t tr").length
         }));
     });
+}
+
+function setPollingInterval() {
+    setInterval(fillLastUsers, 1000);
+    fillLastUsers();
 }
 
 $(document).ready(function () {
