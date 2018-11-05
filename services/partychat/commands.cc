@@ -104,13 +104,17 @@ bool connection::tick() {
 
 	return true;
 }
+void connection::flush(int id) {
+	tick();
+	while (alive() && (conn.is_sending() || !pending_commands.empty() || executing_commands.find(id) != executing_commands.end()))
+		tick();
+}
 bool connection::alive() {
 	return !closed && conn.alive;
 }
 void connection::close() {
 	closed = true;
 }
-
 
 #define HB_PERIOD 3
 
@@ -151,17 +155,10 @@ void master_link::tick() {
 
 node_state node_state::_default;
 
-struct end_command : command {
-	using command::command;
-
-	static const char *_name() { return "end"; }
-	virtual const char *name() { return _name(); }
-
-	virtual void execute(responder &rsp, connection &conn, node_state &state) {
-		pc_log("end_command::execute: closing conenction..");
-		conn.close();
-	}
-};
+void end_command::execute(responder &rsp, connection &conn, node_state &state) {
+	pc_log("end_command::execute: closing connection..");
+	conn.close();
+}
 
 #define COMMAND_CASE(x) \
 	if (!strcmp(x::_name(), name_str)) { \
@@ -186,15 +183,21 @@ bool parse_command(char *str, command *&cmd) {
 	COMMAND_CASE(hb_command)
 	COMMAND_CASE(die_command)
 	COMMAND_CASE(end_command)
+	COMMAND_CASE(say_command)
+	COMMAND_CASE(history_command)
 	COMMAND_CASE(response)
 
 	return false;
 }
 
 void say_command::execute(responder &rsp, connection &conn, node_state &state) {
-	// TODO relay it to master
+	pc_log("say_command::execute: saying '%s'..", text);
+	state.uplink.master_conn.send<say_command>(text);
 }
 
 void history_command::execute(responder &rsp, connection &conn, node_state &state) {
-	// TODO relay it to master
+	rsp.respond("history line 1");
+	rsp.respond("history line 2");
+	rsp.respond("history line 3");
 }
+

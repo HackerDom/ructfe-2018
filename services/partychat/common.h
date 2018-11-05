@@ -11,6 +11,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
+#include <functional>
+#include <unordered_map>
 
 // Logging
 
@@ -58,3 +60,31 @@
 
 	int pc_start_server(int port);
 	int pc_accept_client(int server_sock);
+
+// Groups
+
+	char *pc_extract_group(const char *message);
+
+	struct pc_group {
+		char *group;
+
+		pc_group(const char *message);
+		~pc_group();
+		bool operator==(const pc_group &other) const;
+	};
+
+	namespace std {
+		template <>
+		struct hash<pc_group> {
+			std::size_t operator()(const pc_group& g) const
+			{
+				if (!g.group)
+					return 0;
+				
+				std::size_t h = 0;
+				for (const char *p = g.group; *p; p++)
+					h = (h * 167) ^ *p;
+				return h;
+			}
+		};
+	}

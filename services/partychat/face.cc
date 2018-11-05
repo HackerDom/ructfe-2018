@@ -8,8 +8,6 @@ const char banner[] =
 	"▐█▪·•▐█ ▪▐▌▐█•█▌ ▐█▌· ▐█▀·.▐███▌██▌▐▀▐█ ▪▐▌ ▐█▌·\n"\
 	".▀    ▀  ▀ .▀  ▀ ▀▀▀   ▀ • ·▀▀▀ ▀▀▀ · ▀  ▀  ▀▀▀\n";
 
-char current_group[256];
-
 bool handle_command(const char *command, const char *args, connection &conn) {
 	if (!strcmp("!help", command)) {
 		printf("Available commands\n:");
@@ -19,12 +17,16 @@ bool handle_command(const char *command, const char *args, connection &conn) {
 		return true;
 	}
 	if (!strcmp("!quit", command)) {
+		conn.flush(conn.send<end_command>(args));
 		return false;
 	}
 	if (!strcmp("!say", command)) {
 		// load history if needed
-		conn.send<say_command>(args);
-		conn.tick();conn.tick();conn.tick();
+		conn.flush(conn.send<say_command>(args));
+		return true;
+	}
+	if (!strcmp("!history", command)) {
+		conn.flush(conn.send<history_command>(args));
 		return true;
 	}
 

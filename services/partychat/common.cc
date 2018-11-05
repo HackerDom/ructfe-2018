@@ -1,5 +1,7 @@
 #include <stdarg.h>
 #include <time.h>
+#include <vector>
+#include <algorithm>
 
 #include "common.h"
 
@@ -292,4 +294,63 @@
 
 		pc_make_nonblocking(client_sock);
 		return client_sock;
+	}
+
+// Groups
+
+	char *pc_extract_group(const char *message) {
+
+		if (!message)
+			return NULL;
+
+		if (strlen(message) > CONN_BUFFER_LENGTH) {
+			pc_log("Error: pc_extract_group: message was too long.");
+			return NULL;
+		}
+
+		char buffer[CONN_BUFFER_LENGTH];
+		strcpy(buffer, message);
+
+		std::vector<char *> names;
+
+		char *token = strtok(buffer, " ");
+		while (token) {
+
+			if (token[0] == '@')
+				names.push_back(token);
+			token = strtok(NULL, " ");
+		}
+		if (names.empty())
+			return NULL;
+
+		std::sort(names.begin(), names.end(), [](const char *a, const char *b) { return strcmp(a, b) < 0; });
+
+		int length = 0;
+		for (auto s : names) {
+			length += 1 + strlen(s);
+		}
+
+		char *g = new char[length + 1];
+		bzero(g, length + 1);
+		for (auto s : names) {
+			strcat(g, s);
+			strcat(g, " ");
+		}
+		g[length] = 0;
+
+		return g;
+	}
+
+	pc_group::pc_group(const char *message) {
+		group = pc_extract_group(message);
+	}
+	pc_group::~pc_group() {
+		delete[] group;
+	}
+	bool pc_group::operator==(const pc_group &other) const {
+		if (!group && !other.group)
+			return true;
+		if (!group || !other.group)
+			return false;
+		return !strcmp(group, other.group);
 	}

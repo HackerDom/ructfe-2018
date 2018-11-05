@@ -1,7 +1,6 @@
 #pragma once
 
 #include <queue>
-#include <unordered_map>
 
 #include "common.h"
 
@@ -60,6 +59,15 @@ struct die_command : command {
 	virtual void execute(responder &rsp, connection &conn, node_state &state);
 };
 
+struct end_command : command {
+	using command::command;
+
+	static const char *_name() { return "end"; }
+	virtual const char *name() { return _name(); }
+
+	virtual void execute(responder &rsp, connection &conn, node_state &state);
+};
+
 struct say_command : command {
 	using command::command;
 
@@ -97,9 +105,13 @@ struct connection {
 	bool tick();
 
 	template<typename T>
-	void send(const char *text) {
-		pending_commands.push(new T(text, cmd_id++));
+	int send(const char *text) {
+		int id = cmd_id++;
+		pending_commands.push(new T(text, id));
+		return id;
 	}
+
+	void flush(int id);
 
 	bool alive();
 	void close();
