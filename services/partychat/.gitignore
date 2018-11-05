@@ -1,0 +1,4 @@
+*.o
+checker
+pc-*
+*.log
