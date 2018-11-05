@@ -1,0 +1,28 @@
+
+
+
+                           === Welcome to 'Vending Machines Factory 1883' service ===
+
+
+
+
+
+                                    [+] Create your own VMs on your own VMFactory
+                                    [+] Sell anything for anyone
+                                    [+] Invite yur friends
+                                    [+] Batteries included
+                                    [-] Client not included
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                        (C) RuCTFE 2018, with <3
