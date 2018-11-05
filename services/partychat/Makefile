@@ -9,7 +9,7 @@ FACE_OBJS = face.o common.o
 face: $(FACE_OBJS)
 	g++ -o pc-face $(FACE_OBJS)
 
-NODE_OBJS = node.o common.o
+NODE_OBJS = node.o commands.o common.o
 node: $(NODE_OBJS)
 	g++ -o pc-node $(NODE_OBJS)
 
