@@ -24,7 +24,8 @@ int find_empty_slot(pollfd *fds, int length) {
 	return -1;
 }
 
-#define FDS_CT 8
+#define SRV_CT 2
+#define CON_CT 8
 
 int main(int argc, char **argv) {
 
@@ -46,23 +47,25 @@ int main(int argc, char **argv) {
 		ntohs(((sockaddr_in *)master_address->ai_addr)->sin_port), 
 		control_port);
 
-	master_link uplink(*master_address);
+	node_state state(*master_address);
 
 	int server_sock = pc_start_server(control_port);
 
-	pollfd fds[FDS_CT + 1];
+	pollfd fds[SRV_CT + CON_CT];
 	memset(&fds, 0, sizeof(fds));
-	int used_fds = FDS_CT + 1;
+	int used_fds = SRV_CT + CON_CT;
 
 	fds[0].fd = server_sock;
 	fds[0].events = POLLIN;
+	fds[1].fd = state.uplink.master_conn.conn.socket;
+	fds[1].events = POLLIN;
 
-	controller *controllers[FDS_CT];
+	connection *controllers[CON_CT];
 
 	while (true) {
 
-		uplink.tick();
-		pc_log("Master: %s", uplink.hb.master_available ? "available" : "unavailable");
+		state.uplink.tick();
+		pc_log("Master: %s", state.uplink.hb.master_available ? "available" : "unavailable");
 
 		int result = poll(fds, used_fds, 1000);
 		if (result < 0)
@@ -73,14 +76,17 @@ int main(int argc, char **argv) {
 				continue;
 
 			if (i == 0) {
-				int client_idx = find_empty_slot(fds + 1, FDS_CT);
-
+				int client_idx = find_empty_slot(fds + SRV_CT, CON_CT);
+				
 				if (client_idx >= 0) {
+
 					int client_sock = pc_accept_client(server_sock);
 					if (client_sock) {
-						controllers[client_idx] = new controller(client_sock);
-						fds[client_idx + 1].fd = client_sock;
-						fds[client_idx + 1].events = POLLIN;
+						int fd_idx = client_idx + SRV_CT;
+
+						controllers[client_idx] = new connection(client_sock, state);
+						fds[fd_idx].fd = client_sock;
+						fds[fd_idx].events = POLLIN;
 					}
 					pc_log("main: accepted a new controlling connection.");
 				}
@@ -90,17 +96,20 @@ int main(int argc, char **argv) {
 				}
 				continue;
 			}
+			if (i == 1)
+				continue;
 
-			if (!controllers[i - 1]->tick()) {
-				delete controllers[i - 1];
-				controllers[i - 1] = NULL;
+			int con_idx = i - SRV_CT;
+			if (!controllers[con_idx]->tick()) {
+				delete controllers[con_idx];
+				controllers[con_idx] = NULL;
 				bzero(&fds[i], sizeof(pollfd));
 				fds[0].events = POLLIN;
 			}
 		}
 	}
 
-	for (int i = 0; i < FDS_CT; i++) {
+	for (int i = 0; i < CON_CT; i++) {
 		delete controllers[i];
 	} 
 

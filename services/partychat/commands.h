@@ -6,6 +6,7 @@
 #include "common.h"
 
 struct connection;
+struct node_state;
 
 struct responder {
 	int cmd_id;
@@ -28,8 +29,8 @@ struct command {
 	virtual const char *name() = 0;
 	virtual bool needs_response() { return false; }
 
-	virtual void execute(responder &rsp, connection &conn, void *state) = 0;
-	virtual bool handle_response(const char *response, void *state) { return true; }
+	virtual void execute(responder &rsp, connection &conn, node_state &state) = 0;
+	virtual bool handle_response(const char *response, node_state &state) { return true; }
 };
 
 struct response : command {
@@ -38,7 +39,7 @@ struct response : command {
 	static const char *_name() { return "!"; }
 	virtual const char *name() { return _name(); }
 
-	virtual void execute(responder &rsp, connection &conn, void *state);
+	virtual void execute(responder &rsp, connection &conn, node_state &state);
 };
 
 struct test_command : command {
@@ -47,12 +48,8 @@ struct test_command : command {
 	static const char *_name() { return "test"; }
 	virtual const char *name() { return _name(); }
 
-	virtual void execute(responder &rsp, connection &conn, void *state);
+	virtual void execute(responder &rsp, connection &conn, node_state &state);
 };
-
-struct hb_command;
-
-struct end_command;
 
 struct die_command : command {
 	using command::command;
@@ -60,21 +57,41 @@ struct die_command : command {
 	static const char *_name() { return "die"; }
 	virtual const char *name() { return _name(); }
 
-	virtual void execute(responder &rsp, connection &conn, void *state);
+	virtual void execute(responder &rsp, connection &conn, node_state &state);
+};
+
+struct say_command : command {
+	using command::command;
+
+	static const char *_name() { return "say"; }
+	virtual const char *name() { return _name(); }
+
+	virtual void execute(responder &rsp, connection &conn, node_state &state);
+};
+
+struct history_command : command {
+	using command::command;
+
+	static const char *_name() { return "history"; }
+	virtual const char *name() { return _name(); }
+
+	virtual void execute(responder &rsp, connection &conn, node_state &state);
 };
 
 struct connection {
 	const addrinfo *addr = NULL;
-	void *parent = NULL;
+	node_state &state;
 
 	std::queue<command *> pending_commands;
 	std::unordered_map<int, command *> executing_commands;
 	pc_connection conn;
 	int cmd_id = 0;
+	bool closed = false;
 
-	connection() = default;
-	connection(int socket, void *parent);
-	connection(const addrinfo &addr, void *parent);
+	connection();
+	connection(int socket, node_state &state);
+	connection(const addrinfo &addr, node_state &state);
+	connection(const addrinfo &addr);
 	void reconnect();
 
 	bool tick();
@@ -83,18 +100,9 @@ struct connection {
 	void send(const char *text) {
 		pending_commands.push(new T(text, cmd_id++));
 	}
-};
 
-bool pc_parse_command(char *str, command *&cmd);
-
-struct controller {
-	connection conn;
-	bool alive = true;
-
-	controller() = default;
-	controller(int socket) : conn(socket, this) { }
-
-	bool tick();
+	bool alive();
+	void close();
 };
 
 struct hb_daemon {
@@ -111,16 +119,18 @@ struct master_link {
 	connection master_conn;
 	hb_daemon hb;
 
-	master_link(const addrinfo &master_addr) : master_conn(master_addr, this) { }
+	master_link() = default;
+	master_link(const addrinfo &master_addr, node_state &state) : master_conn(master_addr, state) { }
 
 	void tick();
 };
 
-struct say_command : command {
-	using command::command;
+struct node_state {
+	master_link uplink;
+	void *history_storage;
 
-	static const char *_name() { return "say"; }
-	virtual const char *name() { return _name(); }
+	node_state() = default;
+	node_state(const addrinfo &master_addr) : uplink(master_addr, *this) { }
 
-	virtual void execute(responder &rsp, connection &conn, void *state);
+	static node_state _default;
 };

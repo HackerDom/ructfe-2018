@@ -1,5 +1,7 @@
 #include "commands.h"
 
+bool parse_command(char *str, command *&cmd);
+
 void responder::respond(const char *message) {
 	conn.pending_commands.push(new response(message, cmd_id));
 }
@@ -14,7 +16,7 @@ command::~command() {
 	delete[] text;
 }
 
-void response::execute(responder &rsp, connection &conn, void *state) {
+void response::execute(responder &rsp, connection &conn, node_state &state) {
 
 	auto cmd = conn.executing_commands.find(cmd_id);
 	if (cmd == conn.executing_commands.end()) {
@@ -22,34 +24,46 @@ void response::execute(responder &rsp, connection &conn, void *state) {
 		return;
 	}
 
-	if (cmd->second->handle_response(text, conn.parent)) {
+	if (cmd->second->handle_response(text, conn.state)) {
 		delete cmd->second;
 		conn.executing_commands.erase(cmd);
 	}
 }
 
-void test_command::execute(responder &rsp, connection &conn, void *state) {
+void test_command::execute(responder &rsp, connection &conn, node_state &state) {
 	pc_log("test_command::execute: a test command was executed!");
 }
 
-void die_command::execute(responder &rsp, connection &conn, void *state) {
+void die_command::execute(responder &rsp, connection &conn, node_state &state) {
 	pc_quit("Master told us to die.");
 }
 
-connection::connection(int socket, void *parent) : parent(parent) {
+connection::connection() : state(node_state::_default) { }
+connection::connection(int socket, node_state &state) : state(state) {
 	pc_make_nonblocking(socket);
 	conn = pc_connection(socket);
 }
-connection::connection(const addrinfo &addr, void *parent) : parent(parent) {
+connection::connection(const addrinfo &addr, node_state &state) : state(state) {
+	this->addr = &addr;
+	reconnect();
+}
+connection::connection(const addrinfo &addr) : state(node_state::_default) {
 	this->addr = &addr;
 	reconnect();
 }
 void connection::reconnect() {
 	if (addr) {
+		pc_log("connection::reconnect: connecting to remote endpoint..");
 		pc_connect(*addr, conn);
 	}
 }
 bool connection::tick() {
+	if (closed)
+		return false;
+
+	if (!conn.alive)
+		reconnect();
+
 	if (!conn.is_receiving()) {
 		conn.receive();
 	}
@@ -59,10 +73,10 @@ bool connection::tick() {
 			return false;
 		if (result) {
 			command *cmd;
-			if (pc_parse_command(conn.recv_buffer, cmd)) {
+			if (parse_command(conn.recv_buffer, cmd)) {
 
 				responder rsp(cmd->cmd_id, *this);
-				cmd->execute(rsp, *this, parent);
+				cmd->execute(rsp, *this, state);
 
 				delete cmd;
 			}
@@ -90,7 +104,30 @@ bool connection::tick() {
 
 	return true;
 }
+bool connection::alive() {
+	return !closed && conn.alive;
+}
+void connection::close() {
+	closed = true;
+}
+
+
 #define HB_PERIOD 3
+
+struct hb_command : command {
+	using command::command;
+
+	static const char *_name() { return "hb"; }
+	virtual const char *name() { return _name(); }
+
+	virtual void execute(responder &rsp, connection &conn, node_state &state) { }
+
+	virtual bool needs_response() { return true; }
+
+	virtual bool handle_response(const char *response, node_state &state) {
+		state.uplink.hb.process_response(response);
+	}
+};
 
 bool hb_daemon::tick(connection &conn) {
 	if (!hb_sent && time(NULL) - last_hb >= HB_PERIOD) {
@@ -112,27 +149,7 @@ void master_link::tick() {
 	master_conn.tick();
 }
 
-struct hb_command : command {
-	using command::command;
-
-	static const char *_name() { return "hb"; }
-	virtual const char *name() { return _name(); }
-
-	virtual void execute(responder &rsp, connection &conn, void *state) { }
-
-	virtual bool needs_response() { return true; }
-
-	virtual bool handle_response(const char *response, void *state) {
-		master_link *link = static_cast<master_link *>(state);
-		link->hb.process_response(response);
-	}
-};
-
-bool controller::tick() {
-	conn.tick();
-	pc_log("controller::tick: alive = %d. Addr of alive: %p", alive, &alive);
-	return alive;
-}
+node_state node_state::_default;
 
 struct end_command : command {
 	using command::command;
@@ -140,10 +157,9 @@ struct end_command : command {
 	static const char *_name() { return "end"; }
 	virtual const char *name() { return _name(); }
 
-	virtual void execute(responder &rsp, connection &conn, void *state) {
-		controller *c = static_cast<controller *>(state);
-		c->alive = false;
-		pc_log("end_command::execute: controller is dead, haha! Addr of c->alive: %p", &c->alive);
+	virtual void execute(responder &rsp, connection &conn, node_state &state) {
+		pc_log("end_command::execute: closing conenction..");
+		conn.close();
 	}
 };
 
@@ -153,9 +169,9 @@ struct end_command : command {
 		return true; \
 	}
 
-bool pc_parse_command(char *str, command *&cmd) {
+bool parse_command(char *str, command *&cmd) {
 
-	pc_log("pc_parse_command: '%s'", str);
+	pc_log("parse_command: '%s'", str);
 
 	char *id_str = strtok(str, " ");
 	char *name_str = strtok(NULL, " ");
@@ -164,7 +180,7 @@ bool pc_parse_command(char *str, command *&cmd) {
 	if (!id_str || !name_str)
 		return false;
 
-	pc_log("pc_parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
+	pc_log("parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
 
 	COMMAND_CASE(test_command)
 	COMMAND_CASE(hb_command)
@@ -175,6 +191,10 @@ bool pc_parse_command(char *str, command *&cmd) {
 	return false;
 }
 
-void say_command::execute(responder &rsp, connection &conn, void *state) {
+void say_command::execute(responder &rsp, connection &conn, node_state &state) {
+	// TODO relay it to master
+}
+
+void history_command::execute(responder &rsp, connection &conn, node_state &state) {
 	// TODO relay it to master
 }

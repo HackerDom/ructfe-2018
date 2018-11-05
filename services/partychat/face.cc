@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 
 	pc_log("Establishing connection to node at %s..", endpoint);
 
-	connection conn(*addr, NULL);
+	connection conn(*addr);
 
 	printf("Welcome! Type !help if not sure.\n");
 
