@@ -1,0 +1,201 @@
+cs_user: cs
+cs_dir:  /home/cs/checksystem
+
+pg_cs_user: cs
+pg_cs_pass: jeew3toh3Nai
+pg_cs_db: cs
+pg_cs_host: 10.10.10.4
+pg_cs_port: 5432
+pg_max_connections: 1024
+pg_shared_buffers: 24GB
+pg_work_mem: 512MB
+
+cs_flags_instance: 4
+
+influx_host: 10.10.10.4
+influx_db: checksystem
+
+cs_limit_nofile: 10000
+
+cs_worker_default_jobs: 4
+cs_worker_checkers_jobs: 128
+cs_worker_checkers_queues: -q checker
+cs_worker_instance: 2
+
+cs_hypnotoad_listen: 127.0.0.1:8080
+cs_hypnotoad_flags_listen: 10.10.10.10:8080
+cs_hypnotoad_workers: 16
+cs_hypnotoad_accepts: 1024
+cs_nginx_workers: 4
+cs_nginx_upstream_keepalive: 32
+cs_nginx_listen: 80
+
+cs_base_url: https://ructf.org/
+cs_admin_auth: root:eJ9soo7Aitev
+cs_ctf_name: RuCTFE 2018
+cs_flags_secret: shi4bee4shey
+cs_round_length: 60
+cs_flag_life_time: 15
+cs_time_start: 2018-04-15 14:00:00
+cs_time_stop: 2019-04-15 22:00:00
+cs_time_break_start: 2018-04-15 13:00:00
+cs_time_break_end: 2018-04-15 13:30:00
+
+teams: |
+  {name => 'SharLike', network => '10.60.1.0/24', host => '10.60.1.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/sharlike', token => '636794c1-84d0-4504-a7c4-181cb5949e52', country => 'Russia',},
+  {name => 'cyberwehr', network => '10.60.2.0/24', host => '10.60.2.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '8c90e5d4-fb9e-4089-b96c-4f0e1a9faca4', country => 'Austria',},
+  {name => 'BlahBlah', network => '10.60.3.0/24', host => '10.60.3.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '1ee7271f-d9e4-45dc-a128-282feadd54c0', country => 'Brazil',},
+  {name => 'SiBears', network => '10.60.4.0/24', host => '10.60.4.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/sibears', token => '8ed91b2d-a866-4faa-9f78-2d6cd05f6223', country => 'Russia',},
+  {name => 'mstuca', network => '10.60.5.0/24', host => '10.60.5.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '8a8e5f70-1eaa-45cc-90a7-8b6019184e77', country => 'Russia',},
+  {name => 'cow_face', network => '10.60.6.0/24', host => '10.60.6.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'dfc584e2-d41b-44ba-a7f6-cd8ba8ce1a3a', country => 'Russia',},
+  {name => 'CatchFM', network => '10.60.7.0/24', host => '10.60.7.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/catchfm', token => '7173aa7d-ae20-4e3b-a50e-8442d04a8508', country => 'Russia',},
+  {name => 'Nonsense', network => '10.60.8.0/24', host => '10.60.8.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '5e839ae1-06e9-45ae-ba28-8cdaba6696b4', country => 'Spain',},
+  {name => 'Shadow Servants', network => '10.60.9.0/24', host => '10.60.9.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/shadow-servants', token => 'e64ba2be-6d1b-4f3a-a3c1-cef3b590127a', country => 'Russia',},
+  {name => 'Life', network => '10.60.10.0/24', host => '10.60.10.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/life', token => 'f7a2bb09-e9bd-4342-8fd8-42c124d79623', country => 'Russia',},
+  {name => 'Corrupted Reflection', network => '10.60.11.0/24', host => '10.60.11.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/corrupted-reflection', token => 'f4997e9b-9645-48e1-8447-157d13ea2cfc', country => 'Russia',},
+  {name => 'SIGFLAG', network => '10.60.12.0/24', host => '10.60.12.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/sigflag', token => '5c8067d5-1b41-4490-b41a-10815e58bf71', country => 'Austria',},
+  {name => 'spritzers', network => '10.60.13.0/24', host => '10.60.13.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/spritzers', token => '2facc88b-7b0d-4669-9409-41f0f21d1b7e', country => 'Italy',},
+  {name => 'Squareroots', network => '10.60.14.0/24', host => '10.60.14.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/squareroots', token => 'e6cb5a08-96ec-43b0-9416-4218eb44ebeb', country => 'Germany',},
+  {name => 'tea_without_cookies', network => '10.60.15.0/24', host => '10.60.15.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '73220ca6-c1b5-432f-b282-3d162308f13f', country => 'Russia',},
+  {name => 'Brizz', network => '10.60.16.0/24', host => '10.60.16.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/brizz', token => '9d7dd92e-f20d-42cf-bfcc-160beadf266f', country => 'Russia',},
+  {name => 'Riocool_solo', network => '10.60.17.0/24', host => '10.60.17.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/riocool_solo', token => '40c6c990-af38-4500-8eca-13bcaa776856', country => 'Russia',},
+  {name => 'kks_wund3rw4ffl3_team', network => '10.60.18.0/24', host => '10.60.18.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/kks_wund3rw4ffl3_team', token => 'd1b295f2-84ce-4b20-bc41-dddeebb6a15d', country => 'Russia',},
+  {name => 'ENOFLAG', network => '10.60.19.0/24', host => '10.60.19.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/enoflag', token => 'e8a79ddc-57fc-4cf0-962e-f76664c0dcf6', country => 'Germany',},
+  {name => 'Kamneezhka', network => '10.60.20.0/24', host => '10.60.20.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/kamneezhka', token => '22a672d9-87e3-4aad-8e15-2940c0814c7a', country => 'Russia',},
+  {name => 'FAUST', network => '10.60.21.0/24', host => '10.60.21.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/faust', token => 'c2b53f99-2ee3-45e8-b85f-23b5e272185d', country => 'Germany',},
+  {name => 'ShellPhish', network => '10.60.22.0/24', host => '10.60.22.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'e39febe7-f1dc-41c5-8ae8-1188ef774c10', country => 'India',},
+  {name => 'rwx', network => '10.60.23.0/24', host => '10.60.23.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/rwx', token => 'b4481616-e8fa-4a6f-a1f5-50c92667f806', country => 'Russia',},
+  {name => 'Kernel Space Invaders', network => '10.60.24.0/24', host => '10.60.24.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/kernel-space-invaders', token => '6ac7e6e9-48a1-4d64-9932-f67f2dc2e31d', country => 'Germany',},
+  {name => 'VoidHack', network => '10.60.25.0/24', host => '10.60.25.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/voidhack', token => '8d661b38-1bb8-4fcd-97d0-5087275baf74', country => 'Russia',},
+  {name => 'vimvaders', network => '10.60.26.0/24', host => '10.60.26.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '0e523970-8ad0-4e3d-ab8f-b092f548c201', country => 'Italy',},
+  {name => 'Bitmap', network => '10.60.27.0/24', host => '10.60.27.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'f387b8fd-3809-4076-ae2e-509936d9b8a4', country => 'Russia',},
+  {name => 'TheRomanXpl0it', network => '10.60.28.0/24', host => '10.60.28.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/theromanxpl0it', token => '0b12c5c4-c9c0-4e62-a29f-b5b8f599e5bf', country => 'Italy',},
+  {name => 'Lunary', network => '10.60.29.0/24', host => '10.60.29.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/lunary', token => 'f11ab306-1e59-4a58-bb93-4f1f5af725a5', country => 'Russia',},
+  {name => 'baikal', network => '10.60.30.0/24', host => '10.60.30.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/baikal', token => '8986a3b0-01ad-40b6-aab2-b0585e83861e', country => 'Russia',},
+  {name => 'ALLES!', network => '10.60.31.0/24', host => '10.60.31.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '12081283-45cf-44a3-af32-40d1003d827f', country => 'Germany',},
+  {name => 'banana_style', network => '10.60.32.0/24', host => '10.60.32.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '8ff48807-a3cc-4018-87ff-66923d36b0bb', country => 'Russia',},
+  {name => 'okudo3', network => '10.60.33.0/24', host => '10.60.33.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/okudo3', token => 'e659434f-ee99-4c5a-a1fc-dae8d761f8a1', country => 'Japan',},
+  {name => 'HawkSquad', network => '10.60.34.0/24', host => '10.60.34.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/hawksquad', token => '5c838e0b-fda9-4c6d-91f7-29d81560fa29', country => 'Russia',},
+  {name => 'I\'ll try', network => '10.60.35.0/24', host => '10.60.35.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/ill-try', token => 'aa55789e-52ef-4592-ab44-432c75556591', country => 'Russia',},
+  {name => 'team_stfu', network => '10.60.36.0/24', host => '10.60.36.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'f88a2114-dcc8-479a-bcf6-8eb0df68ef0b', country => 'Russia',},
+  {name => '0x617364', network => '10.60.37.0/24', host => '10.60.37.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/0x617364', token => 'd13dc0e8-6b2f-4e95-9e54-8c52fa8a2f67', country => 'Russia',},
+  {name => 'GITSH', network => '10.60.38.0/24', host => '10.60.38.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '8448e72d-2418-4a43-b480-3aea34e4bb6f', country => 'Colombia',},
+  {name => 'takawo', network => '10.60.39.0/24', host => '10.60.39.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'f3438e8b-5aa1-4628-b6b5-096de03972c6', country => 'Jersey',},
+  {name => 'Perepodvysmotrit', network => '10.60.40.0/24', host => '10.60.40.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/perepodvysmotrit', token => '9cb3af31-bc35-48a7-85e5-9c63ab948c68', country => 'Russia',},
+  {name => 'd34dl1n3', network => '10.60.41.0/24', host => '10.60.41.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/d34dl1n3', token => '26d94de6-95c3-45ec-913d-edc807073bd6', country => 'Russia',},
+  {name => 'Honeypot', network => '10.60.42.0/24', host => '10.60.42.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/honeypot', token => '56a57d89-76de-489c-acdc-1026523d5837', country => 'Russia',},
+  {name => 'dcua', network => '10.60.43.0/24', host => '10.60.43.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/dcua', token => '56d2afc5-d200-4368-976c-a992afa31d07', country => 'Ukraine',},
+  {name => 'SH', network => '10.60.44.0/24', host => '10.60.44.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/sh', token => 'f79c1a36-90bc-45da-96d8-1e7a5f8ba210', country => 'Switzerland',},
+  {name => 'GLUM', network => '10.60.45.0/24', host => '10.60.45.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/glum', token => '02b1bb4c-0c1e-4e9a-b3bc-212e8f7fdda1', country => 'Colombia',},
+  {name => 'tu6pm', network => '10.60.46.0/24', host => '10.60.46.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'd106eee0-c25a-441e-9095-a42c5a010ebe', country => 'United Kingdom',},
+  {name => 'c.3y6p', network => '10.60.47.0/24', host => '10.60.47.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/c3y6p', token => '1424741e-b1bc-4c27-a970-978dd86e6118', country => 'Belarus',},
+  {name => 'WeAreScientists', network => '10.60.48.0/24', host => '10.60.48.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/wearescientists', token => 'e4e2f2b0-b9cc-496d-b776-0fa2aa671184', country => 'Austria',},
+  {name => 'SamaraSquad', network => '10.60.49.0/24', host => '10.60.49.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/samarasquad', token => '2169bb2a-4a37-4eb5-bd79-5592db851d1e', country => 'Russia',},
+  {name => 'FooBar5', network => '10.60.50.0/24', host => '10.60.50.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '7ab0c83f-be82-4962-9dbe-2cbf5175c781', country => 'Germany',},
+  {name => 'Lights Out', network => '10.60.51.0/24', host => '10.60.51.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/lights-out', token => '450604cc-efc1-4c4e-8301-3e9713b94149', country => 'Russia',},
+  {name => 'MIA_division', network => '10.60.52.0/24', host => '10.60.52.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '7a526976-7df7-47a9-b930-a5339ad34e5d', country => 'Russia',},
+  {name => 'cait-sith', network => '10.60.53.0/24', host => '10.60.53.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'af7a7fbe-82b4-4471-adfd-f4702b073b86', country => 'Japan',},
+  {name => 'Great Octopus', network => '10.60.54.0/24', host => '10.60.54.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'fc5c1768-c7b9-4fc9-b892-344e9060704c', country => 'Russia',},
+  {name => 'PEPE_B0YZ', network => '10.60.55.0/24', host => '10.60.55.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/pepe_b0yz', token => 'd4097b02-00d0-47c7-8af8-a9aa9e3000a8', country => 'Russia',},
+  {name => 'F2H', network => '10.60.56.0/24', host => '10.60.56.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/f2h', token => '2fe77d61-0adc-4642-8e86-4bbb77e0122b', country => 'Russia',},
+  {name => 'ZenHack', network => '10.60.57.0/24', host => '10.60.57.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/zenhack', token => '7ac939b0-ac50-4615-b2f9-13f0bb58e5dc', country => 'Italy',},
+  {name => 'ГОСТ in the shell [SPbCTF]', network => '10.60.58.0/24', host => '10.60.58.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/gost-in-the-shell-spbctf', token => '44db4c6a-dcef-4c52-8531-559e3d0473d4', country => 'Russia',},
+  {name => '[SPbCTF] Kappa', network => '10.60.59.0/24', host => '10.60.59.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/spbctf-kappa', token => 'a116fce2-94ac-4555-b4b7-4aadfb57f05d', country => 'Russia',},
+  {name => 'hak1mlukha', network => '10.60.60.0/24', host => '10.60.60.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/hak1mlukha', token => 'c4dd0e04-740a-454a-b8da-03fb4d6094e8', country => 'India',},
+  {name => 'Berserk Healer from Gladiator Cyber Prabu Airlangga', network => '10.60.61.0/24', host => '10.60.61.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '11886b1c-6904-44db-929f-9fe1fd199a23', country => 'Indonesia',},
+  {name => 'Ouroboros [SPbCTF]', network => '10.60.62.0/24', host => '10.60.62.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '6a31f4ef-ab22-4655-b1b1-b2d193636b05', country => 'Russia',},
+  {name => 'M.I.S.T.', network => '10.60.63.0/24', host => '10.60.63.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/mist', token => '6c30c96d-bfd0-4fa8-a833-ae45ba6e28ee', country => 'Germany',},
+  {name => 'Omaviat', network => '10.60.64.0/24', host => '10.60.64.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/omaviat', token => '0a6d6fd7-cc98-4095-8011-991bd09e7a49', country => 'Russia',},
+  {name => 'WE_0WN_Y0U', network => '10.60.65.0/24', host => '10.60.65.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/we_0wn_y0u', token => '564c84fd-2194-4c40-b855-a56d4adfbbbb', country => 'Austria',},
+  {name => 'cybber', network => '10.60.66.0/24', host => '10.60.66.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/cybber', token => '1a89a661-047f-4963-a097-aa16501675e1', country => 'Russia',},
+  {name => 'E-Toolz', network => '10.60.67.0/24', host => '10.60.67.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/e-toolz', token => '4d1f48b3-6600-4ede-af97-7ac71b08ce0d', country => 'Russia',},
+  {name => 'Jet Bits', network => '10.60.68.0/24', host => '10.60.68.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/jet-bits', token => '040faa05-703a-4897-807a-59418afd1c8e', country => 'Russia',},
+  {name => 'Null', network => '10.60.69.0/24', host => '10.60.69.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'c186a79f-0023-4d37-81e5-07bb76749b99', country => 'Russia',},
+  {name => 'DirtyBytes', network => '10.60.70.0/24', host => '10.60.70.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/dirtybytes', token => '2878a179-5064-4d5b-b199-bafd964c8627', country => 'Russia',},
+  {name => 'FIXME', network => '10.60.71.0/24', host => '10.60.71.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/fixme', token => 'a4b699d4-84b6-4243-9286-c7b464020608', country => 'Switzerland',},
+  {name => '[SPbCTF] fargate', network => '10.60.72.0/24', host => '10.60.72.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/spbctf-fargate', token => 'e8a2713b-7123-43d6-b5b2-0fb23f8e6838', country => 'Russia',},
+  {name => 'c0d3Br34k3r5', network => '10.60.73.0/24', host => '10.60.73.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '4293fceb-cd06-4957-a6fe-d8ec5b110a96', country => 'Singapore',},
+  {name => 'ОМСКИЙ АНДЕГРАУНД И КУБОК ПЕТУХА', network => '10.60.74.0/24', host => '10.60.74.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/omskii-andegraund-i-kubok-petukha', token => '502762bf-d7de-4b87-b37d-291a3c740b88', country => 'Russia',},
+  {name => 'MvtinaPwn', network => '10.60.75.0/24', host => '10.60.75.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/mvtinapwn', token => '32aa2d5a-c755-47c6-a03f-c987e426c4f0', country => 'Italy',},
+  {name => 'JHDiscord', network => '10.60.76.0/24', host => '10.60.76.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '7b7abd8b-7aa4-48da-b624-6d5e0c4280ea', country => 'United States',},
+  {name => 'CaliSec', network => '10.60.77.0/24', host => '10.60.77.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '3ac91b1c-ef63-4ba0-8186-f9ac4ac66388', country => 'United States',},
+  {name => 'Bloco do eu sozinho', network => '10.60.78.0/24', host => '10.60.78.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '2b0bcc0f-ef7f-41c7-8e66-584ffa3e8354', country => 'Brazil',},
+  {name => 'H8cked', network => '10.60.79.0/24', host => '10.60.79.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '1c35b6b0-c20e-4576-be29-d22fe6a7745f', country => 'United States',},
+  {name => '03sunf', network => '10.60.80.0/24', host => '10.60.80.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '5974121a-8fa3-4255-a9c8-ca84867d2058', country => 'South Korea',},
+  {name => 'SwissMadeSecurity', network => '10.60.81.0/24', host => '10.60.81.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/swissmadesecurity', token => '3afddf06-9ce5-41cf-98c1-f51beb255c00', country => 'Switzerland',},
+  {name => 'saarsec', network => '10.60.82.0/24', host => '10.60.82.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/saarsec', token => '0d44960f-1760-4be2-ae5c-6d3e2cdebccf', country => 'Germany',},
+  {name => 'NeonHeroe$', network => '10.60.83.0/24', host => '10.60.83.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/neonheroe', token => '74141e2f-9035-4b20-b274-31a1ca95e45b', country => 'Russia',},
+  {name => 'BakerHack1', network => '10.60.84.0/24', host => '10.60.84.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '918ab4e6-36c4-46bf-b5a1-7a9fa4e27c23', country => 'United States',},
+  {name => 'Hack\'n Roll', network => '10.60.85.0/24', host => '10.60.85.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/hackn-roll', token => 'dee1703d-750e-4360-81cd-778035aa375f', country => 'Russia',},
+  {name => 'Ntropy', network => '10.60.86.0/24', host => '10.60.86.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/ntropy', token => 'b001a457-3b3f-4683-ad54-18c394b8c846', country => 'United States',},
+  {name => 'NeosFun', network => '10.60.87.0/24', host => '10.60.87.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/neosfun', token => 'c2fa5201-27e5-4207-a7fe-599045bd0840', country => 'Russia',},
+  {name => 'Erős Pista', network => '10.60.88.0/24', host => '10.60.88.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/eros-pista', token => '29991b37-32aa-4a61-b57d-e4318a87e425', country => 'Hungary',},
+  {name => 'NULLify', network => '10.60.89.0/24', host => '10.60.89.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'ff6baed0-5eae-4029-a7cd-e9b982c14079', country => 'United States',},
+  {name => 'PrimalOptimum', network => '10.60.90.0/24', host => '10.60.90.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '84459bfd-289f-4fc7-9231-d6dbdd560726', country => 'Jordan',},
+  {name => 'Tower of Hanoi', network => '10.60.91.0/24', host => '10.60.91.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/tower-of-hanoi', token => 'ee5989a2-25e8-4a51-a648-2ac66b861c49', country => 'Italy',},
+  {name => 'enZyme', network => '10.60.92.0/24', host => '10.60.92.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/enzyme', token => '949f1b24-5cf0-46a8-bf27-f49a552b11c6', country => 'Tajikistan',},
+  {name => 'Hayyim Sec', network => '10.60.93.0/24', host => '10.60.93.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/hayyim-sec', token => 'ab1de9b2-8a05-4953-be2d-d63210767b23', country => 'South Korea',},
+  {name => 'Al Capwn', network => '10.60.94.0/24', host => '10.60.94.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'b526fa8f-3c1c-449a-813e-0d2076491694', country => 'India',},
+  {name => 'WNG', network => '10.60.95.0/24', host => '10.60.95.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/wng', token => '2d9dd05b-f1b8-48f6-864b-4ecc4156bae4', country => 'Russia',},
+  {name => 'stankc', network => '10.60.96.0/24', host => '10.60.96.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'a3583854-8dfe-4056-9350-ba19a84f55f4', country => 'Croatia',},
+  {name => 'PITECH', network => '10.60.97.0/24', host => '10.60.97.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'ff53bf6a-4032-403e-8b8d-d127e3e61442', country => 'Indonesia',},
+  {name => '[SPbCTF] EvilBunnyWrote', network => '10.60.98.0/24', host => '10.60.98.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/spbctf-evilbunnywrote', token => '81ec3f74-9c00-4bd6-9c82-3ea8f306da52', country => 'Russia',},
+  {name => 'R3@LN0N@me13', network => '10.60.99.0/24', host => '10.60.99.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '34571067-c340-4d94-b74a-6c0745ad3d90', country => 'Russia',},
+  {name => 'CL4IR', network => '10.60.100.0/24', host => '10.60.100.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'da8b1bda-2f9a-43f4-b1e6-c44879e15f64', country => 'Turkey',},
+  {name => 'hamayanhamayan', network => '10.60.101.0/24', host => '10.60.101.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '0076b4e0-108c-4874-8bff-81ade1e8c101', country => 'Japan',},
+  {name => 'OpenToAll', network => '10.60.102.0/24', host => '10.60.102.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'dbc41469-8697-4b8d-9b11-408e96ac585e', country => 'Greenland',},
+  {name => 'Cyber raiders', network => '10.60.103.0/24', host => '10.60.103.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '70bb9f52-940b-41c8-a055-ce36fc592502', country => 'United States',},
+  {name => 'Alpaca', network => '10.60.104.0/24', host => '10.60.104.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '0fbaec17-d2f6-4b7e-8d87-91ee3a98611b', country => 'Russia',},
+  {name => 'TAGA', network => '10.60.105.0/24', host => '10.60.105.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/taga', token => '3dfebe43-734b-4cc1-9913-196247a29ca0', country => 'Belarus',},
+  {name => 'Team_M', network => '10.60.106.0/24', host => '10.60.106.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '46591ada-dd04-4418-a2b9-cd96b72eccdb', country => 'Mongolia',},
+  {name => 'girav', network => '10.60.107.0/24', host => '10.60.107.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/girav', token => '6e14b263-dd14-42a2-aa06-10d87992468e', country => 'Russia',},
+  {name => 'Hackademics', network => '10.60.108.0/24', host => '10.60.108.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/hackademics', token => '68704fe7-e193-4c39-b82a-3ca92c0c074d', country => 'Germany',},
+  {name => 'De1ta', network => '10.60.109.0/24', host => '10.60.109.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'fe43451e-fd6c-4c3d-8b59-ceaa9ea708e2', country => 'China',},
+  {name => 'paperwhale', network => '10.60.110.0/24', host => '10.60.110.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/paperwhale', token => 'e7c321ba-f128-4cd4-81fb-1e6ca03b6664', country => 'Russia',},
+  {name => '[SPbCTF] Red Cadets', network => '10.60.111.0/24', host => '10.60.111.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/spbctf-red-cadets', token => '432ee425-1e91-451a-b293-92b842c79933', country => 'Russia',},
+  {name => 'Team_STFU', network => '10.60.112.0/24', host => '10.60.112.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'c28822ae-e6a0-4923-9b45-bc6517a18643', country => 'Russia',},
+  {name => 'RedNode', network => '10.60.113.0/24', host => '10.60.113.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/rednode', token => '68d0f08f-2294-42aa-b9d3-40f337fb1341', country => 'Greece',},
+  {name => 'UWFx10x', network => '10.60.114.0/24', host => '10.60.114.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/uwfx10x', token => 'c509c19b-2cbf-4b0c-82d6-64f322c5e90a', country => 'Russia',},
+  {name => 'pwnthem0le', network => '10.60.115.0/24', host => '10.60.115.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '323f11c8-ba03-4a83-acd4-a4587727bb2d', country => 'Italy',},
+  {name => 'zerozone', network => '10.60.116.0/24', host => '10.60.116.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '115da903-a955-4f93-ab08-82db4e05a957', country => 'Iran',},
+  {name => 'tinpardo', network => '10.60.117.0/24', host => '10.60.117.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '4e8c345b-ce1b-4710-b415-89c55d89e090', country => 'Colombia',},
+  {name => 'TokyoWesterns', network => '10.60.118.0/24', host => '10.60.118.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/tokyowesterns', token => 'bc3b13b0-4202-4f2c-97c3-f5ab54252248', country => 'Japan',},
+  {name => 'Shellphish', network => '10.60.119.0/24', host => '10.60.119.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '3c0faca1-8317-4d66-83b5-0c4e8d08e057', country => 'United States',},
+  {name => 'Alpha Union', network => '10.60.120.0/24', host => '10.60.120.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'f2401986-e4c9-4c64-937e-e2cd9f9cec11', country => 'India',},
+  {name => '[Censored]', network => '10.60.121.0/24', host => '10.60.121.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '6ba9b2e9-e766-48aa-b54e-4cf04f507fea', country => 'Russia',},
+  {name => '10100110', network => '10.60.122.0/24', host => '10.60.122.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/10100110', token => '6a7aa1bc-3cdb-4fff-a8e7-09bee81b9d3a', country => 'Russia',},
+  {name => 'Ne0Lux-C1Ph3r', network => '10.60.123.0/24', host => '10.60.123.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'f76eaf51-0896-4b25-badc-c6c3e99d05b0', country => 'France',},
+  {name => 'FireSEC', network => '10.60.124.0/24', host => '10.60.124.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '37e4d39d-495f-499b-8907-e7d5463eecb4', country => 'China',},
+  {name => '4x2', network => '10.60.125.0/24', host => '10.60.125.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '5b2a7f39-0705-46ac-8a68-59083d1434bf', country => 'Russia',},
+  {name => 'Nubie', network => '10.60.126.0/24', host => '10.60.126.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '935d5572-f470-4a8d-b27a-b55af5d0c938', country => 'Indonesia',},
+  {name => 'frerrett', network => '10.60.127.0/24', host => '10.60.127.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'f949d9d6-580c-4d62-8dc7-9a184e1a3101', country => 'Tunisia',},
+  {name => 'Ascope', network => '10.60.128.0/24', host => '10.60.128.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '23e268fc-a055-47f8-8f3d-9ac44fa222f6', country => 'France',},
+  {name => '[SPbCTF]  Jet Bits', network => '10.60.129.0/24', host => '10.60.129.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'b84e5d71-23c6-47fb-bdc5-faf276ca438d', country => 'Russia',},
+  {name => 'b01lers', network => '10.60.130.0/24', host => '10.60.130.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/b01lers', token => 'bca9c55d-b1eb-407f-926f-3d9180629532', country => 'United States',},
+  {name => 'PTIT.Mars', network => '10.60.131.0/24', host => '10.60.131.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '9766866e-4b6b-4adc-85df-c84ff8f7cf74', country => 'Vietnam',},
+  {name => 'Good relations with the Wookiees, I have', network => '10.60.132.0/24', host => '10.60.132.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/good-relations-with-the-wookiees-i-have', token => '45fa95c6-bc9f-4222-bdc1-484783924bec', country => 'Russia',},
+  {name => 'p4wnWAT', network => '10.60.133.0/24', host => '10.60.133.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '1b0dbee6-7e9d-4179-852d-3fe1476e8eb4', country => 'Germany',},
+  {name => 'We will soon publish VPN config', network => '10.60.134.0/24', host => '10.60.134.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'b7c63c20-674b-4dc1-a6d4-b8e25ec68760', country => 'Russia',},
+  {name => 'Hacker', network => '10.60.135.0/24', host => '10.60.135.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '03419ab3-02ab-46e3-ae31-1d3831520161', country => 'India',},
+  {name => 'yamong cleanic', network => '10.60.136.0/24', host => '10.60.136.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/yamong-cleanic', token => 'f920a7eb-bb15-4f15-b90a-b5c83a540acc', country => 'South Korea',},
+  {name => 'coolNULL', network => '10.60.137.0/24', host => '10.60.137.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'ed5e6af5-7dfd-4baf-a9bc-ce78062f26df', country => 'Russia',},
+  {name => 'Bushwhackers', network => '10.60.138.0/24', host => '10.60.138.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/bushwhackers', token => 'ae5e9507-52b3-47c2-9e25-dc74b330c6c4', country => 'Russia',},
+  {name => '8bit', network => '10.60.139.0/24', host => '10.60.139.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '842c8f9f-0dd3-4265-9693-d4bd06150489', country => 'Russia',},
+  {name => 'MeePwn', network => '10.60.140.0/24', host => '10.60.140.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/meepwn', token => 'aaa341dd-a2d3-4f23-96b8-dcc3df610e05', country => 'Vietnam',},
+  {name => 'ZWANG', network => '10.60.141.0/24', host => '10.60.141.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'db54fc4b-a350-4898-bd22-279abbb95a45', country => 'China',},
+  {name => 'HackForTeam', network => '10.60.142.0/24', host => '10.60.142.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '9ad404b7-0039-426f-ad15-009d8592dc64', country => 'Germany',},
+  {name => 'GVTs', network => '10.60.143.0/24', host => '10.60.143.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '4ec6feef-a36f-4c7c-b856-c286f6df01f5', country => 'Turkey',},
+  {name => '10sec', network => '10.60.144.0/24', host => '10.60.144.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/10sec', token => 'e1ccf827-4c8b-4b27-8cae-384dfad1da55', country => 'Taiwan',},
+  {name => 'SFT0', network => '10.60.145.0/24', host => '10.60.145.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/sft0', token => 'dd2bc8c0-cc42-441e-93ab-f262a272469b', country => 'Russia',},
+  {name => 'STT', network => '10.60.146.0/24', host => '10.60.146.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '4309e2d1-2766-4d9b-ae1f-1f54339f15c7', country => 'Portugal',},
+  {name => 'Gleitkommafreunde Bonn', network => '10.60.147.0/24', host => '10.60.147.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '53752513-c3dc-47e3-84d3-297c4b90af6f', country => 'Germany',},
+  {name => 'EVA', network => '10.60.148.0/24', host => '10.60.148.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/eva', token => '26b14552-c28c-4cdd-8856-5817233a9de5', country => 'Russia',},
+  {name => 'BinaryBears', network => '10.60.149.0/24', host => '10.60.149.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/binarybears', token => '56d06b81-b10b-4ac8-b925-3ac1a35f7b60', country => 'Russia',},
+  {name => 'c00kies', network => '10.60.150.0/24', host => '10.60.150.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/c00kies', token => 'c3f20749-883d-4431-88ea-ab4383fa584f', country => 'Italy',},
+  {name => 'bitsforeveryone', network => '10.60.151.0/24', host => '10.60.151.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '5a478a61-397a-47d1-b747-111b9dde5433', country => 'United States',},
+  {name => 'Redefined Behavior', network => '10.60.152.0/24', host => '10.60.152.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '3e8c4a0b-549f-47b7-8114-0737045b1d45', country => 'United States',},
+  {name => 'Team STFU', network => '10.60.153.0/24', host => '10.60.153.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => '7dc22f36-c131-4c11-906a-c9b7c1cb5cf1', country => 'Russia',},
+  {name => 'EpicTeam', network => '10.60.154.0/24', host => '10.60.154.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/epicteam', token => '7b1a49e1-2b39-4a1c-85b9-8deac0e3984a', country => 'Russia',},
+  {name => '0xNN', network => '10.60.155.0/24', host => '10.60.155.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'c03e2ce6-e67c-4a39-826b-c2777aacb398', country => 'Indonesia',},
+services: |
+  {name => 'test',  path => 'checkers/test.py', timeout => 15, tcp_port => 8080},

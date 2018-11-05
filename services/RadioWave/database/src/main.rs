@@ -5,8 +5,9 @@ extern crate rustc_serialize;
 extern crate chashmap;
 extern crate time;
 extern crate base32;
-#[macro_use] extern crate log;
 extern crate simplelog;
+#[macro_use]
+extern crate log;
 
 
 mod handlers;
@@ -15,25 +16,16 @@ mod database;
 
 use handlers::*;
 use iron::prelude::Chain;
-use iron::Iron;
+use iron::{Iron, Protocol};
 use router::Router;
 use std::sync::Arc;
 use std::thread;
 
+
 fn main() {
-    let (host, cleanup_in_secs) = load_settings();
-    
-    {
-        use simplelog::*;
-        use std::fs::File;
-        CombinedLogger::init(
-            vec![
-                WriteLogger::new(LevelFilter::Info, Config::default(), 
-                                 File::create("database.log").unwrap()),
-                ]
-        ).unwrap();
-    }
-    
+    setup_logger();
+    let (host, cleanup_in_secs, threads) = load_settings();
+
     let db = Arc::new(database::Database::new(cleanup_in_secs));
     let handlers = Handlers::new(db.clone());
 
@@ -50,17 +42,32 @@ fn main() {
             db.clear();
         }
     });
+    
     info!("Listening to {}", host);
-    Iron::new(chain).http(host).unwrap();
+    Iron::new(chain)
+        .listen_with(host, threads, Protocol::Http, None)
+        .unwrap();
+}
+
+fn setup_logger() {
+    use simplelog::*;
+    use std::fs::File;
+    CombinedLogger::init(
+        vec![
+            WriteLogger::new(LevelFilter::Info, Config::default(),
+                             File::create("database.log").unwrap()),
+        ]
+    ).unwrap();
 }
 
 #[derive(RustcDecodable)]
 struct Settings {
     host: String,
     cleanup_in_secs: u64,
+    threads: usize,
 }
 
-fn load_settings() -> (String, u64) {
+fn load_settings() -> (String, u64, usize) {
     use std::fs::File;
     use std::io::prelude::*;
     use rustc_serialize::json;
@@ -68,7 +75,7 @@ fn load_settings() -> (String, u64) {
     let mut file = File::open("settings.json").expect("settings file not found");
     let mut content = String::new();
     file.read_to_string(&mut content).unwrap();
-    
+
     let settings: Settings = json::decode(content.as_str()).expect("Invalid settings file");
-    (settings.host, settings.cleanup_in_secs)
+    (settings.host, settings.cleanup_in_secs, settings.threads)
 }
