@@ -2,11 +2,11 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha1"
 	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/werelaxe/fast-hash"
 )
 
 const ListingLimit = 10
@@ -55,7 +55,7 @@ func (api *DBApi) Register(login, password *string) error {
 	if len(users) != 0 {
 		return DBApiError(fmt.Sprintf("User with login '%s' is already exist", *login))
 	}
-	passwordHash := sha1.Sum(([]byte)(*password))
+	passwordHash := hasher.GetHash(([]byte)(*password))
 	user := User{Login: *login, PasswordHash: passwordHash[:]}
 	api.db.Create(&user)
 	return nil
@@ -67,7 +67,7 @@ func (api *DBApi) Validate(login, password *string) bool {
 	if len(users) != 1 {
 		return false
 	}
-	passwordHash := sha1.Sum([]byte(*password))
+	passwordHash := hasher.GetHash([]byte(*password))
 	if bytes.Equal(users[0].PasswordHash, passwordHash[:]) {
 		return true
 	}
@@ -111,7 +111,7 @@ func (api *DBApi) CheckLabelOwner(owner string, labelId uint64) bool {
 
 func (api *DBApi) Init(config *PostgresConfig) {
 	var err error
-	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=localhost port=%d user=%s dbname=%s password=%s", config.Port, config.User, config.DBName, config.Password))
+	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=localhost port=%d user=%s dbname=%s sslmode=disable", config.Port, config.User, config.DBName))
 	if err != nil {
 		panic(fmt.Sprintf("failed to connect database: %s", err))
 	}
