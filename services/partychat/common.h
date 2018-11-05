@@ -18,8 +18,11 @@
 	void pc_shutdown_logging();
 	void pc_log(const char *format, ...);
 	void pc_fatal(const char *format, ...);
+	void pc_quit(const char *format, ...);
 
 // Networking
+
+	#define CONN_BUFFER_LENGTH 1024
 
 	struct pc_connection {
 		int socket = 0;
@@ -39,11 +42,13 @@
 		~pc_connection();
 		pc_connection &operator=(pc_connection &&other);
 
-		void send(const char *message);
+		void send(const char *message, ...);
 		int poll_send();
+		bool is_sending();
 
 		void receive();
 		int poll_receive();
+		bool is_receiving();
 	};
 
 	bool pc_connect(const addrinfo &endpoint, pc_connection &connection);
