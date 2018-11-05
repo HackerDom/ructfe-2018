@@ -5,7 +5,7 @@ CFLAGS = -std=c++11
 
 all: face node checker
 
-FACE_OBJS = face.o common.o
+FACE_OBJS = face.o commands.o common.o
 face: $(FACE_OBJS)
 	g++ -o pc-face $(FACE_OBJS)
 

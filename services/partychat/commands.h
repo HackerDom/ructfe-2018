@@ -58,7 +58,7 @@ struct die_command : command {
 	using command::command;
 
 	static const char *_name() { return "die"; }
-	virtual const char *name() { return die_command::_name(); }
+	virtual const char *name() { return _name(); }
 
 	virtual void execute(responder &rsp, connection &conn, void *state);
 };
@@ -86,3 +86,41 @@ struct connection {
 };
 
 bool pc_parse_command(char *str, command *&cmd);
+
+struct controller {
+	connection conn;
+	bool alive = true;
+
+	controller() = default;
+	controller(int socket) : conn(socket, this) { }
+
+	bool tick();
+};
+
+struct hb_daemon {
+	bool master_available = false;
+	time_t last_hb = 0;
+	bool hb_sent = false;
+
+	bool tick(connection &conn);
+
+	bool process_response(const char *response);
+};
+
+struct master_link {
+	connection master_conn;
+	hb_daemon hb;
+
+	master_link(const addrinfo &master_addr) : master_conn(master_addr, this) { }
+
+	void tick();
+};
+
+struct say_command : command {
+	using command::command;
+
+	static const char *_name() { return "say"; }
+	virtual const char *name() { return _name(); }
+
+	virtual void execute(responder &rsp, connection &conn, void *state);
+};

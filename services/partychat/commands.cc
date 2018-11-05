@@ -90,3 +90,91 @@ bool connection::tick() {
 
 	return true;
 }
+#define HB_PERIOD 3
+
+bool hb_daemon::tick(connection &conn) {
+	if (!hb_sent && time(NULL) - last_hb >= HB_PERIOD) {
+		conn.send<hb_command>("HB!");
+		hb_sent = true;
+	}
+}
+
+bool hb_daemon::process_response(const char *response) {
+	pc_log("hb_daemon::process_response: received '%s'.", response);
+	last_hb = time(NULL);
+	master_available = true;
+	hb_sent = false;
+	return true;
+}
+
+void master_link::tick() {
+	hb.tick(master_conn);
+	master_conn.tick();
+}
+
+struct hb_command : command {
+	using command::command;
+
+	static const char *_name() { return "hb"; }
+	virtual const char *name() { return _name(); }
+
+	virtual void execute(responder &rsp, connection &conn, void *state) { }
+
+	virtual bool needs_response() { return true; }
+
+	virtual bool handle_response(const char *response, void *state) {
+		master_link *link = static_cast<master_link *>(state);
+		link->hb.process_response(response);
+	}
+};
+
+bool controller::tick() {
+	conn.tick();
+	pc_log("controller::tick: alive = %d. Addr of alive: %p", alive, &alive);
+	return alive;
+}
+
+struct end_command : command {
+	using command::command;
+
+	static const char *_name() { return "end"; }
+	virtual const char *name() { return _name(); }
+
+	virtual void execute(responder &rsp, connection &conn, void *state) {
+		controller *c = static_cast<controller *>(state);
+		c->alive = false;
+		pc_log("end_command::execute: controller is dead, haha! Addr of c->alive: %p", &c->alive);
+	}
+};
+
+#define COMMAND_CASE(x) \
+	if (!strcmp(x::_name(), name_str)) { \
+		cmd = new x(text_str, atoi(id_str)); \
+		return true; \
+	}
+
+bool pc_parse_command(char *str, command *&cmd) {
+
+	pc_log("pc_parse_command: '%s'", str);
+
+	char *id_str = strtok(str, " ");
+	char *name_str = strtok(NULL, " ");
+	char *text_str = strtok(NULL, " ");
+
+	if (!id_str || !name_str)
+		return false;
+
+	pc_log("pc_parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
+
+	COMMAND_CASE(test_command)
+	COMMAND_CASE(hb_command)
+	COMMAND_CASE(die_command)
+	COMMAND_CASE(end_command)
+	COMMAND_CASE(response)
+
+	return false;
+}
+
+void say_command::execute(responder &rsp, connection &conn, void *state) {
+	// TODO relay it to master
+}
