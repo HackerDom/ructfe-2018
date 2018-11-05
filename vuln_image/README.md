@@ -6,6 +6,11 @@
 * [Vagrant](https://www.vagrantup.com/downloads.html)
 * [Ansible](http://docs.ansible.com/ansible/latest/intro_installation.html#id12)
 
+И плагин для vagrant'а:
+
+```
+vagrant plugin install vagrant-disksize
+```
 
 В случае ubuntu:
 
