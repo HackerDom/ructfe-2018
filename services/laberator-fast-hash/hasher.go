@@ -1,7 +1,7 @@
 package hasher
 
 /*
-#cgo LDFLAGS: hasher.a -lm
+#cgo LDFLAGS: ${SRCDIR}/lib/hasher.a -lm
 #include <hasher.h>
  */
 import "C"
