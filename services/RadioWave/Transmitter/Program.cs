@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using log4net;
+using Transmitter.Db;
+using Transmitter.Morse;
 using Transmitter.Utils;
 using Transmitter.Utils.Log4Net;
 using Transmitter.WebSockets;
@@ -13,7 +15,6 @@ namespace Transmitter
 		private static void Main()
 		{
 			Log4NetHelper.Init();
-
 			try
 			{
 				var settings = Settings.Load();
