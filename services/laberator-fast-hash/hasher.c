@@ -41,24 +41,25 @@ const char LINEAR[BLOCK_SIZE * 2][8] = {
 };
 
 char buffer[BLOCK_SIZE * 2];
+char compress_buffer[BLOCK_SIZE];
 
 void compress(char* data) {
     for (int i = 0; i < BLOCK_SIZE; ++i) {
-        buffer[i] = 0;
+        compress_buffer[i] = i * i ^ i * i * i + i;
     }
     for (int i = 0; i < BLOCK_SIZE * 2; ++i) {
         for (int j = 0; j < 4; ++j) {
-            buffer[LINEAR[i][j * 2]] += data[i] * LINEAR[i][j * 2 + 1];
+            compress_buffer[LINEAR[i][j * 2]] += data[i] * LINEAR[i][j * 2 + 1];
         }
     }
     for (int i = 0; i < BLOCK_SIZE; ++i) {
-        data[i + BLOCK_SIZE] = buffer[i];
+        data[i + BLOCK_SIZE] = compress_buffer[i];
     }
 }
 
 char* prepare_data(const char* data, size_t data_length) {
     size_t new_data_length = (size_t)(ceil(data_length / ((double)(BLOCK_SIZE))) * BLOCK_SIZE);
-    char* new_data = malloc(new_data_length * sizeof(char*));
+    char* new_data = malloc(new_data_length * sizeof(const char*));
     for (size_t i = 0; i < data_length; ++i) {
         new_data[i] = data[i];
     }
@@ -70,13 +71,13 @@ char* prepare_data(const char* data, size_t data_length) {
 
 void get_hash(const char* data, size_t data_length, char* out) {
     for (size_t i = 0; i < BLOCK_SIZE * 2; ++i) {
-        buffer[i] = (char)i;
+        buffer[i] = 0;
     }
     char* prepared_data = prepare_data(data, data_length);
     size_t new_data_length = (size_t)(ceil(data_length / ((double)(BLOCK_SIZE))) * BLOCK_SIZE);
     for (int j = 0; j < new_data_length / BLOCK_SIZE; ++j) {
         for (int i = 0; i < BLOCK_SIZE; ++i) {
-            buffer[i] = prepared_data[i + j * BLOCK_SIZE];
+            buffer[i] = prepared_data[i + i * BLOCK_SIZE];
         }
         compress(buffer);
     }
@@ -85,4 +86,3 @@ void get_hash(const char* data, size_t data_length, char* out) {
     }
     free(prepared_data);
 }
-

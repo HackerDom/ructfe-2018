@@ -10,8 +10,14 @@ import (
 )
 
 func GetHash(data []byte) [C.BLOCK_SIZE]byte {
-	dataPtr := (*C.char)(unsafe.Pointer(&data[0]))
 	var out [C.BLOCK_SIZE]byte
+	if len(data) == 0 {
+		for i := 0; i < C.BLOCK_SIZE; i++ {
+			out[i] = byte(i * i * i ^ i * i + i)
+		}
+		return out
+	}
+	dataPtr := (*C.char)(unsafe.Pointer(&data[0]))
 	outPtr := (*C.char)(unsafe.Pointer(&out[0]))
 	dataLength := C.size_t(len(data))
 	C.get_hash(dataPtr, dataLength, outPtr)
