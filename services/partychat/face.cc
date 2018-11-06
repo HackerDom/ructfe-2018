@@ -8,25 +8,27 @@ const char banner[] =
 	"▐█▪·•▐█ ▪▐▌▐█•█▌ ▐█▌· ▐█▀·.▐███▌██▌▐▀▐█ ▪▐▌ ▐█▌·\n"\
 	".▀    ▀  ▀ .▀  ▀ ▀▀▀   ▀ • ·▀▀▀ ▀▀▀ · ▀  ▀  ▀▀▀\n";
 
-bool handle_command(const char *command, const char *args, connection &conn) {
+bool handle_command(const char *command, const char *args, connection<face_state> &conn) {
 	if (!strcmp("!help", command)) {
-		printf("Available commands\n:");
+		printf("Available commands:\n");
 		printf("\t!help - display this message.\n");
+		printf("\t!say <message> - say something.\n");
+		printf("\t!history <group> - show the history of a conversation.\n");
 		printf("\t!quit - exit partychat.\n");
 
 		return true;
 	}
 	if (!strcmp("!quit", command)) {
-		conn.flush(conn.send<end_command>(args));
+		conn.flush(conn.send<end_command<face_state>>(args));
 		return false;
 	}
 	if (!strcmp("!say", command)) {
 		// load history if needed
-		conn.flush(conn.send<say_command>(args));
+		conn.flush(conn.send<say_command<face_state>>(args));
 		return true;
 	}
 	if (!strcmp("!history", command)) {
-		conn.flush(conn.send<history_command>(args));
+		conn.flush(conn.send<history_command<face_state>>(args));
 		return true;
 	}
 
@@ -59,7 +61,8 @@ int main(int argc, char **argv) {
 
 	pc_log("Establishing connection to node at %s..", endpoint);
 
-	connection conn(*addr);
+	face_state state;
+	connection<face_state> conn(*addr, state);
 
 	printf("Welcome! Type !help if not sure.\n");
 

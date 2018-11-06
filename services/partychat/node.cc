@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 	fds[1].fd = state.uplink.master_conn.conn.socket;
 	fds[1].events = POLLIN;
 
-	connection *controllers[CON_CT];
+	connection<node_state> *controllers[CON_CT];
 
 	while (true) {
 
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
 					if (client_sock) {
 						int fd_idx = client_idx + SRV_CT;
 
-						controllers[client_idx] = new connection(client_sock, state);
+						controllers[client_idx] = new connection<node_state>(client_sock, state);
 						fds[fd_idx].fd = client_sock;
 						fds[fd_idx].events = POLLIN;
 					}
