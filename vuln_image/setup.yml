@@ -12,6 +12,8 @@
   roles:
     - base_image
     - laberator
+    - vending
+
 #    - system
 #    - lighting
 #    - feedback
