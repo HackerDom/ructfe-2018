@@ -1,14 +1,19 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Transmitter.Morse
 {
+    [DataContract]
 	public class Message
 	{
-		public string Text;
-		public int DPM;
-		public int Frequency;
+		[DataMember(Name="text", Order = 1)]public string Text;
+	    [DataMember(Name = "dpm", Order = 2)] public int DPM;
+	    [DataMember(Name = "frequency", Order = 3)] public int Frequency;
+	    [DataMember(Name="need_base32", Order = 4)]public bool NeedBase32;
+	    [DataMember(Name = "key", Order = 5)] public string Key;
 
-		private sealed class MessageComparer : IEqualityComparer<Message>
+        private sealed class MessageComparer : IEqualityComparer<Message>
 		{
 			public bool Equals(Message x, Message y)
 			{
@@ -29,8 +34,18 @@ namespace Transmitter.Morse
 					return hashCode;
 				}
 			}
-		}
 
-		public static readonly IEqualityComparer<Message> Comparer = new MessageComparer();
+        }
+
+
+        public static readonly IEqualityComparer<Message> Comparer = new MessageComparer();
 	}
+
+    public static class MessageExtension
+    {
+        public static string ToJson(this Message message)
+        {
+            return JsonConvert.SerializeObject(message, Formatting.Indented);
+        }
+    }
 }
