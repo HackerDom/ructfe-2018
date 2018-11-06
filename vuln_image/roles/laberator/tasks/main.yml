@@ -1,9 +1,10 @@
 ---
-- name: Install dependencies (Go and postgres)
+- name: Install dependencies (Go, postgres, redis)
   apt:
     name:
      - golang
      - postgresql
+     - redis
     state: latest
     update_cache: yes
 
@@ -30,9 +31,31 @@
     mode: u=rx,g=,o=
   notify: restart laberator service
 
-- name: Install Go dependencies
+- name: Create directory for fast-hash library
+  file:
+    path: /home/laberator/go/src/github.com/werelaxe/fast-hash
+    state: directory
+    owner: laberator
+    group: laberator
+    mode: u=rx,g=,o=
+
+- name: Install laberator fast-hash library
+  copy:
+    src: ../services/laberator-fast-hash/
+    dest: /home/laberator/go/src/github.com/werelaxe/fast-hash/
+    owner: laberator
+    group: laberator
+    mode: u=rx,g=,o=
+  notify: restart laberator service
+
+- name: Download and install Go dependencies
   become_user: laberator
-  command: go get -d
+  shell: |
+      go get -d
+      cd go/src
+      for pkg in github.com/*/*; do
+          go get $pkg;
+      done
   args:
     chdir: /home/laberator/
 

@@ -62,7 +62,7 @@ impl Handler for PostMessageHandler {
 
         let mut msg_in: MessageIn = try_it!(json::decode(&payload), status::BadRequest);
         let msg_out = MessageOut::from_msg_in(&mut msg_in);
-
+        info!("Add '{}'", msg_in.key());
         &self.database.add(msg_in.key().clone(), msg_out);
         Ok(Response::with((status::Created, payload)))
     }
@@ -75,7 +75,7 @@ pub struct GetMessageHandler {
 impl Handler for GetMessageHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
         let ref key = get_http_param!(req, "key");
-
+        info!("Get '{}'", key);
         match &self.database.get(&key.to_string()) {
             Some(msg) => {
                 let payload = try_it!(json::encode(msg));

@@ -1,5 +1,7 @@
 #include <stdarg.h>
 #include <time.h>
+#include <vector>
+#include <algorithm>
 
 #include "common.h"
 
@@ -67,9 +69,22 @@
 		exit(-1);
 	}
 
-// Networking
+	void pc_quit(const char *format, ...) {
 
-	#define CONN_BUFFER_LENGTH 1024
+		char message[LOG_BUFFER_SIZE];
+
+		va_list args;
+		va_start(args, format);
+		vsprintf(message, format, args);
+		va_end(args);
+
+		pc_shutdown_logging();
+
+		printf("Terminating: %s\n", message);
+		exit(0);
+	}
+
+// Networking
 
 	pc_connection::pc_connection(int sock) {
 		socket = sock;
@@ -92,19 +107,20 @@
 		return *this;
 	}
 
-	void pc_connection::send(const char *message) {
+	void pc_connection::send(const char *format, ...) {
 		if (!alive)
 			return;
 
 		if (send_length != 0)
 			pc_fatal("pc_connection::send: previous send operation has not completed.");
 
-		int message_length = strlen(message) + 1;
+		va_list args;
+		va_start(args, format);
+		if (vsnprintf(send_buffer, CONN_BUFFER_LENGTH - 1, format, args) > CONN_BUFFER_LENGTH - 1)
+			pc_log("Error: pc_connection::send: message was truncated.");
+		va_end(args);
 
-		if (message_length >= CONN_BUFFER_LENGTH)
-			pc_fatal("pc_connection::send: message was too long.");
-
-		strcpy(send_buffer, message);
+		int message_length = strlen(send_buffer) + 1;
 		strcat(send_buffer, "\n");
 
 		send_length = message_length;
@@ -136,6 +152,10 @@
 		}
 
 		return 0;
+	}
+
+	bool pc_connection::is_sending() {
+		return send_length != 0;
 	}
 
 	void pc_connection::receive() {
@@ -185,6 +205,10 @@
 		}
 
 		return 0;
+	}
+
+	bool pc_connection::is_receiving() {
+		return recv_length != 0;
 	}
 
 	bool pc_connect(const addrinfo &endpoint, pc_connection &connection) {
@@ -270,4 +294,63 @@
 
 		pc_make_nonblocking(client_sock);
 		return client_sock;
+	}
+
+// Groups
+
+	char *pc_extract_group(const char *message) {
+
+		if (!message)
+			return NULL;
+
+		if (strlen(message) > CONN_BUFFER_LENGTH) {
+			pc_log("Error: pc_extract_group: message was too long.");
+			return NULL;
+		}
+
+		char buffer[CONN_BUFFER_LENGTH];
+		strcpy(buffer, message);
+
+		std::vector<char *> names;
+
+		char *token = strtok(buffer, " ");
+		while (token) {
+
+			if (token[0] == '@')
+				names.push_back(token);
+			token = strtok(NULL, " ");
+		}
+		if (names.empty())
+			return NULL;
+
+		std::sort(names.begin(), names.end(), [](const char *a, const char *b) { return strcmp(a, b) < 0; });
+
+		int length = 0;
+		for (auto s : names) {
+			length += 1 + strlen(s);
+		}
+
+		char *g = new char[length + 1];
+		bzero(g, length + 1);
+		for (auto s : names) {
+			strcat(g, s);
+			strcat(g, " ");
+		}
+		g[length] = 0;
+
+		return g;
+	}
+
+	pc_group::pc_group(const char *message) {
+		group = pc_extract_group(message);
+	}
+	pc_group::~pc_group() {
+		delete[] group;
+	}
+	bool pc_group::operator==(const pc_group &other) const {
+		if (!group && !other.group)
+			return true;
+		if (!group || !other.group)
+			return false;
+		return !strcmp(group, other.group);
 	}
