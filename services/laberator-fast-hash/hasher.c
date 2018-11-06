@@ -45,7 +45,7 @@ char compress_buffer[BLOCK_SIZE];
 
 void compress(char* data) {
     for (int i = 0; i < BLOCK_SIZE; ++i) {
-        compress_buffer[i] = i * i ^ i * i * i + i;
+        compress_buffer[i] = 0;
     }
     for (int i = 0; i < BLOCK_SIZE * 2; ++i) {
         for (int j = 0; j < 4; ++j) {
@@ -64,7 +64,7 @@ char* prepare_data(const char* data, size_t data_length) {
         new_data[i] = data[i];
     }
     for (size_t i = data_length; i < new_data_length; ++i) {
-        new_data[i] = 0;
+        new_data[i] = i * i * i ^ i * i + i;
     }
     return new_data;
 }
@@ -77,7 +77,7 @@ void get_hash(const char* data, size_t data_length, char* out) {
     size_t new_data_length = (size_t)(ceil(data_length / ((double)(BLOCK_SIZE))) * BLOCK_SIZE);
     for (int j = 0; j < new_data_length / BLOCK_SIZE; ++j) {
         for (int i = 0; i < BLOCK_SIZE; ++i) {
-            buffer[i] = prepared_data[i + i * BLOCK_SIZE];
+            buffer[i] = prepared_data[i + j * BLOCK_SIZE];
         }
         compress(buffer);
     }
