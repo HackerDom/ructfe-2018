@@ -1,31 +1,66 @@
-from socketserver import ThreadingTCPServer
-from typing import Type
-import socketserver
+from http.server import ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler
+from http_helpers.routing import RoutingTable, Route
+from http_helpers.objects import Request
+from handlers import index_handler, machine_name_handler, \
+    create_machine_handler, machine_manufacturer_handler, \
+    machine_master_key_handler, machine_meta_handler
+from vmf import VendingMachinesFactory
 
-with open('docs.txt') as file:
-    docs = file.read()
-    HTTP_DOCS = b'HTTP/1.1 200 OK\nContent-Type: text/plain\n\n ' + docs.encode()
-
-
-class PerfThreadingTCPServer(ThreadingTCPServer):
-    def __init__(self, server_address, rq_handler_cls: Type[socketserver.BaseRequestHandler], rq_size: int) -> None:
-        self.request_queue_size = rq_size
-        super().__init__(server_address, rq_handler_cls)
+VENDING_MACHINES = VendingMachinesFactory()
 
 
-class RequestsHandler(socketserver.StreamRequestHandler):
-    def handle(self) -> None:
-        data = self.rfile.readline(65537).strip()
-        # frontend
-        if data.startswith(b'GET / HTTP'):
-            self.wfile.write(HTTP_DOCS)
-            return
-        # backend
-        self.wfile.write(data + b"lol\r\n")
+def create_route_table():
+    return RoutingTable(
+        Route("GET", "/", index_handler.IndexHandler()),
+        Route("CREATE", "/vending_machine", create_machine_handler.CreateMachineHandler(VENDING_MACHINES)),
+        Route("GET", "/machine_name", machine_name_handler.MachineNameHandler(VENDING_MACHINES)),
+        Route("GET", "/machine_manufacturer", machine_manufacturer_handler.MachineManufacturerHandler(VENDING_MACHINES)),
+        Route("GET", "/machine_meta", machine_meta_handler.MachineMetaHandler(VENDING_MACHINES)),
+        Route("GET", "/machine_master_key", machine_master_key_handler.MachineMasterKeyHandler(VENDING_MACHINES)),
+    )
+
+
+class ServiceHttpHandler(BaseHTTPRequestHandler):
+    router = create_route_table()
+    preset_attrs = frozenset(f'do_{m}' for m in router.available_methods)
+
+    def __getattr__(self, item):
+        if item in self.preset_attrs:
+            return self.handle_request
+        return self.__getattribute__(item)
+
+    def handle_request(self):
+        response = self.router.handle(Request(self.command, self.path, self.headers, self.rfile))
+        self.send_response(response.code)
+        for header in response.headers:
+            self.send_header(header[0], header[1])
+        self.end_headers()
+        self.wfile.write(response.body)
+
+
+class ConfigurableThreadingHTTPServer(ThreadingHTTPServer):
+    def __init__(self, server_address, request_handler_class, request_queue_size):
+        self.request_queue_size = request_queue_size
+        super().__init__(server_address, request_handler_class)
 
 
 if __name__ == '__main__':
     port = 1883  # https://en.wikipedia.org/wiki/Vending_machine#Modern_vending_machines
-    server = PerfThreadingTCPServer(('', port), RequestsHandler, 500)
-    print(f"Serving at {port}...")
+    print("Starting server...")
+    server = ConfigurableThreadingHTTPServer(
+        ('', port),
+        ServiceHttpHandler,
+        500
+    )
+    print("Server started!")
+    print(f"Listening for 'http://localhost:{port}/'...")
     server.serve_forever()
+
+
+    # CREATE_MACHINE = 0  # -> nothing to new machine (NONE -> id) (inc id, anything pub)
+    # GET_MACHINE_INFO = 1  # name [0-15] & inventor[16-31] (id -> 32 bits)
+    # GET_PRIVATE_MACHINE_INFO = 2  # key[256-383] m_master[384-512] (id, key -> master)
+    # GET_META = 3  # (id, meta-point -> bit)
+    # CREATE_VENDING_KEYS = 4  # (id, k1-v1, ..., kN-vN -> key1, ..., keyN)
+    # GET_DATA_BY_VENDING_KEY = 5  # (id, k -> bit)
