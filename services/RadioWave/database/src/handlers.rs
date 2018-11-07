@@ -5,7 +5,7 @@ use iron::headers::ContentType;
 use rustc_serialize::json;
 use database::Database;
 use router::Router;
-use models::{MessageIn, MessageOut};
+use models::Message;
 use std::error::Error;
 
 macro_rules! try_it {
@@ -57,14 +57,15 @@ pub struct PostMessageHandler {
 
 impl Handler for PostMessageHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
+        let ref key = get_http_param!(req, "key");
         let mut payload = String::new();
         try_it!(req.body.read_to_string(&mut payload));
-
-        let mut msg_in: MessageIn = try_it!(json::decode(&payload), status::BadRequest);
-        let msg_out = MessageOut::from_msg_in(&mut msg_in);
-        info!("Add '{}'", msg_in.key());
-        &self.database.add(msg_in.key().clone(), msg_out);
-        Ok(Response::with((status::Created, payload)))
+        
+        let msg: Message = try_it!(json::decode(&payload), status::BadRequest);
+        info!("POST '{}'", key);
+        let result = &self.database.add(key.to_string(), msg);
+        
+        Ok(Response::with((status::Ok, try_it!(json::encode(result)))))
     }
 }
 
@@ -75,12 +76,10 @@ pub struct GetMessageHandler {
 impl Handler for GetMessageHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
         let ref key = get_http_param!(req, "key");
-        info!("Get '{}'", key);
-        match &self.database.get(&key.to_string()) {
-            Some(msg) => {
-                let payload = try_it!(json::encode(msg));
-                Ok(Response::with((status::Ok, payload)))
-            }
+        info!("GET '{}'", key);
+        
+        match self.database.get(&key.to_string()) {
+            Some(msg) => Ok(Response::with((status::Ok, try_it!(json::encode(&msg))))),
             None => Ok(Response::with(status::NotFound))
         }
     }
