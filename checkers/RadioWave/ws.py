@@ -1,4 +1,7 @@
 import checker
+import asyncio
+import aiohttp
+
 
 class WSHelper:
 	def __init__(self, connection, type):
@@ -13,7 +16,7 @@ class WSHelper:
 				async for msg in ws:
 					if msg.type == self.type:
 						try:
-							self.process(msg)
+							await self.process(msg)
 						except Exception as ex:
 							checker.mumble(error='can\'t process service responce', exception=ex)
 					elif msg.type == aiohttp.WSMsgType.CLOSED:
@@ -23,6 +26,13 @@ class WSHelper:
 						checker.mumble(error='get message with unexpected type {}\nmessage: {}'.format(msg.type, msg.data))
 		except Exception as ex:
 			checker.down(error='something down', exception=ex)
+
+class WSHelperBinaryDumper(WSHelper):
+	def __init__(self, connection, fout):
+		WSHelper.__init__(self, connection, aiohttp.WSMsgType.BINARY)
+		self.fout = fout
+	async def process(self, msg):
+		self.fout.write(msg.data)
 
 class WSHelperSearchJson(WSHelper):
 	def __init__(self, connection, fields, required):

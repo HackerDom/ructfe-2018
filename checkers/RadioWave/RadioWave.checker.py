@@ -7,10 +7,19 @@ from networking import State
 import random
 import json
 import asyncio
+import time
 
-PORT = 6454
+#PORT = 6454
+PORT = 8080
+
+def dump(self, msg, fout):
+	fout.write(msg.data)
 
 async def handler_check(hostname):
+	first = State(hostname, PORT, 'first')
+	with open('dump', 'wb') as fout:
+		listener = first.get_binary_dumper('/ghslkgfhsyfth/data', fout)
+		await listener.start_internal()
 	checker.ok()
 
 async def handler_get(hostname, id, flag):
