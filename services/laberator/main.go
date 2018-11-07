@@ -52,6 +52,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &cookie)
 	}
 	Redirect(w, r, "/")
+	return
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +69,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			http.SetCookie(w, &cookie)
 		}
 		Redirect(w, r, "/")
+		return
 	}
 }
 
@@ -96,14 +98,17 @@ func PhrasePage(w http.ResponseWriter, r *http.Request) {
 	ok, login := sm.ValidateSession(r.Cookies())
 	if !ok {
 		Redirect(w, r, "/")
+		return
 	}
 	err, phrase := dbApi.GetPhrase(&login)
 	if err != nil {
 		Redirect(w, r, "/")
+		return
 	}
 	encodedPhrase, err := base64.StdEncoding.DecodeString(*phrase)
 	if err != nil {
 		Redirect(w, r, "/")
+		return
 	}
 	Exec(w, "templates/phrase.html", &State{Login: login, Phrase: string(encodedPhrase)})
 }
@@ -112,6 +117,7 @@ func RegisterPage(w http.ResponseWriter, r *http.Request) {
 	ok, _ := sm.ValidateSession(r.Cookies())
 	if ok {
 		Redirect(w, r, "/")
+		return
 	} else {
 		Exec(w, "templates/register.html", &State{})
 	}
@@ -123,6 +129,7 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 		Exec(w, "templates/create.html", &State{Login: login})
 	} else {
 		Redirect(w, r, "/")
+		return
 	}
 }
 
@@ -132,6 +139,7 @@ func ListingPage(w http.ResponseWriter, r *http.Request) {
 		Exec(w, "templates/listing.html", &State{Login: login})
 	} else {
 		Redirect(w, r, "/")
+		return
 	}
 }
 
@@ -150,6 +158,7 @@ func ViewLabel(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		Redirect(w, r, "/")
+		return
 	}
 }
 
@@ -195,6 +204,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &cookies[0])
 		http.SetCookie(w, &cookies[1])
 		Redirect(w, r, "/")
+		return
 	}
 }
 
