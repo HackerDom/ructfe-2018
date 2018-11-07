@@ -14,11 +14,11 @@ namespace Transmitter.Morse
 		private double phi = 0;
 		private double timeDot = double.MaxValue;
 
-		public SignalToPcmConverter(IEnumerator<Signals> signals, double dotDuration, double freq, double dt)
+		public SignalToPcmConverter(IEnumerator<Signals> signals, double freq, double dotDuration, double dt)
 		{
 			this.signals = signals;
 			this.dotDuration = dotDuration;
-			dphi = dt * freq;
+			dphi = dt * freq * 2 * Math.PI;
 			this.dt = dt;
 		}
 

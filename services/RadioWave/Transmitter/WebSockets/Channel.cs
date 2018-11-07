@@ -71,7 +71,7 @@ namespace Transmitter.WebSockets
 			Log.Info($"[{channelId}]: send all, elapsed {sw.Elapsed}");
 		}
 
-		private void UpdateMixer(IEnumerable<Message> messages)
+		private void UpdateMixer(List<Message> messages)
 			=> mixer.Sync(messages);
 
 		private async Task<bool> SendAsync(byte[] message)

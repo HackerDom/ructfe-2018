@@ -12,7 +12,7 @@ namespace Transmitter.Morse
 			var textStream = new StringInfiniteEnumerator(message.Text);
 			var morseStream = new StringToMorseConverter(textStream);
 			var signalStream = new MorseToSignalConverter(morseStream);
-			pcmStream = new SignalToPcmConverter(signalStream, message.Frequency, 60_000.0 / message.DPM, 1.0 / rate);
+			pcmStream = new SignalToPcmConverter(signalStream, message.Frequency, 60.0 / message.DPM, 1.0 / rate);
 		}
 
 		public bool MoveNext()
