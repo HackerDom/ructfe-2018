@@ -1,8 +1,11 @@
 ---
-
 - name: Install utils
   apt:
-    name: [mc, htop, rsync]
+    name:
+      - apt-transport-https
+      - mc
+      - htop
+      - rsync
     state: latest
     update_cache: yes
 
