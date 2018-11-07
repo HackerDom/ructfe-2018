@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using log4net;
 using Newtonsoft.Json;
 using Transmitter.Morse;
 
@@ -13,40 +15,66 @@ namespace Transmitter.Db
 	public static class DbClient
 	{
 		private static Uri dbUri;
-		public const string GetMessageMethod = "search/";
-		public const string PostMessageMethod = "msg";
+		private const int Timeout = 1000;
 
 		public static void Init(string dbHref)
 			=> dbUri = new Uri(dbHref);
 
-		public static async Task<List<Message>> GetMessagesAsync(string key)
+		public static async Task<List<Message>> GetMessagesAsync(string key, int timeout = Timeout)
 		{
-			var request = (HttpWebRequest) WebRequest.Create(dbUri + GetMessageMethod + HttpUtility.UrlEncode(key));
+			var sw = Stopwatch.StartNew();
+			var result = await GetMessagesInternalAsync(key, timeout).ConfigureAwait(false);
+			Log.Info($"{nameof(DbClient)}.{nameof(GetMessagesAsync)}: procesed key '{key}', found {result?.Count} values, elapsed {sw.Elapsed}");
+			return result;
+		}
 
-			using (var response = (HttpWebResponse) (await request.GetResponseAsync().ConfigureAwait(false)))
+		private static async Task<List<Message>> GetMessagesInternalAsync(string key, int timeout)
+		{
+			var request = WebRequest.Create(dbUri + HttpUtility.UrlEncode(key));
+			var responseTask = GetResponseAsync(request);
+
+			using(var cancelSource = new CancellationTokenSource())
+			{
+				await Task.WhenAny(responseTask, Task.Delay(timeout, cancelSource.Token)).ConfigureAwait(false);
+				cancelSource.Cancel();
+			}
+
+			if (responseTask.Status == TaskStatus.RanToCompletion)
+				return responseTask.Result;
+
+			if (responseTask.Exception != null)
+			{
+				Log.Error($"{nameof(DbClient)}.{nameof(GetMessagesAsync)}: exception white get data for key '{key}'", responseTask.Exception);
+				return null;
+			}
+
+			try
+			{
+				request.Abort();
+			}
+			catch
+			{
+				// ignored
+			}
+
+			return null;
+		}
+
+		private static async Task<List<Message>> GetResponseAsync(WebRequest request)
+		{
+			using(var response = await request.GetResponseAsync().ConfigureAwait(false))
 			using (var stream = response.GetResponseStream())
-			using (var reader = new StreamReader(stream))
 			{
-				return JsonConvert.DeserializeObject<List<Message>>(await reader.ReadToEndAsync().ConfigureAwait(false));
+				if (stream == null)
+					return null;
+
+				using (var reader = new StreamReader(stream))
+				{
+					return JsonConvert.DeserializeObject<List<Message>>(await reader.ReadToEndAsync().ConfigureAwait(false));
+				}
 			}
 		}
 
-		public static async Task PostAsync(Message message)
-		{
-			var request = (HttpWebRequest) WebRequest.Create(dbUri + PostMessageMethod);
-			var data = Encoding.ASCII.GetBytes(message.ToJson());
-
-			request.Method = "POST";
-			request.ContentType = "application/json";
-			request.ContentLength = data.Length;
-
-			using (var stream = await request.GetRequestStreamAsync())
-			{
-				stream.Write(data, 0, data.Length);
-			}
-
-			var response = (HttpWebResponse) (await request.GetResponseAsync());
-
-		}
+		private static readonly ILog Log = LogManager.GetLogger(typeof(DbClient));
 	}
 }

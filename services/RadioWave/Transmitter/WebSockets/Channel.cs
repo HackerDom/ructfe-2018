@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -62,7 +63,7 @@ namespace Transmitter.WebSockets
 			for (var i = 0; i < buffer.Length; i++)
 			{
 				mixer.MoveNext();
-				buffer[i] = (byte)mixer.Current;
+				buffer[i] = (byte)((mixer.Current + 1) / 2 * 255);
 			}
 
 			await SendAsync(buffer).ConfigureAwait(false);
@@ -70,7 +71,7 @@ namespace Transmitter.WebSockets
 			Log.Info($"[{channelId}]: send all, elapsed {sw.Elapsed}");
 		}
 
-		private void UpdateMixer(IEnumerable<Message> messages)
+		private void UpdateMixer(List<Message> messages)
 			=> mixer.Sync(messages);
 
 		private async Task<bool> SendAsync(byte[] message)
@@ -99,6 +100,9 @@ namespace Transmitter.WebSockets
 				Log.Info($"[{channelId}]: send to {ws.RemoteEndpoint} {message.Length} bytes, elapsed {sw.Elapsed}");
 			}
 		}
+
+		public static string GetChannelId(Uri uri)
+			=> uri.IsAbsoluteUri ? uri.AbsolutePath : uri.ToString().TrimStart('/');
 
 		private static readonly ILog Log = LogManager.GetLogger(typeof(Channel));
 	}

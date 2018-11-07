@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Transmitter.Utils
 {
-	public static class IEnumerableExtentions
+	public static class EnumerableExtentions
 	{
 		public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
 		{
@@ -15,6 +15,7 @@ namespace Transmitter.Utils
 
 		public static TV GetOrDefault<TK, TV>(this IDictionary<TK, TV> dict, TK key, TV def = default(TV))
 		{
+			// ReSharper disable once CompareNonConstrainedGenericWithNull
 			if (dict == null || key == null)
 				return def;
 			return dict.TryGetValue(key, out var res) ? res : def;
@@ -22,6 +23,7 @@ namespace Transmitter.Utils
 
 		public static TV[] GetOrDefault<TK, TV>(this IDictionary<TK, TV[]> dict, TK key, TV def = default(TV))
 		{
+			// ReSharper disable once CompareNonConstrainedGenericWithNull
 			if(dict == null || key == null)
 				return new[] { def };
 			return dict.TryGetValue(key, out var res) ? res : new[] {def};

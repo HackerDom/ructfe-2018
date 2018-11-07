@@ -20,7 +20,7 @@ namespace Transmitter.WebSockets
 		{
 			var timeout = TimeSpan.FromSeconds(3);
 			var rwTimeout = TimeSpan.FromMilliseconds(200);
-			const int bufferSize = 1000;
+			const int bufferSize = 1024 * 8;
 			const int buffersCount = 100;
 
 			var options = new WebSocketListenerOptions

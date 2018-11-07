@@ -11,6 +11,7 @@ namespace Transmitter.WebSockets
 	{
 		private readonly ConcurrentDictionary<string, Channel> channels = new ConcurrentDictionary<string, Channel>();
 		private readonly int writeTimeout;
+		// ReSharper disable once NotAccessedField.Local
 		private Timer timer;
 
 		public Channels(int writeTimeout)
