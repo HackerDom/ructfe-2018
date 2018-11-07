@@ -63,7 +63,7 @@ namespace Transmitter.WebSockets
 			for (var i = 0; i < buffer.Length; i++)
 			{
 				mixer.MoveNext();
-				buffer[i] = (byte)mixer.Current;
+				buffer[i] = (byte)((mixer.Current + 1) / 2 * 255);
 			}
 
 			await SendAsync(buffer).ConfigureAwait(false);

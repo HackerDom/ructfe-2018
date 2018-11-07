@@ -38,7 +38,7 @@ namespace Transmitter.Morse
 			{
 				if (generator.Value.MoveNext())
 					moveNext = true;
-				Current += generator.Value.Current * 0.1;
+				Current += generator.Value.Current / 8;
 			}
 			return moveNext;
 		}
