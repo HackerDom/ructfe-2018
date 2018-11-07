@@ -17,6 +17,12 @@ namespace Transmitter.Morse
 
 		public void Sync(IEnumerable<Message> messages)
 		{
+			if (messages == null)
+			{
+				Remove(generators.Keys);
+				return;
+			}
+
 			var current = new HashSet<Message>(generators.Keys, Message.Comparer);
 			var update = new HashSet<Message>(messages, Message.Comparer);
 
