@@ -14,16 +14,20 @@ namespace Transmitter
 		private static void Main()
 		{
 			Log4NetHelper.Init();
-			try
-			{
-				var settings = Settings.Load();
-				MainAsync(settings).Wait();
-			}
-			catch (Exception ex)
-			{
-				Log.Fatal("Unhandled exception", ex);
-				Environment.Exit(-1);
-			}
+
+			AppDomain.CurrentDomain.UnhandledException += LogUnhandledException;
+
+			var settings = Settings.Load();
+			MainAsync(settings).Wait();
+		}
+
+		private static void LogUnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			var exception = e.ExceptionObject as Exception;
+			Console.Error.WriteLine("Unhandled exception");
+			Console.Error.WriteLine(exception);
+			Log.Fatal("Unhandled exception", exception);
+			Environment.Exit(-1);
 		}
 
 		private static async Task MainAsync(Settings settings)
