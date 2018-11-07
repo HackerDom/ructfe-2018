@@ -1,5 +1,6 @@
 {
-  "host": "localhost:8000",
+  "db_host": "127.0.0.1:8888",
+  "ws_host": "127.0.0.1:7777",
   "cleanup_in_secs": 120,
-  "threads": 512
+  "threads": 64
 }
