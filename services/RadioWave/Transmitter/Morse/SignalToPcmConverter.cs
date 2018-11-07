@@ -12,7 +12,7 @@ namespace Transmitter.Morse
 		private readonly double dt;
 
 		private double phi = 0;
-		private double timeDot = 0;
+		private double timeDot = double.MaxValue;
 
 		public SignalToPcmConverter(IEnumerator<Signals> signals, double dotDuration, double freq, double dt)
 		{
