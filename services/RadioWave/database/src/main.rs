@@ -5,8 +5,9 @@ extern crate rustc_serialize;
 extern crate chashmap;
 extern crate time;
 extern crate base32;
-#[macro_use] extern crate log;
+extern crate ws;
 extern crate simplelog;
+#[macro_use] extern crate log;
 
 
 mod handlers;
@@ -15,31 +16,23 @@ mod database;
 
 use handlers::*;
 use iron::prelude::Chain;
-use iron::Iron;
+use iron::{Iron, Protocol};
 use router::Router;
 use std::sync::Arc;
 use std::thread;
 
+
 fn main() {
-    let (host, cleanup_in_secs) = load_settings();
-    
-    {
-        use simplelog::*;
-        use std::fs::File;
-        CombinedLogger::init(
-            vec![
-                WriteLogger::new(LevelFilter::Info, Config::default(), 
-                                 File::create("database.log").unwrap()),
-                ]
-        ).unwrap();
-    }
-    
-    let db = Arc::new(database::Database::new(cleanup_in_secs));
+    setup_logger();
+    let (db_host, ws_host, cleanup_in_secs, threads) = load_settings();
+
+    let ws = ws::WebSocket::new(|_| move |_| Ok(())).unwrap();
+    let db = Arc::new(database::Database::new(cleanup_in_secs, ws.broadcaster()));
     let handlers = Handlers::new(db.clone());
 
     let mut router = Router::new();
-    router.get("/search/:key", handlers.get_msg, "get_msg");
-    router.post("/msg", handlers.post_msg, "post_msg");
+    router.get("/:key", handlers.get_msg, "get_msg");
+    router.post("/:key", handlers.post_msg, "post_msg");
 
     let mut chain = Chain::new(router);
     chain.link_after(JsonAfterMiddleware);
@@ -50,17 +43,37 @@ fn main() {
             db.clear();
         }
     });
-    info!("Listening to {}", host);
-    Iron::new(chain).http(host).unwrap();
+
+    thread::spawn(move || {
+        ws.bind(ws_host).unwrap().run().unwrap();
+    });
+
+    info!("Listening to {}", db_host);
+    Iron::new(chain)
+        .listen_with(db_host, threads, Protocol::Http, None)
+        .unwrap();
+}
+
+fn setup_logger() {
+    use simplelog::*;
+    use std::fs::File;
+    CombinedLogger::init(
+        vec![
+            WriteLogger::new(LevelFilter::Info, Config::default(),
+                             File::create("database.log").unwrap()),
+        ]
+    ).unwrap();
 }
 
 #[derive(RustcDecodable)]
 struct Settings {
-    host: String,
+    db_host: String,
+    ws_host: String,
     cleanup_in_secs: u64,
+    threads: usize,
 }
 
-fn load_settings() -> (String, u64) {
+fn load_settings() -> (String, String, u64, usize) {
     use std::fs::File;
     use std::io::prelude::*;
     use rustc_serialize::json;
@@ -68,7 +81,7 @@ fn load_settings() -> (String, u64) {
     let mut file = File::open("settings.json").expect("settings file not found");
     let mut content = String::new();
     file.read_to_string(&mut content).unwrap();
-    
+
     let settings: Settings = json::decode(content.as_str()).expect("Invalid settings file");
-    (settings.host, settings.cleanup_in_secs)
+    (settings.db_host, settings.ws_host, settings.cleanup_in_secs, settings.threads)
 }

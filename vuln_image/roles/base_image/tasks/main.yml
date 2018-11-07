@@ -1,22 +1,47 @@
 ---
-
 - name: Install utils
   apt:
-    name: [mc, htop]
+    name:
+      - apt-transport-https
+      - mc
+      - htop
+      - rsync
     state: latest
     update_cache: yes
 
-#- name: Copy files
-#  copy:
-#    src: "{{ item.src }}"
-#    dest: "{{ item.dest }}"
-#    mode: 0755
-#    owner: root
-#  with_items:
-#    - {src: "00-header", dest: "/etc/update-motd.d/00-header"}
-#    - {src: "10-help-text", dest: "/etc/update-motd.d/10-help-text"}
-#
-#
+- name: Make directory for cloud-init
+  file:
+    path: /etc/cloud-init/
+    state: directory
+    mode: 0755
+    owner: root
+
+- name: Install cloud-init
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{  item.dest }}"
+    mode: 0755
+    owner: root
+  with_items:
+    - {src: "cloud-init.sh", dest: "/etc/cloud-init/cloud-init.sh"}
+    - {src: "cloud-init.service", dest: "/etc/systemd/system/cloud-init.service"}
+
+- name: Enable cloud-init
+  systemd:
+    name: cloud-init
+    enabled: yes
+    daemon_reload: yes
+
+- name: Copy MOTD
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0755
+    owner: root
+  with_items:
+    - {src: "00-header", dest: "/etc/update-motd.d/00-header"}
+    - {src: "10-help-text", dest: "/etc/update-motd.d/10-help-text"}
+
 # TODO:
-# * install docker
+# * install docker (?)
 # * install docker-compose

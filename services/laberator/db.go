@@ -15,6 +15,13 @@ type User struct {
 	ID           uint `gorm:"primary_key"`
 	Login        string
 	PasswordHash []byte
+	Phrase       Phrase
+	PhraseID     uint
+}
+
+type Phrase struct {
+	ID    uint `gorm:"primary_key"`
+	Value string
 }
 
 type DBApi struct {
@@ -49,16 +56,27 @@ func (api *DBApi) IsUserExist(login *string) bool {
 	return len(users) != 0
 }
 
-func (api *DBApi) Register(login, password *string) error {
+func (api *DBApi) Register(login, password, phrase *string) error {
 	var users []User
 	api.db.Where("Login = ?", login).Find(&users)
 	if len(users) != 0 {
 		return DBApiError(fmt.Sprintf("User with login '%s' is already exist", *login))
 	}
 	passwordHash := hasher.GetHash(([]byte)(*password))
-	user := User{Login: *login, PasswordHash: passwordHash[:]}
+	phraseObj := Phrase{Value: *phrase}
+	phraseObjId := api.db.Create(&phraseObj).Value.(*Phrase).ID
+	user := User{Login: *login, PasswordHash: passwordHash[:], PhraseID: phraseObjId}
 	api.db.Create(&user)
 	return nil
+}
+
+func (api *DBApi) GetPhrase(login *string) (error, *string) {
+	var users []User
+	api.db.Preload("Phrase").Where("Login = ?", *login).Find(&users)
+	if len(users) != 1 {
+		return errors.New("multiple users"), nil
+	}
+	return nil, &users[0].Phrase.Value
 }
 
 func (api *DBApi) Validate(login, password *string) bool {
@@ -117,4 +135,5 @@ func (api *DBApi) Init(config *PostgresConfig) {
 	}
 	api.db.AutoMigrate(&User{})
 	api.db.AutoMigrate(&Label{})
+	api.db.AutoMigrate(&Phrase{})
 }

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/gorilla/websocket"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -17,7 +19,8 @@ const ConfigPath = "config"
 var dbApi DBApi
 var sm SessionManager
 var executor = CommandExecutor{&dbApi, &sm}
-var pattern, _ = regexp.Compile("^\\w{1,40}$")
+var pattern, _ = regexp.Compile("^[\\w=]{1,40}$")
+var phrasePattern, _ = regexp.Compile("^.{1,100}$")
 
 func Redirect(w http.ResponseWriter, r *http.Request, url string) {
 	fmt.Fprintf(w, `<html><head></head><body><script>window.location.replace("%v")</script></body></html>`, url)
@@ -27,12 +30,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	login := r.Form.Get("login")
 	password := r.Form.Get("password")
+	phrase := r.Form.Get("phrase")
+
 	if len(login) == 0 || len(password) == 0 {
 		w.WriteHeader(400)
 		return
 	}
 
-	if !pattern.Match([]byte(password)) || !pattern.Match([]byte(login)) {
+	if !pattern.Match([]byte(password)) || !pattern.Match([]byte(login)) || !phrasePattern.Match([]byte(phrase)) {
 		w.WriteHeader(400)
 		return
 	}
@@ -41,12 +46,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	dbApi.Register(&login, &password)
+	dbApi.Register(&login, &password, &phrase)
 	cookies := sm.CreateSession(login)
 	for _, cookie := range cookies {
 		http.SetCookie(w, &cookie)
 	}
 	Redirect(w, r, "/")
+	return
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -63,6 +69,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			http.SetCookie(w, &cookie)
 		}
 		Redirect(w, r, "/")
+		return
 	}
 }
 
@@ -87,10 +94,30 @@ func Main(w http.ResponseWriter, r *http.Request) {
 	Exec(w, "templates/main.html", &State{Login: logged})
 }
 
+func PhrasePage(w http.ResponseWriter, r *http.Request) {
+	ok, login := sm.ValidateSession(r.Cookies())
+	if !ok {
+		Redirect(w, r, "/")
+		return
+	}
+	err, phrase := dbApi.GetPhrase(&login)
+	if err != nil {
+		Redirect(w, r, "/")
+		return
+	}
+	encodedPhrase, err := base64.StdEncoding.DecodeString(*phrase)
+	if err != nil {
+		Redirect(w, r, "/")
+		return
+	}
+	Exec(w, "templates/phrase.html", &State{Login: login, Phrase: string(encodedPhrase)})
+}
+
 func RegisterPage(w http.ResponseWriter, r *http.Request) {
 	ok, _ := sm.ValidateSession(r.Cookies())
 	if ok {
 		Redirect(w, r, "/")
+		return
 	} else {
 		Exec(w, "templates/register.html", &State{})
 	}
@@ -102,6 +129,7 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 		Exec(w, "templates/create.html", &State{Login: login})
 	} else {
 		Redirect(w, r, "/")
+		return
 	}
 }
 
@@ -111,6 +139,7 @@ func ListingPage(w http.ResponseWriter, r *http.Request) {
 		Exec(w, "templates/listing.html", &State{Login: login})
 	} else {
 		Redirect(w, r, "/")
+		return
 	}
 }
 
@@ -129,6 +158,7 @@ func ViewLabel(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		Redirect(w, r, "/")
+		return
 	}
 }
 
@@ -174,12 +204,14 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &cookies[0])
 		http.SetCookie(w, &cookies[1])
 		Redirect(w, r, "/")
+		return
 	}
 }
 
 type State struct {
 	Login   string
 	LabelId uint64
+	Phrase  string
 }
 
 func main() {
@@ -196,13 +228,14 @@ func main() {
 	http.HandleFunc("/", Main)
 	http.HandleFunc("/cmdexec", ProcessCommand)
 	http.HandleFunc("/create_page", CreatePage)
+	http.HandleFunc("/favicon.ico", func(writer http.ResponseWriter, request *http.Request) {})
+	http.HandleFunc("/phrase", PhrasePage)
 	http.HandleFunc("/listing", ListingPage)
 	http.HandleFunc("/login", Login)
 	http.HandleFunc("/logout", Logout)
 	http.HandleFunc("/register", Register)
 	http.HandleFunc("/register_page", RegisterPage)
 	http.HandleFunc("/labels/", ViewLabel)
-	http.HandleFunc("/favicon.ico", func(writer http.ResponseWriter, request *http.Request) {})
 
 	fmt.Println("Start server")
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil))

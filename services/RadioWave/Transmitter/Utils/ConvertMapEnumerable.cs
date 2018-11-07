@@ -19,7 +19,7 @@ namespace Transmitter.Utils
 
 		public bool MoveNext()
 		{
-			if (pos < curr.Length - 1)
+			if (curr != null && pos < curr.Length - 1)
 			{
 				++pos;
 				return true;
