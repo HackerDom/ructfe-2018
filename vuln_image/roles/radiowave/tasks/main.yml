@@ -1,0 +1,68 @@
+---
+- name: Install dotnet repo keys
+  apt:
+    deb: https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+
+- name: Install .NET Core 2.1
+  apt:
+    name:
+     - dotnet-sdk-2.1
+    state: latest
+    update_cache: yes
+
+- name: Create user
+  user:
+    name: radiowave
+    createhome: yes
+    system: yes
+    shell: /usr/sbin/nologin
+
+- name: Install Rust
+  become_user: radiowave
+  shell: curl https://sh.rustup.rs -sSf | sh -s -- -y
+  args:
+    chdir: /home/radiowave/
+    warn: False
+
+- name: Copy RadioWave sources
+  copy:
+    src: ../services/RadioWave/
+    dest: /home/radiowave/
+    owner: radiowave
+    group: radiowave
+    mode: u+rwX,g=,o=
+  notify: restart radiowave service
+
+- name: Cargo build (RadioWave/database)
+  command: /home/radiowave/.cargo/bin/cargo build -j2 --release
+  become_user: radiowave
+  args:
+    chdir: /home/radiowave/database
+  notify: restart radiowave service
+
+- name: Build RadioWave Transmitter
+  command: dotnet build -c Release
+  become_user: radiowave
+  args:
+    chdir: /home/radiowave/Transmitter
+  notify: restart radiowave service
+
+- name: Install radiowave-database systemd service
+  copy: src=radiowave-database.service dest=/etc/systemd/system/radiowave-database.service
+  notify: restart radiowave service
+
+- name: Install radiowave-transmitter systemd service
+  copy: src=radiowave-transmitter.service dest=/etc/systemd/system/radiowave-transmitter.service
+  notify: restart radiowave service
+
+- name: Enable radiowave services
+  systemd:
+    name: '{{ item }}'
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  with_items:
+    - radiowave-transmitter
+    - radiowave-database
+
+

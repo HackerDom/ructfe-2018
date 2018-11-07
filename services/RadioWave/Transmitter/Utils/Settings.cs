@@ -18,5 +18,6 @@ namespace Transmitter.Utils
 		}
 
 		public ushort Port { get; set; }
+		public string DbUri { get; set; }
 	}
 }

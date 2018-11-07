@@ -28,7 +28,7 @@
     dest: /home/laberator/
     owner: laberator
     group: laberator
-    mode: u=rx,g=,o=
+    mode: u+rwX,g=,o=
   notify: restart laberator service
 
 - name: Create directory for fast-hash library
@@ -37,7 +37,7 @@
     state: directory
     owner: laberator
     group: laberator
-    mode: u=rx,g=,o=
+    mode: u+rwX,g=,o=
 
 - name: Install laberator fast-hash library
   copy:
@@ -45,7 +45,7 @@
     dest: /home/laberator/go/src/github.com/werelaxe/fast-hash/
     owner: laberator
     group: laberator
-    mode: u=rx,g=,o=
+    mode: u+rwX,g=,o=
   notify: restart laberator service
 
 - name: Download and install Go dependencies

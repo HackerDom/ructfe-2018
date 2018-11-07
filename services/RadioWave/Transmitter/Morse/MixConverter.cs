@@ -15,13 +15,19 @@ namespace Transmitter.Morse
 			this.rate = rate;
 		}
 
-		public void Sync(IEnumerable<Message> messages)
+		public void Sync(List<Message> messages)
 		{
-			var current = new HashSet<Message>(generators.Keys, Message.Comparer);
-			var update = new HashSet<Message>(messages, Message.Comparer);
+			if (messages == null)
+			{
+				Remove(generators.Keys);
+				return;
+			}
 
-			Add(update.Except(current));
-			Remove(current.Except(update));
+			var add = messages.Except(generators.Keys, Message.Comparer).ToList();
+			var remove = generators.Keys.Except(messages, Message.Comparer).ToList();
+
+			Add(add);
+			Remove(remove);
 		}
 
 		private void Add(IEnumerable<Message> messages) 
@@ -38,7 +44,7 @@ namespace Transmitter.Morse
 			{
 				if (generator.Value.MoveNext())
 					moveNext = true;
-				Current += generator.Value.Current * 0.1;
+				Current += generator.Value.Current / 8;
 			}
 			return moveNext;
 		}

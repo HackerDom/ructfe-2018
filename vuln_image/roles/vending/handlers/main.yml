@@ -1,0 +1,5 @@
+---
+
+- name: Restart vending service
+  service: name=vending state=restarted
+  listen: "restart vending service"

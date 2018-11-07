@@ -1,34 +1,105 @@
 #include "common.h"
+#include "commands.h"
 
-int main() {
+const char banner[] =
+	" ▄▄▄· ▄▄▄· ▄▄▄  ▄▄▄▄▄ ▄· ▄▌ ▄▄·  ▄ .▄ ▄▄▄· ▄▄▄▄▄\n"\
+	"▐█ ▄█▐█ ▀█ ▀▄ █·•██  ▐█▪██▌▐█ ▌▪██▪▐█▐█ ▀█ •██  \n"\
+	" ██▀·▄█▀▀█ ▐▀▀▄  ▐█.▪▐█▌▐█▪██ ▄▄██▀▐█▄█▀▀█  ▐█.▪\n"\
+	"▐█▪·•▐█ ▪▐▌▐█•█▌ ▐█▌· ▐█▀·.▐███▌██▌▐▀▐█ ▪▐▌ ▐█▌·\n"\
+	".▀    ▀  ▀ .▀  ▀ ▀▀▀   ▀ • ·▀▀▀ ▀▀▀ · ▀  ▀  ▀▀▀\n";
 
-	pc_init_logging("/dev/null", true);
+bool handle_command(const char *command, const char *args, connection<face_state> &conn) {
+	if (!strcmp("!help", command)) {
+		printf("Available commands:\n");
+		printf("\t!help - display this message.\n");
+		printf("\t!say <message> - say something.\n");
+		printf("\t!history <group> - show the history of a conversation.\n");
+		printf("\t!quit - exit partychat.\n");
 
-	addrinfo *endpoint;
-	if (!pc_parse_endpoint("localhost:16770", &endpoint))
-		pc_fatal("fuck!");
+		return true;
+	}
+	if (!strcmp("!quit", command)) {
+		conn.flush(conn.send<end_command<face_state>>(args));
+		return false;
+	}
+	if (!strcmp("!say", command)) {
+		// load history if needed
+		conn.flush(conn.send<say_command<face_state>>(args));
+		return true;
+	}
+	if (!strcmp("!history", command)) {
+		conn.flush(conn.send<history_command<face_state>>(args));
+		return true;
+	}
 
-	pc_connection conn;
-	if (!pc_connect(*endpoint, conn))
-		pc_fatal("shit!");
+	printf("Unrecognized command '%s'.\n", command);
+	return true;
+}
 
-	conn.send("Hey!");
-	while (!conn.poll_send()) ;
+int main(int argc, char **argv) {
 
-	if (!conn.alive)
-		pc_fatal("damn!");
+	char endpoint[256];
+	if (argc == 1)
+		sprintf(endpoint, "%s", "localhost:6666");
+	else if (argc == 2)
+		sprintf(endpoint, "%s", argv[1]);
+	else {
+		printf("Usage:\n");
+		printf("%s [node-endpoint]\n", argv[0]);
+		exit(-1);
+	}
 
-	conn.send("Hoy!");
-	while (!conn.poll_send()) ;
+	printf("%s\n", banner);
 
-	if (!conn.alive)
-		pc_fatal("damn!");
+	char log_file[64];
+	sprintf(log_file, "%s.log", argv[0]);
+	pc_init_logging(log_file, true);
 
-	conn.receive();
+	addrinfo *addr;
+	if (!pc_parse_endpoint(endpoint, &addr))
+		pc_fatal("Failed to parse node endpoint.");
 
-	while (!conn.poll_receive()) ;
+	pc_log("Establishing connection to node at %s..", endpoint);
 
-	pc_log("Received: %s", conn.recv_buffer);
+	face_state state;
+	connection<face_state> conn(*addr, state);
+
+	printf("Welcome! Type !help if not sure.\n");
+
+	char last_cmd[512];
+	bzero(last_cmd, sizeof(last_cmd));
+	while (true) {
+		printf("%s> ", last_cmd);
+
+		char buffer[512];
+		bzero(buffer, sizeof(buffer));
+		if (!fgets(buffer, sizeof(buffer), stdin))
+			break;
+		if (strlen(buffer) > 0)
+			buffer[strlen(buffer) - 1] = 0;
+
+		char *args = buffer;
+		if (buffer[0] == '!') {
+			if (strchr(buffer, ' ')) {
+				char *tok = strtok(buffer, " ");
+				strcpy(last_cmd, tok);
+				args = buffer + strlen(last_cmd) + 1;
+			}
+			else {
+				strcpy(last_cmd, buffer);
+				args = NULL;
+			}
+		}
+		else if (!last_cmd[0])
+			continue;
+
+		pc_log("Executing command '%s' with args '%s'..", last_cmd, args);
+
+		if (!handle_command(last_cmd, args, conn))
+			break;
+	}
+
+	pc_shutdown_logging();
 
 	return 0;
 }

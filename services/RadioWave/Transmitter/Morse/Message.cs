@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace Transmitter.Morse
 {
+	[DataContract]
 	public class Message
 	{
-		public string Text;
-		public int DPM;
-		public int Frequency;
+		[DataMember(Name = "text", Order = 1)] public string Text;
+		[DataMember(Name = "dpm", Order = 2)] public int DPM;
+		[DataMember(Name = "frequency", Order = 3)] public int Frequency;
+		[DataMember(Name = "key", Order = 5)] public string Key;
 
 		private sealed class MessageComparer : IEqualityComparer<Message>
 		{

@@ -1,6 +1,8 @@
 let ws;
 let pattern = /^\w{1,40}$/;
+let phrasePattern = /^.{1,100}$/;
 let patternErrorText = "This field must match the regex '" + pattern + "'.";
+let phrasePatternErrorText = "This field must match the regex '" + phrasePattern + "'.";
 let existingErrorText = "This login is already used.";
 let incorrectPairErrorText = "Incorrect login or password.";
 let fontPattern = /^[\w\s]{1,100}$/;
@@ -55,17 +57,22 @@ function createCommandRequest(command, data) {
 function login() {
     let loginField = $('#l-fld');
     let passwordField = $('#p-fld');
+    console.log("Login passwd: " + btoa(passwordField.val()));
     if (!loginField.hasClass("is-invalid") && !passwordField.hasClass("is-invalid")) {
         ws.onmessage = function (e) {
             if (e.data === "true") {
-                window.location.replace("/login?login=" + loginField.val() + "&password=" + passwordField.val());
+                window.location.replace(
+                    "/login?login=" + loginField.val() +
+                    "&password=" + btoa(passwordField.val())
+                );
             } else {
+                console.log("Data: " + e.data);
                 setError(loginField, incorrectPairErrorText);
             }
         };
         ws.send(createCommandRequest("validate", {
             "Login": loginField.val(),
-            "Password": passwordField.val()
+            "Password": btoa(passwordField.val())
         }));
     }
     return false;
@@ -79,8 +86,14 @@ function resetImproprietyError() {
 function register() {
     let loginField = $('#r-l-fld');
     let passwordField = $('#p-fld');
+    let phraseField = $('#r-s-fld');
+    console.log("Register passwd: " + btoa(passwordField.val()));
     if (!loginField.hasClass("is-invalid") && !passwordField.hasClass("is-invalid")) {
-        window.location.replace("/register?login=" + loginField.val() + "&password=" + passwordField.val());
+        window.location.replace(
+            "/register?login=" + loginField.val() +
+            "&password=" + btoa(passwordField.val()) +
+            "&phrase=" + btoa(phraseField.val())
+        );
     }
     return false;
 }
@@ -104,6 +117,14 @@ function checkPattern() {
         setError($(this), patternErrorText);
     } else {
         unsetError($(this), patternErrorText);
+    }
+}
+
+function checkSecretPattern() {
+    if ($(this).val().match(phrasePattern) == null) {
+        setError($(this), phrasePatternErrorText);
+    } else {
+        unsetError($(this), phrasePatternErrorText);
     }
 }
 
@@ -267,9 +288,11 @@ $(document).ready(function () {
     let labelTextFld = $("#t-fld");
     let fontFld = $("#f-fld");
     let sizeFld = $("#s-fld");
+    let phraseFld = $("#r-s-fld");
     loginFld.on("change", checkPattern);
     loginFld.on("change", resetImproprietyError);
     loginFld.on("change", enableButton);
+    phraseFld.on("change", checkSecretPattern);
     rLoginFld.on("change", checkLoginExisting);
     rLoginFld.on("change", checkPattern);
     rLoginFld.on("change", enableButton);
