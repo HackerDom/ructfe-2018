@@ -15,7 +15,6 @@ namespace Transmitter.Db
 	public static class DbClient
 	{
 		private static Uri dbUri;
-		private const string GetMessageMethod = "search/";
 		private const int Timeout = 1000;
 
 		public static void Init(string dbHref)
@@ -31,7 +30,7 @@ namespace Transmitter.Db
 
 		private static async Task<List<Message>> GetMessagesInternalAsync(string key, int timeout)
 		{
-			var request = WebRequest.Create(dbUri + GetMessageMethod + HttpUtility.UrlEncode(key));
+			var request = WebRequest.Create(dbUri + HttpUtility.UrlEncode(key));
 			var responseTask = GetResponseAsync(request);
 
 			using(var cancelSource = new CancellationTokenSource())
