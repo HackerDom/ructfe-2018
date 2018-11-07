@@ -17,7 +17,7 @@ namespace Transmitter.Morse
 
 			CharToMorse = File.ReadAllLines(charsFilePath)
 				.Where(line => !string.IsNullOrWhiteSpace(line))
-				.Select(line => line.Split('=').Select(s => s.Trim()).ToList())
+				.Select(line => line.Split('\t').Select(s => s.Trim()).ToList())
 				.ToDictionary(
 					list => list[0][0],
 					list => list[1]
