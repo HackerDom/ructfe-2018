@@ -1,0 +1,5 @@
+---
+
+- name: Restart partychat service
+  service: name=partychat state=restarted
+  listen: "restart partychat service"
