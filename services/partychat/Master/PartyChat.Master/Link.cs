@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,17 +13,16 @@ namespace PartyChat.Master
         
         private readonly Socket client;
 
-        private int commandId;
-
         private const int MaxCommandLength = 1000;
+        
 
         public Link(Socket client) => this.client = client;
 
-        public async Task<Command> SendCommand(string name, string args)
-        {
-            var command = new Command(name, args, commandId++);
+        public IPEndPoint RemoteEndpoint => client.RemoteEndPoint as IPEndPoint;
 
-            var line = $"{command.Id} {command.Name} {command.Args}\n";
+        public async Task SendCommand(Command command)
+        {
+            var line = $"{command.Id} {command.Name} {command.Text}\n";
             if (line.Length > MaxCommandLength)
                 throw new InvalidOperationException("The command was too long.");
 
@@ -39,8 +39,6 @@ namespace PartyChat.Master
                     dataToSend = dataToSend.Slice(bytesSent);
                 }
             }
-
-            return command;
         }
 
         public async Task<Command> ReceiveCommand()

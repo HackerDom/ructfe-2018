@@ -2,19 +2,17 @@
 {
     internal class Command
     {
-        public Command(string name, string args, int id)
+        public Command(string name, string text, int id)
         {
             Name = name;
-            Args = args;
+            Text = text;
             Id = id;
         }
 
         public string Name { get; }
         
-        public string Args { get; }
+        public string Text { get; }
         
         public int Id { get; }
-
-        public override string ToString() => $"{Id} {Name} {Args}";
     }
 }

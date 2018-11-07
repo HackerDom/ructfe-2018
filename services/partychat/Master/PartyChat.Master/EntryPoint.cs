@@ -12,6 +12,9 @@ namespace PartyChat.Master
         {
             SetupThreadPool();
             
+            var heartbeatStorage = new HeartbeatStorage(TimeSpan.FromSeconds(15));
+            var sessionStorage = new SessionStorage();
+            
             var server = new TcpListener(IPAddress.Any, 16770);
 
             server.Start(100);
@@ -20,7 +23,8 @@ namespace PartyChat.Master
             {
                 var client = server.AcceptSocket();
 
-                new ClientHandler(new Link(client), null).Run();
+                var session = new Session(new Link(client), new CommandHandler(sessionStorage, heartbeatStorage));
+                session.Run();
             }
         }
 
