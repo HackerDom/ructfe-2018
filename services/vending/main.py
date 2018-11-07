@@ -2,7 +2,9 @@ from http.server import ThreadingHTTPServer
 from http.server import BaseHTTPRequestHandler
 from http_helpers.routing import RoutingTable, Route
 from http_helpers.objects import Request
-from handlers import index_handler, machine_handler
+from handlers import index_handler, machine_name_handler, \
+    create_machine_handler, machine_manufacturer_handler, \
+    machine_master_key_handler, machine_meta_handler
 from vmf import VendingMachinesFactory
 
 VENDING_MACHINES = VendingMachinesFactory()
@@ -11,11 +13,11 @@ VENDING_MACHINES = VendingMachinesFactory()
 def create_route_table():
     return RoutingTable(
         Route("GET", "/", index_handler.IndexHandler()),
-        Route("CREATE", "/vending_machine", machine_handler.MachineHandler(VENDING_MACHINES)),
-        Route("GET", "/machine_name", machine_handler.MachineHandler(VENDING_MACHINES)),
-        Route("GET", "/machine_manufacturer", machine_handler.MachineHandler(VENDING_MACHINES)),
-        Route("GET", "/machine_master_key", machine_handler.MachineHandler(VENDING_MACHINES)),
-        Route("GET", "/machine_meta", machine_handler.MachineHandler(VENDING_MACHINES))
+        Route("CREATE", "/vending_machine", create_machine_handler.CreateMachineHandler(VENDING_MACHINES)),
+        Route("GET", "/machine_name", machine_name_handler.MachineNameHandler(VENDING_MACHINES)),
+        Route("GET", "/machine_manufacturer", machine_manufacturer_handler.MachineManufacturerHandler(VENDING_MACHINES)),
+        Route("GET", "/machine_meta", machine_meta_handler.MachineMetaHandler(VENDING_MACHINES)),
+        Route("GET", "/machine_master_key", machine_master_key_handler.MachineMasterKeyHandler(VENDING_MACHINES)),
     )
 
 
