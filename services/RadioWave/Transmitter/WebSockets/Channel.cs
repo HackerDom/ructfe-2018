@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Transmitter.Db;
 using Transmitter.Morse;
 using vtortola.WebSockets;
 
@@ -9,13 +10,16 @@ namespace Transmitter.WebSockets
 {
 	public class Channel
 	{
+		private readonly string channelId;
 		private readonly int writeTimeout;
 		private readonly List<WebSocket> sockets = new List<WebSocket>();
 		private readonly MixConverter mixer = new MixConverter(8000);
 		private readonly byte[] buffer = new byte[8000];
+		private Task<List<Message>> getMessagesTask;
 
-		public Channel(int writeTimeout, WebSocket ws)
+		public Channel(string channelId, int writeTimeout, WebSocket ws)
 		{
+			this.channelId = channelId;
 			this.writeTimeout = writeTimeout;
 			sockets.Add(ws);
 		}
@@ -32,6 +36,16 @@ namespace Transmitter.WebSockets
 
 		public Task PrepareAndSendAsync()
 		{
+			if (getMessagesTask == null)
+				getMessagesTask = Task.Run(() => DbClient.GetMessagesAsync(channelId));
+
+			if (getMessagesTask.IsCompleted)
+			{
+				if (getMessagesTask.Status == TaskStatus.RanToCompletion)
+					UpdateMixer(getMessagesTask.Result);
+				getMessagesTask = null;
+			}
+
 			lock (this)
 			{
 				if (!sockets.Any())
@@ -47,7 +61,7 @@ namespace Transmitter.WebSockets
 			return SendAsync(buffer);
 		}
 
-		public void UpdateMixer(IEnumerable<Message> messages)
+		private void UpdateMixer(IEnumerable<Message> messages)
 			=> mixer.Sync(messages);
 
 		private async Task<bool> SendAsync(byte[] message)
