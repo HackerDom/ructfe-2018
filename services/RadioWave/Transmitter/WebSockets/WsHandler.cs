@@ -14,7 +14,7 @@ namespace Transmitter.WebSockets
 
 		public Task ProcessWsConnectionAsync(WebSocket ws)
 		{
-			var channel = ws.HttpRequest.RequestUri.AbsolutePath;
+			var channel = Channel.GetChannelId(ws.HttpRequest.RequestUri);
 			channels.Add(channel, ws);
 			return Task.CompletedTask;
 		}

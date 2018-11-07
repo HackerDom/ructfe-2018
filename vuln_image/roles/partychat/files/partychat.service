@@ -1,5 +1,5 @@
 [Unit]
-    Description=RuCTFE 2018: Laberator
+    Description=RuCTFE 2018: PartyChat Node
     After=network-online.target
     Wants=network-online.target
     StartLimitBurst=4
@@ -7,17 +7,17 @@
 
 [Service]
     Type=simple
-    ExecStart=/home/laberator/run.sh
+    ExecStart=/home/partychat/run.sh
     KillMode=control-group
-    WorkingDirectory=/home/laberator
+    WorkingDirectory=/home/partychat
 
 # Run as
-    User=laberator
-    Group=laberator
+    User=partychat
+    Group=partychat
 
 # Autorestart on failure
     Restart=always
-    RestartSec=10s
+    RestartSec=1s
 
 # Restrict directories and permissions
     NoNewPrivileges=true

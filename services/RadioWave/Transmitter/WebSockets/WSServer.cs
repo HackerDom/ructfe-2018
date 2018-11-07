@@ -20,7 +20,7 @@ namespace Transmitter.WebSockets
 		{
 			var timeout = TimeSpan.FromSeconds(3);
 			var rwTimeout = TimeSpan.FromMilliseconds(200);
-			const int bufferSize = 1000;
+			const int bufferSize = 1024 * 8;
 			const int buffersCount = 100;
 
 			var options = new WebSocketListenerOptions
@@ -73,6 +73,7 @@ namespace Transmitter.WebSockets
 					var ws = await listener.AcceptWebSocketAsync(token).ConfigureAwait(false);
 					if (ws == null)
 						continue;
+					Log.Info($"{ws.RemoteEndpoint} -> {ws.HttpRequest.RequestUri}");
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 					Task.Run(() => process.Invoke(ws), token);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed

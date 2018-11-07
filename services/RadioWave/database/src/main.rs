@@ -5,9 +5,9 @@ extern crate rustc_serialize;
 extern crate chashmap;
 extern crate time;
 extern crate base32;
+extern crate ws;
 extern crate simplelog;
-#[macro_use]
-extern crate log;
+#[macro_use] extern crate log;
 
 
 mod handlers;
@@ -24,14 +24,15 @@ use std::thread;
 
 fn main() {
     setup_logger();
-    let (host, cleanup_in_secs, threads) = load_settings();
+    let (db_host, ws_host, cleanup_in_secs, threads) = load_settings();
 
-    let db = Arc::new(database::Database::new(cleanup_in_secs));
+    let ws = ws::WebSocket::new(|_| move |_| Ok(())).unwrap();
+    let db = Arc::new(database::Database::new(cleanup_in_secs, ws.broadcaster()));
     let handlers = Handlers::new(db.clone());
 
     let mut router = Router::new();
-    router.get("/search/:key", handlers.get_msg, "get_msg");
-    router.post("/msg", handlers.post_msg, "post_msg");
+    router.get("/:key", handlers.get_msg, "get_msg");
+    router.post("/:key", handlers.post_msg, "post_msg");
 
     let mut chain = Chain::new(router);
     chain.link_after(JsonAfterMiddleware);
@@ -42,10 +43,14 @@ fn main() {
             db.clear();
         }
     });
-    
-    info!("Listening to {}", host);
+
+    thread::spawn(move || {
+        ws.bind(ws_host).unwrap().run().unwrap();
+    });
+
+    info!("Listening to {}", db_host);
     Iron::new(chain)
-        .listen_with(host, threads, Protocol::Http, None)
+        .listen_with(db_host, threads, Protocol::Http, None)
         .unwrap();
 }
 
@@ -62,12 +67,13 @@ fn setup_logger() {
 
 #[derive(RustcDecodable)]
 struct Settings {
-    host: String,
+    db_host: String,
+    ws_host: String,
     cleanup_in_secs: u64,
     threads: usize,
 }
 
-fn load_settings() -> (String, u64, usize) {
+fn load_settings() -> (String, String, u64, usize) {
     use std::fs::File;
     use std::io::prelude::*;
     use rustc_serialize::json;
@@ -77,5 +83,5 @@ fn load_settings() -> (String, u64, usize) {
     file.read_to_string(&mut content).unwrap();
 
     let settings: Settings = json::decode(content.as_str()).expect("Invalid settings file");
-    (settings.host, settings.cleanup_in_secs, settings.threads)
+    (settings.db_host, settings.ws_host, settings.cleanup_in_secs, settings.threads)
 }

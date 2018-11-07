@@ -1,0 +1,40 @@
+---
+- name: Install build dependencies (build-essential)
+  apt:
+    name:
+     - build-essential
+    state: latest
+    update_cache: yes
+
+- name: Create user
+  user:
+    name: partychat
+    createhome: yes
+    system: yes
+    shell: /usr/sbin/nologin
+
+- name: Copy sources to tmp dir (/run/build_partychat)
+  copy:
+    src: ../services/partychat/
+    dest: /run/build_partychat/
+
+- name: Build service
+  shell: |
+      make
+      cp -t /home/partychat/ partychat-node partychat run.sh
+      chown -R partychat:partychat /home/partychat
+      chmod -R u=rwX,g=,o= /home/partychat
+  args:
+    chdir: /run/build_partychat/
+  notify: restart partychat service
+
+- name: Install partychat systemd service
+  copy: src=partychat.service dest=/etc/systemd/system/partychat.service
+  notify: restart partychat service
+
+- name: Enable partychat service
+  systemd:
+    name: partychat
+    enabled: yes
+    state: started
+    daemon_reload: yes

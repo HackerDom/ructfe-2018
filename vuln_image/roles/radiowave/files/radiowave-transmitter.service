@@ -1,5 +1,5 @@
 [Unit]
-    Description=RuCTFE 2018: Laberator
+    Description=RuCTFE 2018: Radiowave Transmitter
     After=network-online.target
     Wants=network-online.target
     StartLimitBurst=4
@@ -7,13 +7,13 @@
 
 [Service]
     Type=simple
-    ExecStart=/home/laberator/run.sh
+    ExecStart=/usr/bin/dotnet run -c Release
     KillMode=control-group
-    WorkingDirectory=/home/laberator
+    WorkingDirectory=/home/radiowave/Transmitter
 
 # Run as
-    User=laberator
-    Group=laberator
+    User=radiowave
+    Group=radiowave
 
 # Autorestart on failure
     Restart=always

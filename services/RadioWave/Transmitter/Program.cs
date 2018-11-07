@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using log4net;
 using Transmitter.Db;
-using Transmitter.Morse;
 using Transmitter.Utils;
 using Transmitter.Utils.Log4Net;
 using Transmitter.WebSockets;
@@ -15,20 +14,25 @@ namespace Transmitter
 		private static void Main()
 		{
 			Log4NetHelper.Init();
-			try
-			{
-				var settings = Settings.Load();
-				MainAsync(settings).Wait();
-			}
-			catch (Exception ex)
-			{
-				Log.Fatal("Unhandled exception", ex);
-				Environment.Exit(-1);
-			}
+
+			AppDomain.CurrentDomain.UnhandledException += LogUnhandledException;
+
+			var settings = Settings.Load();
+			MainAsync(settings).Wait();
+		}
+
+		private static void LogUnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			var exception = e.ExceptionObject as Exception;
+			Console.Error.WriteLine("Unhandled exception");
+			Console.Error.WriteLine(exception);
+			Log.Fatal("Unhandled exception", exception);
+			Environment.Exit(-1);
 		}
 
 		private static async Task MainAsync(Settings settings)
 		{
+			DbClient.Init(settings.DbUri);
 			var channels = new Channels(200);
 			var handler = new WsHandler(channels);
 			var server = new WsServer(settings.Port, handler.ProcessWsConnectionAsync);

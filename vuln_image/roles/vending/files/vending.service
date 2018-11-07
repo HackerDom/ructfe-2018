@@ -1,5 +1,5 @@
 [Unit]
-    Description=RuCTFE 2018: Laberator
+    Description=RuCTFE 2018: Vending
     After=network-online.target
     Wants=network-online.target
     StartLimitBurst=4
@@ -7,13 +7,13 @@
 
 [Service]
     Type=simple
-    ExecStart=/home/laberator/run.sh
+    ExecStart=/usr/bin/python3.7 /home/vending/main.py
     KillMode=control-group
-    WorkingDirectory=/home/laberator
+    WorkingDirectory=/home/vending
 
 # Run as
-    User=laberator
-    Group=laberator
+    User=vending
+    Group=vending
 
 # Autorestart on failure
     Restart=always

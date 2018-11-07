@@ -1,0 +1,34 @@
+---
+- name: Install dependencies (python3.7)
+  apt:
+    name:
+     - python3.7
+    state: latest
+    update_cache: yes
+
+- name: Create user
+  user:
+    name: vending
+    createhome: yes
+    system: yes
+    shell: /usr/sbin/nologin
+
+- name: Install vending service
+  copy:
+    src: ../services/vending/
+    dest: /home/vending/
+    owner: vending
+    group: vending
+    mode: u=rx,g=,o=
+  notify: restart vending service
+
+- name: Install vending systemd service
+  copy: src=vending.service dest=/etc/systemd/system/vending.service
+  notify: restart vending service
+
+- name: Enable vending service
+  systemd:
+    name: vending
+    enabled: yes
+    state: started
+    daemon_reload: yes

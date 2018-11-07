@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using log4net;
+using Transmitter.Db;
 using Transmitter.Morse;
 using vtortola.WebSockets;
 
@@ -9,13 +13,16 @@ namespace Transmitter.WebSockets
 {
 	public class Channel
 	{
+		private readonly string channelId;
 		private readonly int writeTimeout;
 		private readonly List<WebSocket> sockets = new List<WebSocket>();
 		private readonly MixConverter mixer = new MixConverter(8000);
 		private readonly byte[] buffer = new byte[8000];
+		private Task<List<Message>> getMessagesTask;
 
-		public Channel(int writeTimeout, WebSocket ws)
+		public Channel(string channelId, int writeTimeout, WebSocket ws)
 		{
+			this.channelId = channelId;
 			this.writeTimeout = writeTimeout;
 			sockets.Add(ws);
 		}
@@ -30,24 +37,41 @@ namespace Transmitter.WebSockets
 			return this;
 		}
 
-		public Task PrepareAndSendAsync()
+		public async Task PrepareAndSendAsync()
 		{
 			lock (this)
 			{
 				if (!sockets.Any())
-					return Task.CompletedTask;
+				{
+					Log.Info($"[{channelId}]: no clients");
+					return;
+				}
+			}
+
+			var sw = Stopwatch.StartNew();
+
+			if(getMessagesTask == null)
+				getMessagesTask = Task.Run(() => DbClient.GetMessagesAsync(channelId));
+
+			if(getMessagesTask.IsCompleted)
+			{
+				if(getMessagesTask.Status == TaskStatus.RanToCompletion)
+					UpdateMixer(getMessagesTask.Result);
+				getMessagesTask = null;
 			}
 
 			for (var i = 0; i < buffer.Length; i++)
 			{
 				mixer.MoveNext();
-				buffer[i] = (byte)mixer.Current;
+				buffer[i] = (byte)((mixer.Current + 1) / 2 * 255);
 			}
 
-			return SendAsync(buffer);
+			await SendAsync(buffer).ConfigureAwait(false);
+
+			Log.Info($"[{channelId}]: send all, elapsed {sw.Elapsed}");
 		}
 
-		public void UpdateMixer(IEnumerable<Message> messages)
+		private void UpdateMixer(List<Message> messages)
 			=> mixer.Sync(messages);
 
 		private async Task<bool> SendAsync(byte[] message)
@@ -67,12 +91,19 @@ namespace Transmitter.WebSockets
 			return true;
 		}
 
-		private static Task SendAsync(WebSocket ws, byte[] message, CancellationToken token)
+		private async Task SendAsync(WebSocket ws, byte[] message, CancellationToken token)
 		{
 			using (var stream = ws.CreateMessageWriter(WebSocketMessageType.Binary))
 			{
-				return stream.WriteAsync(message, 0, message.Length, token);
+				var sw = Stopwatch.StartNew();
+				await stream.WriteAsync(message, 0, message.Length, token).ConfigureAwait(false);
+				Log.Info($"[{channelId}]: send to {ws.RemoteEndpoint} {message.Length} bytes, elapsed {sw.Elapsed}");
 			}
 		}
+
+		public static string GetChannelId(Uri uri)
+			=> uri.IsAbsoluteUri ? uri.AbsolutePath : uri.ToString().TrimStart('/');
+
+		private static readonly ILog Log = LogManager.GetLogger(typeof(Channel));
 	}
 }
