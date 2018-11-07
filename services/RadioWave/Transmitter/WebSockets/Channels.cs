@@ -35,12 +35,12 @@ namespace Transmitter.WebSockets
 			Task.WaitAll(channels.Select(pair => UpdateAndSendAsync(pair.Key, pair.Value)).ToArray());
 		}
 
-		private static Task UpdateAndSendAsync(string name, Channel channel)
+		private static async Task UpdateAndSendAsync(string name, Channel channel)
 		{
-			var messages = DbClient.GetMessages(name);
+			var messages = await DbClient.GetMessagesAsync(name).ConfigureAwait(false);
 			channel.UpdateMixer(messages);
 
-			return channel.PrepareAndSendAsync();
+			await channel.PrepareAndSendAsync().ConfigureAwait(false);
 		}
 	}
 }
