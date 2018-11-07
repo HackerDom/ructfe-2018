@@ -24,7 +24,7 @@ namespace PartyChat.Master
                 case Commands.Heartbeat:
                     if (!TrySetNick(command.Text) || !sessionStorage.TryRegister(nick, session))
                     {
-                        await session.Kill();
+                        await session.Kill(true);
                         return;
                     }
 
