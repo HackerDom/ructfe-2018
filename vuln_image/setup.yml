@@ -8,18 +8,13 @@
     - name: 'Install python2'
       raw: sudo apt-get -y install python-simplejson
       changed_when: False
+    - name: 'Add universe repo'
+      raw: sudo add-apt-repository universe
+      changed_when: False
 
   roles:
     - base_image
     - laberator
     - vending
     - partychat
-
-#    - system
-#    - lighting
-#    - feedback
-#    - trafficlights
-#    - cityparking
-#    - flightdispatcher
-#    - railway
-#    - docs
+    - radiowave

@@ -1,5 +1,5 @@
 [Unit]
-    Description=RuCTFE 2018: PartyChat Node
+    Description=RuCTFE 2018: Radiowave Transmitter
     After=network-online.target
     Wants=network-online.target
     StartLimitBurst=4
@@ -7,17 +7,17 @@
 
 [Service]
     Type=simple
-    ExecStart=/home/partychat/run.sh
+    ExecStart=/usr/bin/dotnet run -c Release
     KillMode=control-group
-    WorkingDirectory=/home/partychat
+    WorkingDirectory=/home/radiowave/Transmitter
 
 # Run as
-    User=partychat
-    Group=partychat
+    User=radiowave
+    Group=radiowave
 
 # Autorestart on failure
     Restart=always
-    RestartSec=1s
+    RestartSec=10s
 
 # Restrict directories and permissions
     NoNewPrivileges=true
