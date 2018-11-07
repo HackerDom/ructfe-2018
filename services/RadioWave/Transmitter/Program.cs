@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using log4net;
 using Transmitter.Db;
-using Transmitter.Morse;
 using Transmitter.Utils;
 using Transmitter.Utils.Log4Net;
 using Transmitter.WebSockets;
@@ -29,6 +28,7 @@ namespace Transmitter
 
 		private static async Task MainAsync(Settings settings)
 		{
+			DbClient.Init(settings.DbUri);
 			var channels = new Channels(200);
 			var handler = new WsHandler(channels);
 			var server = new WsServer(settings.Port, handler.ProcessWsConnectionAsync);
