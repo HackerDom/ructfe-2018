@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -99,6 +100,9 @@ namespace Transmitter.WebSockets
 				Log.Info($"[{channelId}]: send to {ws.RemoteEndpoint} {message.Length} bytes, elapsed {sw.Elapsed}");
 			}
 		}
+
+		public static string GetChannelId(Uri uri)
+			=> uri.IsAbsoluteUri ? uri.AbsolutePath : uri.ToString().TrimStart('/');
 
 		private static readonly ILog Log = LogManager.GetLogger(typeof(Channel));
 	}
