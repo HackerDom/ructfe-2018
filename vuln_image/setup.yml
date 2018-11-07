@@ -12,6 +12,9 @@
   roles:
     - base_image
     - laberator
+    - vending
+    - partychat
+
 #    - system
 #    - lighting
 #    - feedback
