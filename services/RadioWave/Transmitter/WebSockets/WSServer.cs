@@ -73,6 +73,7 @@ namespace Transmitter.WebSockets
 					var ws = await listener.AcceptWebSocketAsync(token).ConfigureAwait(false);
 					if (ws == null)
 						continue;
+					Log.Info($"{ws.RemoteEndpoint} -> {ws.HttpRequest.RequestUri}");
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 					Task.Run(() => process.Invoke(ws), token);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
