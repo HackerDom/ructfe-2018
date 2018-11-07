@@ -1,0 +1,9 @@
+---
+
+- name: Restart radiowave-transmitter service
+  service: name=radiowave-transmitter state=restarted
+  listen: "restart radiowave service"
+
+- name: Restart radiowave-database service
+  service: name=radiowave-database state=restarted
+  listen: "restart radiowave service"
