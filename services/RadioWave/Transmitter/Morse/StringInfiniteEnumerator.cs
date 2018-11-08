@@ -17,7 +17,7 @@ namespace Transmitter.Morse
 		public bool MoveNext()
 		{
 			++pos;
-			if (pos == str.Length)
+			if (pos >= str.Length)
 				pos = 0;
 			return true;
 		}

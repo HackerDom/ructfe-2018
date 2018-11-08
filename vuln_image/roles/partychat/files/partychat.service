@@ -6,7 +6,7 @@
     StartLimitInterval=60s
 
 [Service]
-    Type=Simple
+    Type=simple
     ExecStart=/home/partychat/run.sh
     KillMode=control-group
     WorkingDirectory=/home/partychat
@@ -36,7 +36,7 @@
     MemoryMax=1024M
     MemorySwapMax=1024M
     CPUQuota=150%
-    LimitNOFILE=65536 # Default is usually too small
+    LimitNOFILE=65536
 
 # Optional TODO:
 # * IO accounting and limits

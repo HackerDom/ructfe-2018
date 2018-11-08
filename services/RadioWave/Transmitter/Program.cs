@@ -33,11 +33,9 @@ namespace Transmitter
 		private static async Task MainAsync(Settings settings)
 		{
 			DbClient.Init(settings.DbUri);
-			var channels = new Channels(200);
-			var handler = new WsHandler(channels);
-			var server = new WsServer(settings.Port, handler.ProcessWsConnectionAsync);
+			Channels.WriteTimeout = 200;
+			var server = new WsServer(settings.Port, WsHandler.ProcessWsConnectionAsync);
 			await server.StartAsync().ConfigureAwait(false);
-			channels.StartSending();
 			Thread.Sleep(Timeout.Infinite);
 		}
 

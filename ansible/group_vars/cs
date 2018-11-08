@@ -265,4 +265,4 @@ teams: |
   {name => 'The legendary majestic rectal worm and his grandson famous programmer fat crab  come in to gay-bar and bartender starts dance the jig', network => '10.60.220.0/24', host => '10.60.220.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'cb053454-e19e-45c8-a893-87e1733f2f44', country => 'Russia',},
 services: |
   {name => 'test',  path => 'checkers/test.py', timeout => 15, tcp_port => 8080},
-  {name => 'laberator',  path => 'checkers/laberator/checker.py', timeout => 20, tcp_port => 8080}
+  {name => 'laberator',  path => 'checkers/laberator/checker.py', timeout => 20, tcp_port => 8080},

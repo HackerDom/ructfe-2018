@@ -4,10 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using log4net;
 using Transmitter.Db;
 using Transmitter.Morse;
 using vtortola.WebSockets;
+
+using Timer = System.Timers.Timer;
 
 namespace Transmitter.WebSockets
 {
@@ -18,13 +21,22 @@ namespace Transmitter.WebSockets
 		private readonly List<WebSocket> sockets = new List<WebSocket>();
 		private readonly MixConverter mixer = new MixConverter(8000);
 		private readonly byte[] buffer = new byte[8000];
+		private readonly Timer timer;
+
 		private Task<List<Message>> getMessagesTask;
+		private bool isFirstRun = true;
+
 
 		public Channel(string channelId, int writeTimeout, WebSocket ws)
 		{
 			this.channelId = channelId;
 			this.writeTimeout = writeTimeout;
 			sockets.Add(ws);
+
+			timer = new Timer(1000);
+			timer.Elapsed += PrepareAndSend;
+			timer.AutoReset = true;
+			timer.Start();
 		}
 
 		public Channel Add(WebSocket ws)
@@ -32,31 +44,53 @@ namespace Transmitter.WebSockets
 			lock (this)
 			{
 				sockets.Add(ws);
+				if (sockets.Count == 1)
+				{
+					timer.Start();
+					isFirstRun = true;
+				}
 			}
 
 			return this;
 		}
 
-		public async Task PrepareAndSendAsync()
+		private void PrepareAndSend(object sender, ElapsedEventArgs e)
+		{
+			lock (timer)
+			{
+				Task.WhenAll(PrepareAndSendAsync());
+			}
+		}
+
+		private async Task PrepareAndSendAsync()
 		{
 			lock (this)
 			{
 				if (!sockets.Any())
 				{
 					Log.Info($"[{channelId}]: no clients");
+					timer.Stop();
 					return;
 				}
 			}
 
 			var sw = Stopwatch.StartNew();
 
-			if(getMessagesTask == null)
+			if (getMessagesTask == null)
 				getMessagesTask = Task.Run(() => DbClient.GetMessagesAsync(channelId));
 
-			if(getMessagesTask.IsCompleted)
+			if (isFirstRun)
+				await Task.WhenAny(getMessagesTask).ConfigureAwait(false);
+
+			if (getMessagesTask.IsCompleted)
 			{
-				if(getMessagesTask.Status == TaskStatus.RanToCompletion)
-					UpdateMixer(getMessagesTask.Result);
+				if (getMessagesTask.Status == TaskStatus.RanToCompletion)
+				{
+					var messages = getMessagesTask.Result;
+					UpdateMixer(messages);
+					if (messages != null)
+						isFirstRun = false;
+				}
 				getMessagesTask = null;
 			}
 
@@ -71,7 +105,7 @@ namespace Transmitter.WebSockets
 			Log.Info($"[{channelId}]: send all, elapsed {sw.Elapsed}");
 		}
 
-		private void UpdateMixer(IEnumerable<Message> messages)
+		private void UpdateMixer(List<Message> messages)
 			=> mixer.Sync(messages);
 
 		private async Task<bool> SendAsync(byte[] message)
