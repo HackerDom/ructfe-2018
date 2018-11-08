@@ -1,0 +1,53 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 40vmin;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+}
+
+.App-form {
+  display: grid;
+  grid-gap: 15px;
+}
+
+.App-btn {
+  background: #fc63e3;
+  border: none;
+  padding: 1vmin 0;
+  font-size: calc(10px + 2vmin);
+  font-family: "Press Start 2P", cursive;
+}
+
+.App-news {
+  max-width: 60vw;
+  display: grid;
+  grid-gap: 1vmin;
+  margin-top: 2vmin;
+}
+
+.App-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

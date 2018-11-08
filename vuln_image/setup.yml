@@ -11,9 +11,16 @@
     - name: 'Add universe repo'
       raw: sudo add-apt-repository universe
       changed_when: False
+    - name: 'Ensure tmp exists'
+      raw: mkdir -p /run/ansible_tmp/
+      changed_when: False
+    - name: 'Ensure tmp dir rights'
+      raw: chmod a+rwx /run/ansible_tmp/
+      changed_when: False
 
   roles:
     - base_image
+    - front
     - laberator
     - vending
     - partychat

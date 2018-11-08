@@ -1,6 +1,7 @@
+import struct
+
 from array import array
 from threading import Lock
-import struct
 
 
 class VendingMachinesFactory:
