@@ -7,28 +7,29 @@ namespace NTPTools
 {
     public class TimeProvider : ITimeProvider
     {
+        private static int normalDeviation = 1;
+
         public TimeProvider(INTSourceProvider ntSourceProvider)
         {
             this.ntSourceProvider = ntSourceProvider;
         }
 
-        public byte[] GetTime()
+        public double GetTimestamp()
         {
-            var addresses = Dns.GetHostEntry(ntSourceProvider.DefaultSource).AddressList.First();
-            var time = GetNetworkTime(addresses);
-            return BitConverter.GetBytes(time.Item1 + time.Item2);
+            var addresses = ntSourceProvider.DefaultSource;
+            return GetNetworkTime(addresses);
         }
 
-        public byte[] GetTime(string endpoint)
+        public double GetTimestamp(string endpoint)
         {;
-            var address = IPAddress.Parse(endpoint);
-            var time = GetNetworkTime(address);
-            return BitConverter.GetBytes(time.Item1 + time.Item2);
+            var defaultTime = GetNetworkTime(ntSourceProvider.DefaultSource);
+            var address = IPAddress.TryParse(endpoint ,out var parsed) ? parsed : ntSourceProvider.DefaultSource;
+            var customTime = GetNetworkTime(address);
+            return Math.Abs(defaultTime - customTime) > normalDeviation ? defaultTime : customTime;
         }
 
 
-
-        public static (ulong, ulong) GetNetworkTime(IPAddress endpoint)
+        public double GetNetworkTime(IPAddress endpoint)
         {
             var builder = new NTPDataBuilder();
             builder.SetNTPMode(NTPMode.Client);
@@ -37,69 +38,48 @@ namespace NTPTools
             builder.SetPeerClockStratum(3);
             builder.SetPollingInterval(TimeSpan.FromSeconds(2));
 
-            var ntpResponse = new byte[48];
 
+            //TODO: 124!!!
             var ipEndPoint = new IPEndPoint(endpoint, 123);
-            using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp))
-            {
-                socket.Connect(ipEndPoint);
-                socket.ReceiveTimeout = 3000;
 
-                socket.Send(builder.Build());
-                socket.Receive(ntpResponse);
-                socket.Close();
-            }
+            var client = new UdpClient(AddressFamily.InterNetwork);
+            var request = builder.Build();
+            client.SendAsync(request, request.Length, ipEndPoint);
+            var result = client.Receive(ref ipEndPoint);
 
-            return  (GetMilliseconds(ntpResponse), GetOrigin(ntpResponse));
+            return GetMilliseconds(result, 40);
         }
 
-        private static ulong GetMilliseconds(byte[] ntpData)
+
+        private static ulong GetMilliseconds(byte[] ntpData, byte refOffset)
         {
-            const byte serverReplyTime = 40;
+            ulong intPart = BitConverter.ToUInt32(ntpData, refOffset);
+            ulong fractPart = BitConverter.ToUInt32(ntpData, refOffset + 4);
 
-            ulong intPart = BitConverter.ToUInt32(ntpData, serverReplyTime);
-
-            ulong fractPart = BitConverter.ToUInt32(ntpData, serverReplyTime + 4);
-
-            intPart = SwapEndianness(intPart);
-            fractPart = SwapEndianness(fractPart);
-
-            var milliseconds = (intPart * 1000) + ((fractPart * 1000) / 0x100000000L);
-            return milliseconds;
-        }
-
-        private static ulong GetOrigin(byte[] ntpData)
-        {
-            const byte serverReplyTime = 48;
-
-            ulong intPart = BitConverter.ToUInt32(ntpData, serverReplyTime);
-
-            ulong fractPart = BitConverter.ToUInt32(ntpData, serverReplyTime + 4);
-
-            intPart = SwapEndianness(intPart);
-            fractPart = SwapEndianness(fractPart);
+            intPart = SwapEndianness(SwapEndianness(SwapEndianness(intPart)));
+            fractPart = SwapEndianness(SwapEndianness(SwapEndianness(intPart)));
 
             var milliseconds = (intPart * 1000) + ((fractPart * 1000) / 0x100000000L);
             return milliseconds;
         }
 
 
-        enum LeapIndicator
+        public enum LeapIndicator
         {
             NoWarining
         }
 
-        enum NTPVersionNumber
+        public enum NTPVersionNumber
         {
             V1, V2, V3, V4
         }
 
-        enum NTPMode
+        public enum NTPMode
         {
             Client
         }
 
-        class NTPDataBuilder
+       public class NTPDataBuilder
         {
             private byte flags = 0b00000000;
             private byte peerClockStratum = 0;
@@ -179,6 +159,7 @@ namespace NTPTools
                            ((x & 0xff000000) >> 24));
         }
 
+        private readonly UdpClient udpClient;
         private readonly INTSourceProvider ntSourceProvider;
     }
 }

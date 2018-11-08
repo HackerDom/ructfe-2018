@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 
 namespace NTPTools
 {
     public interface INTSourceProvider
     {
-        string DefaultSource { get; }
+        IPAddress DefaultSource { get; }
 
-        IEnumerable<string> GetSource();
+        IEnumerable<IPAddress> GetSource();
     }
 }

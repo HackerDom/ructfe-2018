@@ -4,7 +4,7 @@ namespace NTPTools
 {
     public interface ITimeProvider
     {
-        byte[] GetTime();
-        byte[] GetTime(string timeProvider);
+        double GetTimestamp();
+        double GetTimestamp(string timeProvider);
     }
 }

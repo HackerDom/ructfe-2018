@@ -14,7 +14,6 @@ namespace Vch.Core.Sorages
             this.uuidProvider = uuidProvider;
             users = new ConcurrentDictionary<UInt64, UserInfo>();
             usersCollection = GetCollection<UserInfo>(NameReslover.UserCollectionName);
-
             Init().GetAwaiter().GetResult();
         }
 
@@ -23,7 +22,9 @@ namespace Vch.Core.Sorages
             var userInfo = new UserInfo(uuidProvider.GetUUID(meta));
 
             users[userInfo.Id] = userInfo;
+
             usersCollection.InsertOne(userInfo);
+
             return userInfo;
         }
 
@@ -35,6 +36,9 @@ namespace Vch.Core.Sorages
         private async Task Init()
         {
             var usersFindResult = await usersCollection.FindAsync(info => true);
+
+            if (usersFindResult.Current == null)
+                return;
 
             foreach (var userInfo in usersFindResult.Current)
             {

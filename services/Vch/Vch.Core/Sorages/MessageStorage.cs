@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using Vch.Core.Meta;
@@ -11,24 +12,24 @@ namespace Vch.Core.Sorages
     {
         public MessageStorage(IMongoClient mongoClient) : base(mongoClient)
         {
-            messages = new ConcurrentDictionary<MessageId, IMessage>();
-            messageCollection = GetCollection<IMessage>(NameReslover.MessageCollectionName);
+            messages = new ConcurrentDictionary<MessageId, Message>();
+            messageCollection = GetCollection<Message>(NameReslover.MessageCollectionName);
             Init().GetAwaiter().GetResult();
+            RemoveOldMessage();
         }
 
-        public void AddMessage(IMessage message)
+        public void AddMessage(Message message)
         {
             messages[message.Id] = message;
             messageCollection.InsertOne(message);
         }
 
-        public DeleteResult DeleteMessage(MessageId messageId, string ownerCode)
+        public DeleteResult DeleteMessage(MessageId messageId)
         {
             messages.Remove(messageId, out var _);
             try
             {
-                return messageCollection.DeleteOne(message => messageId.Equals(message.Id) &&
-                                                              message.Owner.SEqual(ownerCode));
+                return messageCollection.DeleteOne(message => messageId.Equals(message.Id));
             }
             catch (Exception e)
             {
@@ -38,7 +39,7 @@ namespace Vch.Core.Sorages
             
         }
 
-        public IEnumerable<IMessage> GetAllMessage()
+        public IEnumerable<Message> GetAllMessage()
         {
             return messages.Values;
         }
@@ -51,26 +52,38 @@ namespace Vch.Core.Sorages
         private async Task Init()
         {
             var loadedMessages = await messageCollection.FindAsync(message => true);
+
+            if (loadedMessages.Current == null)
+                return;
+
             foreach (var message in loadedMessages.Current)
             {
                 messages[message.Id] = message;
             }
         }
 
-        private readonly ConcurrentDictionary<MessageId, IMessage> messages;
-        private readonly IMongoCollection<IMessage> messageCollection;
-    }
-
-    public static class StringExtension
-    {
-        public static bool SEqual(this string source, string other)
+        private async Task RemoveOldMessage()
         {
-            var equal = true;
-            for (int i = 0; i < other.Length; i++)
+            while (true)
             {
-                equal &= source[i] == other[i];
+                await Task.Delay(new TimeSpan(0, 0, 5, 0));
+                foreach (var message in messages.Where(pair => (pair.Value.CreationTime - DateTime.UtcNow).TotalMinutes > 30))
+                {
+                    try
+                    {
+                        DeleteMessage(message.Value.Id);
+                    }
+                    catch (Exception e)
+                    {
+                        //TODO: log this
+                        Console.WriteLine(e);
+                    }
+                }
             }
-            return equal;
         }
+
+        private readonly ConcurrentDictionary<MessageId, Message> messages;
+        private readonly IMongoCollection<Message> messageCollection;
     }
+    
 }

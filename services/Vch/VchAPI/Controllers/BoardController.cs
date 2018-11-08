@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using Vch.Core.Helpers;
@@ -13,49 +16,60 @@ namespace VchAPI.Controllers
     [ApiController]
     public class BoardController : ControllerBase
     {
-        [HttpGet("messages")]
-        public ActionResult<IEnumerable<IMessage>> GetAllMessages()
+        public BoardController(IUUIDProvider uuidProvider, IUserStorage userStorage, IMessageStorage messageStorage)
         {
-            return messageStorage.GetAllMessage().ToActionResult();
+            this.uuidProvider = uuidProvider;
+            this.userStorage = userStorage;
+            this.messageStorage = messageStorage;
+        }
+
+        [HttpGet("messages")]
+        public async Task<ActionResult<IEnumerable<IMessage>>> GetAllMessages()
+        {
+            return messageStorage.GetAllMessage().Cast<IMessage>().ToActionResult();
         }
 
         [HttpPost("message/post/{userId}")]
-        public ActionResult<Message> PostMessageAsync(UInt64 userId, [FromBody] string value)
+        public async Task<ActionResult<Message>> PostMessageAsync(UInt64 userId, [FromBody] string text)
         {
             var user = userStorage.GetUser(userId);
             if (user == null)
                 return NotFound();
 
-            var message = Message.Create(value, user.Meta, uuidProvider);
+            var message = Message.Create(text, user, uuidProvider);
             messageStorage.AddMessage(message);
 
             return message.ToActionResult();
         }
 
-        [HttpDelete("message/post/{userId}")]
-        public ActionResult<DeleteResult> DeleteMessageAsync(UInt64 messageId, [FromBody] string ownerKey)
+        [HttpPost("messages/{userId}")]
+        public async Task<ActionResult<IEnumerable<Message>>> PostMessageAsync(UInt64 userId)
         {
-            var result = messageStorage.DeleteMessage(new MessageId(messageId), ownerKey);
+            var user = userStorage.GetUser(userId);
+            if (user == null)
+                return NotFound();
 
-            return result.ToActionResult();
+            return messageStorage.GetAllMessage().Where(message => message.userInfo.Id.Equals(userId)).ToActionResult();
         }
 
-
         [HttpPost("user")]
-        public ActionResult<UserInfo> RegisterUserAsync()
+        public async Task<ActionResult<UserInfo>> RegisterUserAsync()
         {
-            using (var memory = new MemoryStream())
+            var meta = await ParseContent<UserMeta>();
+            return userStorage.AddUser(meta).ToActionResult();
+        }
+
+        public async Task<TValue> ParseContent<TValue>()
+        {
+            using (var memory = new StreamReader(Request.Body))
             {
-                Request.Body.CopyTo(memory);
-                var text = BitConverter.ToString(memory.ToArray());
-                var meta = text.FromJSON<UserMeta>();
-                return userStorage.AddUser(meta).ToActionResult();
+                var text = await memory.ReadToEndAsync();
+                return text.FromJSON<TValue>();
             }
         }
 
-
-        public IUUIDProvider uuidProvider { get; set; }
-        public IUserStorage userStorage { get; set; }
-        private IMessageStorage messageStorage { get; set; }
+        private readonly IUUIDProvider uuidProvider;
+        private readonly IUserStorage userStorage;
+        private readonly IMessageStorage messageStorage;
     }
 }

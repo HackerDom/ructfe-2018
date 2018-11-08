@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using System.Security.Cryptography;
 using NTPTools;
+using Vch.Core.Helpers;
 
 namespace Vch.Core.Meta
 {
@@ -17,9 +19,9 @@ namespace Vch.Core.Meta
 
         public UInt64 GetUUID(UserMeta meta)
         {
-            var timeBits = new BitArray(timeProvider.GetTime(meta.VaultTimeProvider));
+            var timeBits = new BitArray(timeProvider.GetTimestamp(meta.VaultTimeSource).ToBytes());
             var rndBites = new BitArray(GetNextBytes());
-            byte[] result = new byte[timeBits.Count/8];
+            byte[] result = new byte[8];
             timeBits.Xor(rndBites).CopyTo(result, 0);
             return BitConverter.ToUInt64(result);
         }
@@ -27,7 +29,7 @@ namespace Vch.Core.Meta
         private byte[] GetNextBytes()
         {
             lastComputed = shaProvider.ComputeHash(lastComputed);
-            return lastComputed;
+            return lastComputed.Take(6).Union(new byte[2]).ToArray();
         }
 
         private byte[] lastComputed;

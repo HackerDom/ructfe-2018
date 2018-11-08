@@ -10,7 +10,6 @@ namespace Vch.Core.Meta
         }
 
         public UInt64 Id { get; }
-
         public UserMeta Meta { get; set; }
     }
 }

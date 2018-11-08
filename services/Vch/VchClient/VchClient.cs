@@ -25,9 +25,8 @@ namespace VchUtils
             var response = await httpClient.SendAsync(request);
 
             Console.WriteLine(await response.Content.ReadAsStringAsync());
-            
-            response.EnsureSucces();
 
+            response.EnsureSucces();
             return (await response.Content.ReadAsStringAsync()).FromJSON<UserInfo>();
         }
 
@@ -45,10 +44,23 @@ namespace VchUtils
             return (await response.Content.ReadAsStringAsync()).FromJSON<Message>();
         }
 
+        public async Task<IEnumerable<Message>> GetUserMessages(UInt64 userId)
+        {
+            var request =
+                new HttpRequestMessage(HttpMethod.Put, new Uri($"{apiBaseUri}messages/{userId}"))
+                {
+                    Content = new StringContent(userId.ToString())
+                };
+            var response = await httpClient.SendAsync(request);
+            response.EnsureSucces();
+
+            return (await response.Content.ReadAsStringAsync()).FromJSON<IEnumerable<Message>>();
+        }
+
         public async Task<IEnumerable<IMessage>> GetAll()
         {
             var request =
-                new HttpRequestMessage(HttpMethod.Put,new Uri($"{apiBaseUri}messages"));
+                new HttpRequestMessage(HttpMethod.Put, new Uri($"{apiBaseUri}messages"));
             var response = await httpClient.SendAsync(request);
             response.EnsureSucces();
 
@@ -57,5 +69,6 @@ namespace VchUtils
 
         private readonly Uri apiBaseUri;
         private readonly HttpClient httpClient;
+
     }
 }

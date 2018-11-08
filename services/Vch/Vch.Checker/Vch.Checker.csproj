@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NTPTools\NTPTools.csproj" />
     <ProjectReference Include="..\Vch.Core\Vch.Core.csproj" />
     <ProjectReference Include="..\VchClient\VchUtils.csproj" />
   </ItemGroup>

@@ -1,4 +1,6 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +45,7 @@ namespace VchAPI
             containerBuilder.RegisterType<NTSourceProvider>().As<INTSourceProvider>().SingleInstance();
             containerBuilder.RegisterType<BoardController>().PropertiesAutowired();
         }
+        
 
         public void Configure(
             IApplicationBuilder app,

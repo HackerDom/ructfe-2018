@@ -1,4 +1,6 @@
-﻿namespace Vch.Core.Meta
+﻿using System;
+
+namespace Vch.Core.Meta
 {
     public class Message : IMessage
     {
@@ -9,15 +11,17 @@
 
         public MessageId Id { get; }
         public string Text { get; set; }
+        public DateTime CreationTime { get; set; }
+        public UserInfo userInfo { get; set; }
 
-        public string Owner { get; set; }
 
-        public static Message Create(string text, UserMeta meta, IUUIDProvider uuidProvider)
+        public static Message Create(string text, UserInfo info, IUUIDProvider uuidProvider)
         {
-            return new Message(new MessageId(uuidProvider.GetUUID(meta)))
+            return new Message(new MessageId(uuidProvider.GetUUID(info.Meta)))
             {
                 Text = text,
-                Owner = meta.VaultAuthCode
+                userInfo = info,
+                CreationTime = DateTime.UtcNow
             };
         }
     }
