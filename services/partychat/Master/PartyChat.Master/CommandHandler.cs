@@ -16,7 +16,7 @@ namespace PartyChat.Master
         {
             this.sessionStorage = sessionStorage;
             this.heartbeatStorage = heartbeatStorage;
-            this.log = log.ForContext(GetType());
+            this.log = log.ForContext(GetType().Name);
         }
 
         public async Task HandleCommand(Command command, Session session)
