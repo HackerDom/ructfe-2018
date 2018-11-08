@@ -24,7 +24,7 @@ namespace PartyChat.Master
             if (ReferenceEquals(existingSession, session))
                 return true;
             
-            if (!Equals(existingSession.RemoteEndpoint.Address, session.RemoteEndpoint.Address))
+            if (existingSession.IsAlive && !Equals(existingSession.RemoteEndpoint.Address, session.RemoteEndpoint.Address))
                 return false;
 
             existingSession.Kill(true);

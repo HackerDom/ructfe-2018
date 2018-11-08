@@ -55,7 +55,7 @@ namespace PartyChat.Master
                     group = Group.ExtractGroup(command.Text);
                     group.Add(nick);
                     
-                    log.Info("The history of group ({group}) was requested. Collecting..", command.Text, group);
+                    log.Info("The history of group ({group}) was requested. Collecting..", group);
                     
                     var responses = new List<Response>();
                     foreach (var member in group)

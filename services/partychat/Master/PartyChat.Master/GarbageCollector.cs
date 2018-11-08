@@ -26,8 +26,15 @@ namespace PartyChat.Master
                 {
                     while (true)
                     {
-                        await Task.Delay(period);
-                        await CollectGarbage();
+                        try
+                        {
+                            await Task.Delay(period);
+                            await CollectGarbage();
+                        }
+                        catch (Exception error)
+                        {
+                            log.Error(error);
+                        }
                     }
                 });
         }
