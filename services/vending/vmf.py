@@ -49,11 +49,14 @@ class VendingMachinesFactory:
     def __getitem__(self, item: int) -> memoryview:
         return memoryview(self.vms)[item * self.struct_size: (item + 1) * self.struct_size]
 
-    def get_machine_name(self, vm_id: int) -> memoryview: return self[vm_id][self.__name]
+    def get_machine_name(self, vm_id: int) -> memoryview:
+        return self[vm_id][self.__name]
 
-    def get_machine_manufacturer(self, vm_id: int) -> memoryview: return self[vm_id][self.__manufacturer]
+    def get_machine_manufacturer(self, vm_id: int) -> memoryview:
+        return self[vm_id][self.__manufacturer]
 
-    def get_machine_meta(self, vm_id: int, start: int, stop: int) -> memoryview: return self[vm_id][start:stop] if start < self.__meta.stop and stop < self.__meta.stop else None
+    def get_machine_meta(self, vm_id: int, start: int, stop: int) -> memoryview:
+        return self[vm_id][start:stop] if start < self.__meta.stop and stop < self.__meta.stop else None
 
     def get_master_info(self, vm_id: int, key: bytes) -> memoryview:
         vm = self[vm_id]

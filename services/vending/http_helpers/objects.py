@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Tuple, BinaryIO
+from typing import Tuple
 
 
 @dataclass(frozen=True)
