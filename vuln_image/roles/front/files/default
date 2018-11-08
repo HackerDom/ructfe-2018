@@ -27,6 +27,7 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+        proxy_set_header Origin '';
     }
 }
 
@@ -36,13 +37,6 @@ server {
 
     location / {
         proxy_pass http://127.0.0.1:19999;
-    }
-
-    location /cmdexec {
-        proxy_pass http://127.0.0.1:19999;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
     }
 }
 
