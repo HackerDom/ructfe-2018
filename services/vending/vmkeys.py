@@ -15,7 +15,6 @@ class VMKeys:
             for dt, rnd_key in ((i, self.__generate_rand_key(partitioning - i)) for i, x in enumerate(partitioned_data)))))
 
         for i, result in enumerate(results):
-            print(partitioned_data[i], result)
             self.__keys[vm_guid][result] = partitioned_data[i]
         return vm_guid, results
 
