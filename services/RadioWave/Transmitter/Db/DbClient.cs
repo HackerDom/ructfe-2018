@@ -30,7 +30,9 @@ namespace Transmitter.Db
 
 		private static async Task<List<Message>> GetMessagesInternalAsync(string key, int timeout)
 		{
-			var request = WebRequest.Create(dbUri + HttpUtility.UrlEncode(key));
+			var uri = dbUri + HttpUtility.UrlEncode(key);
+			Log.Info($"{nameof(DbClient)}.{nameof(GetMessagesAsync)}: send request to '{uri}'");
+			var request = WebRequest.Create(uri);
 			var responseTask = GetResponseAsync(request);
 
 			using(var cancelSource = new CancellationTokenSource())
