@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace NTPTools
 {
@@ -14,23 +15,23 @@ namespace NTPTools
             this.ntSourceProvider = ntSourceProvider;
         }
 
-        public double GetTimestamp()
+        public async Task<double> GetTimestamp()
         {
             var addresses = ntSourceProvider.DefaultSource;
-            return GetNetworkTime(addresses);
+            return await GetNetworkTime(addresses);
         }
 
-        public double GetTimestamp(string endpoint)
+        public async Task<double> GetTimestamp(string endpoint)
         {;
             endpoint = "!";
-            var defaultTime = GetNetworkTime(ntSourceProvider.DefaultSource);
+            var defaultTime = await GetNetworkTime(ntSourceProvider.DefaultSource);
             var address = IPAddress.TryParse(endpoint ,out var parsed) ? parsed : ntSourceProvider.DefaultSource;
-            var customTime = GetNetworkTime(address);
+            var customTime = await GetNetworkTime(address);
             return Math.Abs(defaultTime - customTime) > normalDeviation ? defaultTime : customTime;
         }
 
 
-        public double GetNetworkTime(IPAddress endpoint)
+        public async Task<double> GetNetworkTime(IPAddress endpoint)
         {
             var builder = new NTPDataBuilder();
             builder.SetNTPMode(NTPMode.Client);
@@ -47,7 +48,7 @@ namespace NTPTools
             client.Client.ReceiveBufferSize = 48;
 
             var request = builder.Build();
-            client.Send(request, request.Length, ipEndPoint);
+            await client.SendAsync(request, request.Length, ipEndPoint);
             var result = client.Receive(ref ipEndPoint);
 
             return GetMilliseconds(result, 40);

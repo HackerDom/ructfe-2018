@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace NTPTools
 {
     public interface ITimeProvider
     {
-        double GetTimestamp();
-        double GetTimestamp(string timeProvider);
+	    Task<double> GetTimestamp();
+	    Task<double> GetTimestamp(string timeProvider);
     }
 }

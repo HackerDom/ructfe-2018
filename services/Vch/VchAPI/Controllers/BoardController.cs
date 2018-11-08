@@ -38,11 +38,10 @@ namespace VchAPI.Controllers
 
             var text = await ParseContent<string>();
 
-            var message = Message.Create(text, user, uuidProvider);
-            messageStorage.UpdateMessage(new MessageId(uuidProvider.GetUUID(user.Meta)), user, text);
+            var message = await Message.Create(text, user, uuidProvider);
+            messageStorage.UpdateMessage(new MessageId(await uuidProvider.GetUUID(user.Meta)), user, text);
             return message.ToActionResult();
         }
-
 
         [HttpGet("messages/{userId}")]
         public async Task<ActionResult<IEnumerable<Message>>> GetMessagesAsync(string userId)
@@ -58,7 +57,7 @@ namespace VchAPI.Controllers
         public async Task<ActionResult<UserInfo>> RegisterUserAsync()
         {
             var meta = await ParseContent<UserMeta>();
-            return userStorage.AddUser(meta).ToActionResult();
+            return (await userStorage.AddUser(meta)).ToActionResult();
         }
 
         public async Task<TValue> ParseContent<TValue>() where TValue : class

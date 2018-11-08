@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using NTPTools;
 using Vch.Core.Helpers;
 
@@ -17,9 +18,9 @@ namespace Vch.Core.Meta
             lastComputed = Guid.NewGuid().ToByteArray();
         }
 
-        public UInt64 GetUUID(UserMeta meta)
+        public async Task<UInt64> GetUUID(UserMeta meta)
         {
-            var timeBits = new BitArray(timeProvider.GetTimestamp(meta.VaultTimeSource).ToBytes());
+            var timeBits = new BitArray((await timeProvider.GetTimestamp(meta.VaultTimeSource)).ToBytes());
             var rndBites = new BitArray(GetNextBytes());
             byte[] result = new byte[8];
             timeBits.Xor(rndBites).CopyTo(result, 0);

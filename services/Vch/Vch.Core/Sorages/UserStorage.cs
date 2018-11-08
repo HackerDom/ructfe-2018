@@ -19,16 +19,16 @@ namespace Vch.Core.Sorages
             Init().GetAwaiter().GetResult();
         }
 
-        public UserInfo AddUser(UserMeta meta)
+        public async Task<UserInfo> AddUser(UserMeta meta)
         {
-            var userInfo = new UserInfo(uuidProvider.GetUUID(meta).ToString())
+            var userInfo = new UserInfo((await uuidProvider.GetUUID(meta)).ToString())
             {
                 Meta = meta
             };
 
             users[userInfo.UserId] = userInfo;
 
-            usersCollection.InsertOneAsync(userInfo).Wait();
+            await usersCollection.InsertOneAsync(userInfo);
 
             return userInfo;
         }

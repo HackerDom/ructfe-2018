@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
@@ -32,9 +33,9 @@ namespace Vch.Core.Meta
             };
         }
 
-        public static Message Create(string text, UserInfo info, IUUIDProvider uuidProvider)
+        public static async Task<Message> Create(string text, UserInfo info, IUUIDProvider uuidProvider)
         {
-            return new Message(new MessageId(uuidProvider.GetUUID(info.Meta)))
+            return new Message(new MessageId(await uuidProvider.GetUUID(info.Meta)))
             {
                 Text = text,
                 userInfo = info,
