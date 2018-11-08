@@ -14,7 +14,7 @@ namespace PartyChat.Master
         public HeartbeatStorage(TimeSpan keepAlive, ILog log)
         {
             this.keepAlive = keepAlive;
-            this.log = log.ForContext(GetType());
+            this.log = log.ForContext(GetType().Name);
         }
 
         public void RegisterHeartbeat(string nick) => lastHeartbeats[nick] = DateTime.UtcNow;

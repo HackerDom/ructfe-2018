@@ -26,10 +26,12 @@ namespace PartyChat.Master
             return new Group(membersList);
         }
 
-        public void Add(string nick)
+        public Group Add(string nick)
         {
-            members.Add(nick);
-            members.Sort();
+            var newMembers = new List<string>(new HashSet<string>(members) {nick});
+            newMembers.Sort();
+            
+            return  new Group(newMembers);
         }
 
         public override string ToString() => string.Join(", ", members);

@@ -232,5 +232,5 @@ func main() {
 	http.HandleFunc("/labels/", ViewLabel)
 
 	fmt.Println("Start server")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%d", config.Port), nil))
 }

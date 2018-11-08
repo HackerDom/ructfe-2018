@@ -18,4 +18,4 @@ checker: $(CHECKER_OBJS)
 	g++ -o checker $(CHECKER_OBJS)
 
 clean:
-	rm -f partychat* checker *.o
+	rm -rf partychat* checker *.o histories

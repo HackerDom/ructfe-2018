@@ -16,7 +16,7 @@ namespace PartyChat.Master
             this.sessionStorage = sessionStorage;
             this.heartbeatStorage = heartbeatStorage;
             this.period = period;
-            this.log = log.ForContext(GetType());
+            this.log = log.ForContext(GetType().Name);
         }
 
         public void Start()
@@ -26,8 +26,15 @@ namespace PartyChat.Master
                 {
                     while (true)
                     {
-                        await Task.Delay(period);
-                        await CollectGarbage();
+                        try
+                        {
+                            await Task.Delay(period);
+                            await CollectGarbage();
+                        }
+                        catch (Exception error)
+                        {
+                            log.Error(error);
+                        }
                     }
                 });
         }
