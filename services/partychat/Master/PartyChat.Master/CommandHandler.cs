@@ -76,6 +76,10 @@ namespace PartyChat.Master
                     var mergedResponse = HistoryMerger.Merge(responses);
                     session.SendResponse(command.Id, mergedResponse);
                     break;
+                
+                case Commands.List:
+                    session.SendResponse(command.Id, sessionStorage.ListAlive());
+                    break;
             }
         }
 

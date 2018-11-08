@@ -1,0 +1,6 @@
+---
+
+- name: Restart vch service
+  service: name=vch state=restarted
+  listen: "restart vch service"
+

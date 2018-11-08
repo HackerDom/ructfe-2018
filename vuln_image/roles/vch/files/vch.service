@@ -1,0 +1,46 @@
+[Unit]
+    Description=RuCTFE 2018: Vch
+    After=network-online.target
+    Wants=network-online.target
+    StartLimitBurst=1000
+    StartLimitInterval=10s
+
+[Service]
+    Type=simple
+    ExecStart=/usr/bin/dotnet run -c Release
+    KillMode=control-group
+    WorkingDirectory=/home/vch/VchAPI/
+
+# Run as
+    User=vch
+    Group=vch
+
+# Autorestart on failure
+    Restart=always
+    RestartSec=2s
+
+# Restrict directories and permissions
+    NoNewPrivileges=true
+    ProtectSystem=true
+    PrivateDevices=true
+    PrivateTmp=true
+
+#Prevent access to db files and such in /var/lib
+    InaccessibleDirectories=-/var/lib
+    # ReadWriteDirectories=
+    # ReadOnlyDirectories=
+    UMask=0027
+
+# Resource limits
+    TasksMax=2048
+    MemoryMax=1024M
+    MemorySwapMax=1024M
+    CPUQuota=150%
+    LimitNOFILE=65536
+
+# Optional TODO:
+# * IO accounting and limits
+# * network isolation
+
+[Install]
+    WantedBy=multi-user.target

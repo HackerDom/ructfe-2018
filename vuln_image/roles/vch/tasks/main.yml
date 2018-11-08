@@ -1,0 +1,52 @@
+---
+- name: Install dotnet repo keys
+  apt:
+    deb: https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+
+- name: Install .NET Core 2.1 and MongoDB
+  apt:
+    name:
+     - dotnet-sdk-2.1
+     - mongodb
+    state: latest
+    update_cache: yes
+
+- name: Create user
+  user:
+    name: vch
+    createhome: yes
+    system: yes
+    shell: /usr/sbin/nologin
+
+- name: Copy sources
+  copy:
+    src: '../services/Vch/{{ item }}'
+    dest: /home/vch/
+    owner: vch
+    group: vch
+    mode: u=rwX,g=,o=
+  with_items:
+    - 'NTPTools'
+    - 'VchAPI'
+    - 'Vch.Core'
+  notify: restart vch service
+
+- name: Build service
+  become_user: vch
+  shell: |
+      dotnet build -c Release
+  args:
+    chdir: /home/vch/VchAPI/
+  notify: restart vch service
+
+- name: Install vch systemd service
+  copy: src=vch.service dest=/etc/systemd/system/vch.service
+  notify: restart vch service
+
+- name: Enable vch service
+  systemd:
+    name: vch
+    enabled: yes
+    state: started
+    daemon_reload: yes
+

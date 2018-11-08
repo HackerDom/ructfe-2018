@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using Vostok.Logging.Abstractions;
 
 #pragma warning disable 4014
@@ -43,5 +44,8 @@ namespace PartyChat.Master
                     ((ICollection<KeyValuePair<string, Session>>) sessions).Remove(pair);
             }
         }
+
+        public Response ListAlive() => 
+            new Response(sessions.Where(pair => pair.Value.IsAlive).Select(pair => pair.Key).OrderBy(e => e));
     }
 }
