@@ -42,7 +42,7 @@ server {
 
 # RadioWave
 server {
-    listen 6455;
+    listen 7777;
 
     types_hash_max_size 4096;
     charset utf-8;
@@ -54,7 +54,7 @@ server {
 
     location /radio {
         rewrite ^/radio(/.*)$ $1 break;
-        proxy_pass http://127.0.0.1:6456/;
+        proxy_pass http://127.0.0.1:17779/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -62,7 +62,7 @@ server {
 
     location /news {
         rewrite ^/news(/.*)$ $1 break;
-        proxy_pass http://127.0.0.1:7777/;
+        proxy_pass http://127.0.0.1:17777/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -70,6 +70,6 @@ server {
 
     location /db {
         rewrite ^/db(/.*)$ $1 break;
-        proxy_pass http://127.0.0.1:8888/;
+        proxy_pass http://127.0.0.1:17778/;
     }
 }
