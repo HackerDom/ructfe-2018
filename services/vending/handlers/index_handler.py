@@ -7,4 +7,4 @@ with open("docs.txt", mode='rb') as f:
 
 class IndexHandler(BaseHandler):
     def handle(self, request: Request) -> Response:
-        return Response(200, DOCS)
+        return Response(200, DOCS, (("Content-Type", "text/plain"),))

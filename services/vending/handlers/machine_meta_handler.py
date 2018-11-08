@@ -8,4 +8,7 @@ class MachineMetaHandler(BaseHandler):
         self.vm = vm_object
 
     def handle(self, request: Request) -> Response:
-        return Response(200, b"OK")
+        try:
+            return Response(200, bytes(self.vm.get_machine_meta(*map(int, (str(request.body).split())))))
+        except ValueError:
+            return Response(400, b'Bad Request')

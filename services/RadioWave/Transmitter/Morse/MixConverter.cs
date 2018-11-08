@@ -19,7 +19,7 @@ namespace Transmitter.Morse
 		{
 			if (messages == null)
 			{
-				Remove(generators.Keys);
+				Remove(generators.Keys.ToList());
 				return;
 			}
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Tuple, BinaryIO
+from typing import Tuple
 
 
 @dataclass(frozen=True)
@@ -13,5 +13,5 @@ class Response:
 class Request:
     method: str
     path: str
-    body: BinaryIO
+    body: str
     headers: Tuple[Tuple[str, str]] = field(default=())

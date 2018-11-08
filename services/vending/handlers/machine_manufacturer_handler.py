@@ -8,4 +8,7 @@ class MachineManufacturerHandler(BaseHandler):
         self.vm = vm_object
 
     def handle(self, request: Request) -> Response:
-        return Response(200, b"OK")
+        try:
+            return Response(200, bytes(self.vm.get_machine_manufacturer(int(str(request.body)))))
+        except ValueError:
+            return Response(400, b'Bad Request')
