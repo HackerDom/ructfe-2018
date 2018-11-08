@@ -45,11 +45,8 @@ namespace VchUtils
 
         public async Task<IEnumerable<Message>> GetUserMessages(UInt64 userId)
         {
-            var request =
-                new HttpRequestMessage(HttpMethod.Put, new Uri($"{apiBaseUri}messages/{userId}"))
-                {
-                    Content = new StringContent(userId.ToString())
-                };
+	        var request =
+		        new HttpRequestMessage(HttpMethod.Get, new Uri($"{apiBaseUri}messages/{userId}"));
             var response = await httpClient.SendAsync(request);
             response.EnsureSucces("Can't get user messages");
 
@@ -59,7 +56,7 @@ namespace VchUtils
         public async Task<IEnumerable<IMessage>> GetAll()
         {
             var request =
-                new HttpRequestMessage(HttpMethod.Put, new Uri($"{apiBaseUri}messages"));
+                new HttpRequestMessage(HttpMethod.Get, new Uri($"{apiBaseUri}messages"));
             var response = await httpClient.SendAsync(request);
             response.EnsureSucces("Can't get all messages");
 

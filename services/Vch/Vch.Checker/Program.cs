@@ -112,7 +112,7 @@ namespace Vch.Checker
             try
             {
                 var result = await client.GetUserMessages(UInt64.Parse(args.FlagId));
-                return (int)(result.Any() ? ServiceState.OK : ServiceState.Corrupt);
+                return (int)(result.All(message => message?.userInfo?.Meta?.TrackingCode == args.Flag) ? ServiceState.OK : ServiceState.Corrupt);
             }
             catch (Exception e)
             {

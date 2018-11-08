@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Vch.Core.Meta
 {
     public class MessageId
     {
-        public MessageId(ulong id)
+	    [JsonConstructor]
+		public MessageId(ulong id)
         {
             Id = id;
         }

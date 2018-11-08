@@ -1,17 +1,20 @@
 ﻿using System;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
 
 namespace Vch.Core.Meta
 {
     public class Message : IMessage
     {
-        private Message(MessageId messageId)
+	    [JsonConstructor]
+		private Message(MessageId messageId)
         {
             MessageId = messageId;
         }
 
         [BsonId]
+		[JsonIgnore]
         public ObjectId Id;
 
         public MessageId MessageId { get; set; }

@@ -44,7 +44,7 @@ namespace VchAPI.Controllers
         }
 
 
-        [HttpPost("messages/{userId}")]
+        [HttpGet("messages/{userId}")]
         public async Task<ActionResult<IEnumerable<Message>>> GetMessagesAsync(string userId)
         {
             var user = userStorage.GetUser(userId);

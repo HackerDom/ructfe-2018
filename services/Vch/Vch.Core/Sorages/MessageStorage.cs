@@ -20,11 +20,17 @@ namespace Vch.Core.Sorages
 
         public Message UpdateMessage(MessageId id, UserInfo userInfo, string text)
         {
-            return messages.AddOrUpdate(id, messageId => Message.Create(text, userInfo, messageId),
+            return messages.AddOrUpdate(id, messageId =>
+	            {
+		            var message = Message.Create(text, userInfo, messageId);
+					 messageCollection.InsertOneAsync(message).Wait();
+					return message;
+	            },
                 (messageId, message) =>
                 {
                     message.Text = text;
-                    return message;
+	                messageCollection.UpdateOneAsync(_ => _.MessageId.Equals(messageId), new ObjectUpdateDefinition<Message>(message)).Wait();
+					return message;
                 });
         }
 
