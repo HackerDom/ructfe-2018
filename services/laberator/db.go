@@ -9,7 +9,7 @@ import (
 	"github.com/werelaxe/fast-hash"
 )
 
-const ListingLimit = 10
+const ListingLimit = 20
 
 type User struct {
 	ID           uint `gorm:"primary_key"`
@@ -129,7 +129,7 @@ func (api *DBApi) CheckLabelOwner(owner string, labelId uint64) bool {
 
 func (api *DBApi) Init(config *PostgresConfig) {
 	var err error
-	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=localhost port=%d user=%s dbname=%s password=%s", config.Port, config.User, config.DBName, config.Password))
+	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s", config.Host, config.Port, config.User, config.DBName, config.Password))
 	if err != nil {
 		panic(fmt.Sprintf("failed to connect database: %s", err))
 	}

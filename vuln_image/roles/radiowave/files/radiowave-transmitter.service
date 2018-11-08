@@ -7,7 +7,7 @@
 
 [Service]
     Type=simple
-    ExecStart=/usr/bin/dotnet run -c Release
+    ExecStart=/usr/bin/dotnet Transmitter.dll
     KillMode=control-group
     WorkingDirectory=/home/radiowave/Transmitter
 

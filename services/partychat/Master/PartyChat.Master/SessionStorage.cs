@@ -27,7 +27,9 @@ namespace PartyChat.Master
             if (existingSession.IsAlive && !Equals(existingSession.RemoteEndpoint.Address, session.RemoteEndpoint.Address))
                 return false;
 
+#pragma warning disable 4014
             existingSession.Kill(true);
+#pragma warning restore 4014
             sessions[nick] = session;
             return true;
         }
