@@ -21,3 +21,5 @@
       - ws4py
       - beautifulsoup4
       - aiohttp
+      - scipy
+      - numpy

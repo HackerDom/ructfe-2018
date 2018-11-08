@@ -99,12 +99,12 @@ func PhrasePage(w http.ResponseWriter, r *http.Request) {
 		Redirect(w, r, "/")
 		return
 	}
-	encodedPhrase, err := base64.StdEncoding.DecodeString(strings.Replace(*phrase, " ", "+", -1))
+	decodedPhrase, err := base64.StdEncoding.DecodeString(strings.Replace(*phrase, " ", "+", -1))
 	if err != nil {
 		Redirect(w, r, "/")
 		return
 	}
-	Exec(w, "templates/phrase.html", &State{Login: login, Phrase: string(encodedPhrase)})
+	Exec(w, "templates/phrase.html", &State{Login: login, Phrase: string(decodedPhrase)})
 }
 
 func RegisterPage(w http.ResponseWriter, r *http.Request) {
