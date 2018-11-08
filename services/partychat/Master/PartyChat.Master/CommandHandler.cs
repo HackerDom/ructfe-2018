@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Vostok.Logging.Abstractions;
 
@@ -6,6 +7,8 @@ namespace PartyChat.Master
 {
     internal class CommandHandler
     {
+        private static readonly TimeSpan HistoryRequestTimeout = TimeSpan.FromSeconds(10); 
+        
         private readonly SessionStorage sessionStorage;
         private readonly HeartbeatStorage heartbeatStorage;
         private readonly ILog log;
@@ -16,7 +19,7 @@ namespace PartyChat.Master
         {
             this.sessionStorage = sessionStorage;
             this.heartbeatStorage = heartbeatStorage;
-            this.log = log.ForContext(GetType());
+            this.log = log.ForContext(GetType().Name);
         }
 
         public async Task HandleCommand(Command command, Session session)
@@ -55,7 +58,7 @@ namespace PartyChat.Master
                     group = Group.ExtractGroup(command.Text);
                     group.Add(nick);
                     
-                    log.Info("The history of group ({group}) was requested. Collecting..", command.Text, group);
+                    log.Info("The history of group ({group}) was requested. Collecting..", group);
                     
                     var responses = new List<Response>();
                     foreach (var member in group)
@@ -64,9 +67,11 @@ namespace PartyChat.Master
                         if (memberSession == null || !memberSession.IsAlive)
                             continue;
                         
-                        var response = await memberSession.SendCommandWithResponse(Commands.History, command.Text);
+                        var response = await memberSession.SendCommandWithResponse(Commands.History, command.Text, HistoryRequestTimeout);
                         responses.Add(response);
                     }
+                    
+                    log.Info("Sending collected and merged history back..");
 
                     var mergedResponse = HistoryMerger.Merge(responses);
                     session.SendResponse(command.Id, mergedResponse);

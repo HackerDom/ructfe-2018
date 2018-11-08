@@ -202,6 +202,9 @@
 	template<typename TState>
 	struct say_command;
 
+	template<typename TState>
+	struct history_command;
+
 // State
 
 	#define HB_PERIOD 3
@@ -244,12 +247,22 @@
 		}
 	};
 
+	#define CON_CT 8
+
 	struct node_state {
 		master_link uplink;
-		std::unordered_map<pc_group, std::vector<connection<node_state> *>> talking_conns;
+		connection<node_state> *controllers[CON_CT];
 		void *history_storage;
 
-		node_state(const addrinfo &master_addr, const char *nick) : uplink(master_addr, *this, nick) { }
+		node_state(const addrinfo &master_addr, const char *nick) : uplink(master_addr, *this, nick) {
+			bzero(controllers, sizeof(controllers));
+		}
+
+		~node_state() {
+			for (int i = 0; i < CON_CT; i++) {
+				delete controllers[i];
+			} 
+		}
 	};
 
 	struct face_state {
@@ -271,8 +284,6 @@
 		}
 	};
 
-
-
 // Commands (specialized)
 
 	template<>
@@ -286,15 +297,15 @@
 			if (&conn == &state.uplink.master_conn) {
 				pc_log("say_command::execute: saying '%s' to controllers..", this->text);
 				pc_group g(this->text);
-				for (auto c : state.talking_conns[g]) {
-					c->flush(c->send<say_command>(this->text));
+
+				for (int i = 0; i < CON_CT; i++) {
+					state.controllers[i]->send<say_command>(this->text);
 				}
 				pc_add_line(g, this->text);
 			}
 			else {
 				pc_log("say_command::execute: saying '%s'..", this->text);
 				pc_group g(this->text);
-				state.talking_conns[g].push_back(&conn);
 
 				state.uplink.master_conn.send<say_command>(this->text);
 				conn.flush(conn.send<say_command>(this->text));
@@ -314,19 +325,53 @@
 		}
 	};
 
-	template<typename TState>
-	struct history_command : command<TState> {
-		using command<TState>::command;
+	template<>
+	struct history_command<node_state> : command<node_state> {
+		using command<node_state>::command;
 
 		static const char *_name() { return "history"; }
 		virtual const char *name() { return _name(); }
 
-		virtual void execute(responder<TState> &rsp, connection<TState> &conn, TState &state) {
-			rsp.respond("history line 1");
-			rsp.respond("history line 2");
-			rsp.respond("history line 3");
+		virtual void execute(responder<node_state> &rsp, connection<node_state> &conn, node_state &state) {
+			if (&conn == &state.uplink.master_conn) {
+				pc_log("history_command::execute: loading history for '%s'..", this->text);
+				pc_group g(this->text);
+
+				pc_send_lines(g, [&rsp](const char *line) { rsp.respond(line); });
+				rsp.respond("");
+			}
+			else {
+				pc_log("history_command::execute: getting history from master '%s'..", this->text);
+				pc_group g(this->text);
+				
+				state.uplink.master_conn.send<history_command>(this->text);
+			}
+		}
+
+		virtual bool needs_response() { return true; }
+
+		virtual bool handle_response(const char *response, node_state &state) {
+			if (!response || strlen(response) == 0)
+				return true;
+			for (int i = 0; i < CON_CT; i++) {
+				state.controllers[i]->send<history_command>(this->text);
+			}
+			return false;
 		}
 	};
+
+	template<>
+	struct history_command<face_state> : command<face_state> {
+		using command<face_state>::command;
+
+		static const char *_name() { return "history"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) {
+			printf(": %s\n", this->text);
+		}
+	};
+
 
 // Parse commands
 

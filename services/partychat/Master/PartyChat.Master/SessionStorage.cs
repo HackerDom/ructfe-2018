@@ -9,7 +9,7 @@ namespace PartyChat.Master
         private readonly ILog log;
         private readonly ConcurrentDictionary<string, Session> sessions = new ConcurrentDictionary<string, Session>();
 
-        public SessionStorage(ILog log) => this.log = log.ForContext(GetType());
+        public SessionStorage(ILog log) => this.log = log.ForContext(GetType().Name);
 
         public Session this[string nick] => sessions.TryGetValue(nick, out var session) ? session : null;
 
@@ -24,10 +24,12 @@ namespace PartyChat.Master
             if (ReferenceEquals(existingSession, session))
                 return true;
             
-            if (!Equals(existingSession.RemoteEndpoint.Address, session.RemoteEndpoint.Address))
+            if (existingSession.IsAlive && !Equals(existingSession.RemoteEndpoint.Address, session.RemoteEndpoint.Address))
                 return false;
 
+#pragma warning disable 4014
             existingSession.Kill(true);
+#pragma warning restore 4014
             sessions[nick] = session;
             return true;
         }
