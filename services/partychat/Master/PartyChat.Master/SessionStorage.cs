@@ -21,9 +21,13 @@ namespace PartyChat.Master
             if (!sessions.TryGetValue(nick, out var existingSession))
                 return false;
 
-            if (!Equals(existingSession.RemoteEndpoint, session.RemoteEndpoint))
+            if (ReferenceEquals(existingSession, session))
+                return true;
+            
+            if (!Equals(existingSession.RemoteEndpoint.Address, session.RemoteEndpoint.Address))
                 return false;
 
+            existingSession.Kill(true);
             sessions[nick] = session;
             return true;
         }
