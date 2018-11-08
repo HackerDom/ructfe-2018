@@ -22,6 +22,7 @@ def generate_flag():
 
 def main():
     for i in range(MAX_REQUESTS):
+        sleep(3)
         flag = generate_flag()
         vuln = str(i % 2 + 1)
         try:

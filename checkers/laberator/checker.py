@@ -7,6 +7,7 @@ import pickle
 import re
 import socket
 import traceback
+from time import sleep
 
 import requests
 import websocket
@@ -86,23 +87,47 @@ def not_found(*args):
     return CHECKER_ERROR
 
 
-def create_label(ws, cookies, text, font, size):
+def create_label(hostname, cookies, text, font, size):
+    ws = websocket.create_connection(
+        WS_URL.format(hostname, PORT),
+        timeout=10
+    )
     ws.send(create_command_request("create", {
         "RawCookies": get_raw_cookies(cookies),
         "Text": text,
         "Font": font,
         "Size": size,
     }))
-    return ws.recv()
+    result = ws.recv()
+    ws.close()
+    return result
 
 
-def list_labels(ws, cookies):
+def list_labels(hostname, cookies):
+    ws = websocket.create_connection(
+        WS_URL.format(hostname, PORT),
+        timeout=10
+    )
     ws.send(create_command_request("list", {
         "RawCookies": get_raw_cookies(cookies),
         "Offset": 0
     }))
     response = ws.recv()
-    print_to_stderr("ws response:", response)
+    ws.close()
+    return json.loads(response.encode())
+
+
+def view_label(hostname, cookies, label_id):
+    ws = websocket.create_connection(
+        WS_URL.format(hostname, PORT),
+        timeout=10
+    )
+    ws.send(create_command_request("view", {
+        "RawCookies": get_raw_cookies(cookies),
+        "LabelId": label_id
+    }))
+    response = ws.recv()
+    ws.close()
     return json.loads(response.encode())
 
 
@@ -116,6 +141,17 @@ def get_phrase_data(hostname, cookies):
     return PHRASE_PATTERN.findall(r.content.decode())
 
 
+def get_last_users(hostname):
+    ws = websocket.create_connection(
+        WS_URL.format(hostname, PORT),
+        timeout=10
+    )
+    ws.send(create_command_request("last_users", {}))
+    response = ws.recv()
+    ws.close()
+    return json.loads(response.encode())
+
+
 def put_first(hostname, flag_id, flag):
     login = generate_login()
     password = generate_password()
@@ -123,23 +159,14 @@ def put_first(hostname, flag_id, flag):
     try:
         cookies = signup("{}:{}".format(hostname, PORT), login, password, generate_phrase())
         label_font, label_size = generate_label()
-        ws = websocket.create_connection(
-            WS_URL.format(hostname, PORT),
-            timeout=10
-        )
-        if create_label(ws, cookies, flag, label_font, label_size) != "true":
+        if create_label(hostname, cookies, flag, label_font, label_size) != "true":
             print_to_stderr("Can not create label")
             exit(MUMBLE)
-        ws.send(create_command_request("list", {
-            "RawCookies": get_raw_cookies(cookies),
-            "Offset": 0
-        }))
         print("{},{},{}".format(
             login,
             password,
             get_hash((flag, label_font, label_size))
         ))
-        ws.close()
     except (requests.exceptions.ConnectTimeout, socket.timeout, requests.exceptions.ConnectionError):
         traceback.print_exc()
         exit_code = DOWN
@@ -154,39 +181,60 @@ def put_first(hostname, flag_id, flag):
     exit(exit_code)
 
 
+def check_label_correctness(label, flag, expected_label_hash):
+    text = label.get("Text", None)
+    font = label.get("Font", None)
+    size = label.get("Size", None)
+    label_id = label.get("ID", None)
+    if text is None or font is None or size is None or label_id is None:
+        print_to_stderr("Label text =", text)
+        print_to_stderr("Label font =", font)
+        print_to_stderr("Label size =", size)
+        print_to_stderr("Label id =", label_id)
+        exit(MUMBLE)
+    real_label_hash = get_hash((text, font, size))
+    if real_label_hash != expected_label_hash:
+        print_to_stderr("Label(text={}, font={}, size={}) real hash='{}', but expected hash='{}'".format(
+            text, font, size, real_label_hash, expected_label_hash
+        ))
+        exit(CORRUPT)
+    if text != flag:
+        print_to_stderr("Label(text={}, font={}, size={}), but expected text(flag)='{}'".format(
+            text, font, size, flag
+        ))
+        exit(CORRUPT)
+    return label_id
+
+
+def check_users_correctness(users, login):
+    if type(users) != list:
+        exit(MUMBLE)
+
+    for user in users:
+        if type(user) != dict:
+            exit(MUMBLE)
+
+        username = user.get("Login")
+        if type(username) != str:
+            exit(MUMBLE)
+        if username == login:
+            return True
+    return False
+
+
 def get_first(hostname, flag_id, flag):
     login, password, expected_label_hash = flag_id.split(',')
     exit_code = OK
     try:
         cookies = signin("{}:{}".format(hostname, PORT), login, password)
-        ws = websocket.create_connection(
-            WS_URL.format(hostname, PORT),
-            timeout=10
-        )
-        labels = list_labels(ws, cookies)
+        labels = list_labels(hostname, cookies)
         if len(labels) != 1:
-            print_to_stderr("There is a multiple labels={} gotten by ws={}, cookies={}".format(labels, ws, cookies))
+            print_to_stderr("There is multiple or empty labels={} gotten by cookies={}".format(labels, cookies))
             exit(CORRUPT)
         label = labels[0]
-        text = label.get("Text", None)
-        font = label.get("Font", None)
-        size = label.get("Size", None)
-        if text is None or font is None or size is None:
-            print_to_stderr("Label text =", text)
-            print_to_stderr("Label font =", font)
-            print_to_stderr("Label size =", size)
-            exit(MUMBLE)
-        real_label_hash = get_hash((text, font, size))
-        if real_label_hash != expected_label_hash:
-            print_to_stderr("Label(text={}, font={}, size={}) real hash='{}', but expected hash='{}'".format(
-                text, font, size, real_label_hash, expected_label_hash
-            ))
-            exit(CORRUPT)
-        if text != flag:
-            print_to_stderr("Label(text={}, font={}, size={}), but expected text(flag)='{}'".format(
-                text, font, size, flag
-            ))
-            exit(CORRUPT)
+        label_id = check_label_correctness(label, flag, expected_label_hash)
+        label = view_label(hostname, cookies, label_id)
+        check_label_correctness(label, flag, expected_label_hash)
     except (requests.exceptions.ConnectTimeout, socket.timeout, requests.exceptions.ConnectionError):
         traceback.print_exc()
         exit_code = DOWN
@@ -235,6 +283,10 @@ def get_second(hostname, flag_id, flag):
         phrase = phrase_data[0]
         if phrase != flag:
             exit(CORRUPT)
+        last_users = get_last_users(hostname)
+        if not check_users_correctness(last_users, login):
+            exit(CORRUPT)
+
     except (requests.exceptions.ConnectTimeout, socket.timeout, requests.exceptions.ConnectionError):
         traceback.print_exc()
         exit_code = DOWN
