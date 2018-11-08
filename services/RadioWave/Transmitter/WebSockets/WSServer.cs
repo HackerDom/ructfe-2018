@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using log4net;
 using Transmitter.Utils.Log4Net;
 using vtortola.WebSockets;
-using vtortola.WebSockets.Deflate;
 using vtortola.WebSockets.Rfc6455;
 
 namespace Transmitter.WebSockets
@@ -34,10 +33,7 @@ namespace Transmitter.WebSockets
 				Logger = new ILogWrapper(Log),
 			};
 
-			options.Standards.RegisterRfc6455(factory =>
-			{
-				factory.MessageExtensions.RegisterDeflateCompression();
-			});
+			options.Standards.RegisterRfc6455(_ => {});
 
 			options.Transports.ConfigureTcp(tcp =>
 			{

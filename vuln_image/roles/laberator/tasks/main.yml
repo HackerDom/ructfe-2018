@@ -22,14 +22,20 @@
     system: yes
     shell: /usr/sbin/nologin
 
+- name: chmod home
+  file: dest=/home/laberator mode='o='
+
 - name: Install laberator service
   copy:
     src: ../services/laberator/
     dest: /home/laberator/
     owner: laberator
     group: laberator
-    mode: u+rwX,g=,o=
+    mode: u=rwX,g=,o=
   notify: restart laberator service
+
+- name: Chmod run.sh
+  file: dest=/home/laberator/run.sh mode=u+x
 
 - name: Create directory for fast-hash library
   file:

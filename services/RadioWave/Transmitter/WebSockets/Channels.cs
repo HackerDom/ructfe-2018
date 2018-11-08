@@ -3,19 +3,14 @@ using vtortola.WebSockets;
 
 namespace Transmitter.WebSockets
 {
-	public class Channels
+	public static class Channels
 	{
-		private readonly ConcurrentDictionary<string, Channel> channels = new ConcurrentDictionary<string, Channel>();
-		private readonly int writeTimeout;
+		private static readonly ConcurrentDictionary<string, Channel> ChannelsPool = new ConcurrentDictionary<string, Channel>();
+		public static int WriteTimeout;
 
-		public Channels(int writeTimeout)
+		public static void Add(string channel, WebSocket ws)
 		{
-			this.writeTimeout = writeTimeout;
-		}
-
-		public void Add(string channel, WebSocket ws)
-		{
-			channels.AddOrUpdate(channel, s => new Channel(channel, writeTimeout, ws), (s, ch) => ch.Add(ws));
+			ChannelsPool.AddOrUpdate(channel, s => new Channel(channel, WriteTimeout, ws), (s, ch) => ch.Add(ws));
 		}
 	}
 }

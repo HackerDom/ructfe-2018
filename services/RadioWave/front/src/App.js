@@ -3,82 +3,146 @@ import logo from "./logo.svg";
 import Input from "./components/Input";
 import "./App.css";
 import { Formik, Form, Field } from "formik";
-const server = "10.33.81.15:6455";
 
-const InitialState = {
-  text: "AAAA",
+const host = window.location.host;
+
+const initialState = {
+  text: "RUCTF",
   DpM: 70,
-  freq: 4000,
-  ch: "1"
+  freq: 1000,
+  ch: "radio"
 };
 
 class App extends Component {
   constructor(props) {
     super(props);
-    const radioSocket = new WebSocket(
-      `ws://${server}/radio/${InitialState.ch}`
-    );
-    radioSocket.binaryType = "arraybuffer";
-    radioSocket.onmessage = this.handleRadioMsg;
-    this.radioSocket = radioSocket;
+    this.state = {
+      news: ["RUCTF", "RUCTF", "RUCTF", "RUCTF", "RUCTF"]
+    };
+    this.tryConnectRadio(initialState.ch);
+    this.tryConnectNews();
   }
 
-  changeChannel = (ch) => {
-      this.radioSocket.close()
-      const radioSocket = new WebSocket(
-          `ws://${server}/radio/${ch}`
-      );
+  tryConnectRadio = (ch = initialState.ch) => {
+    try {
+      const radioSocket = new WebSocket(`ws://${host}/radio/${ch}`);
       radioSocket.binaryType = "arraybuffer";
       radioSocket.onmessage = this.handleRadioMsg;
+      radioSocket.onerror = () => setTimeout(this.tryConnectRadio, 1000);
+      radioSocket.onclose = () => setTimeout(this.tryConnectRadio, 1000);
       this.radioSocket = radioSocket;
-  }
-
-  handleRadioMsg = ({ data }) => {
-    try {
-        const audioContext = new window.AudioContext();
-        const b = audioContext.createBuffer(1, data.byteLength, 8000);
-        b.copyToChannel(new Float32Array(data), 0, 0)
-        const s = audioContext.createBufferSource();
-        s.buffer = b
-        s.start()
     } catch (e) {
       console.log(`💩: ${e.message}`);
     }
   };
 
+  handleRadioMsg = ({ data }) => {
+    try {
+      const arr = this.convert(data);
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const audioContext = new Ctx();
+      const buffer = audioContext.createBuffer(1, arr.length, 8000);
+      buffer.copyToChannel(arr, 0, 0);
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
+      source.start();
+    } catch (e) {
+      console.log(`💩: ${e.message}`);
+    }
+  };
+
+  convert = data => {
+    const us = new Uint8Array(data);
+    const fs = new Float32Array(us.length);
+    for (let i = 0; i < us.length; i++) {
+      fs[i] = us[i] / 128 - 1;
+    }
+    return fs;
+  };
+
+  changeChannel = e => {
+    if (this.radioSocket.readyState === WebSocket.OPEN)
+      this.radioSocket.close();
+    this.tryConnectRadio(e.target.value);
+  };
+
+  tryConnectNews = () => {
+    try {
+      const newsSocket = new WebSocket(`ws://${host}/news`);
+      newsSocket.onmessage = this.handleNewsMsg;
+      newsSocket.onerror = () => setTimeout(this.tryConnectNews, 1000);
+      newsSocket.onclose = () => setTimeout(this.tryConnectNews, 1000);
+      this.newsSocket = newsSocket;
+    } catch (e) {
+      console.log(`💩: ${e.message}`);
+    }
+  };
+
+  handleNewsMsg = ({ data }) => {
+    try {
+      this.append(data);
+    } catch (e) {
+      console.log(`💩: ${e.message}`);
+    }
+  };
+
+  append = text => {
+    const news = this.state.news.slice();
+    news.push(text.toUpperCase());
+    if (news.length > 5) {
+      news.shift();
+    }
+    this.setState({ news });
+  };
+
   render() {
+    const { news } = this.state;
     return (
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <Formik initialValues={InitialState} onSubmit={this.submitNewMessage}>
+          <Formik initialValues={initialState} onSubmit={this.submitNewMessage}>
             {() => (
               <Form className={"App-form"}>
                 <Field name="text" component={Input} />
                 <Field name="DpM" component={Input} />
                 <Field name="freq" component={Input} />
-                <Field name="ch" component={Input} />
-                <button type="submit">send</button>
+                <Field
+                  onChangeChannel={this.changeChannel}
+                  name="ch"
+                  component={Input}
+                />
+                <button className="App-btn" type="submit">
+                  send
+                </button>
               </Form>
             )}
           </Formik>
+          <section className={"App-news"}>
+            {news.map((t, i) => (
+              <div className={"App-text"} key={i}>
+                {t.toUpperCase()}
+              </div>
+            ))}
+          </section>
         </header>
       </div>
     );
   }
 
-  submitNewMessage = values => {
-    fetch(`http://${server}/db/${values.ch}`, {
+  submitNewMessage = values =>
+    fetch(`http://${host}/db/${values.ch}`, {
       method: "post",
+      mode: "no-cors",
       body: JSON.stringify({
         dpm: values.DpM,
         frequency: values.freq,
-        text: values.text,
+        text: values.text.toUpperCase(),
         need_base32: false,
         is_private: false
       })
     });
-  };
 }
 
 export default App;
