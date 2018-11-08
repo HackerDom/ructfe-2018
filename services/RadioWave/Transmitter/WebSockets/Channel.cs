@@ -45,7 +45,10 @@ namespace Transmitter.WebSockets
 			{
 				sockets.Add(ws);
 				if (sockets.Count == 1)
+				{
 					timer.Start();
+					isFirstRun = true;
+				}
 			}
 
 			return this;
