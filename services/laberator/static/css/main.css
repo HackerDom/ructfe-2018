@@ -47,7 +47,12 @@ canvas {
     padding-top: 8%
 }
 
-#canvas{
-    border: solid 1px blue;
-    width: 100%;
+.tables-top {
+    padding-top: 4%
+}
+
+h1 {
+    font-size: 60px;
+    padding-top: 15%;
+    text-align: center;
 }

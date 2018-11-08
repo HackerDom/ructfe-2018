@@ -20,7 +20,7 @@ PHRASE_URL = "http://{hostport}/phrase"
 WS_URL = "ws://{}:{}/cmdexec"
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 PORT = 8080
-PHRASE_PATTERN = re.compile("<p>([a-zA-Z\\d!@#$%&*()_+=/., ]{1,100})</p>")
+PHRASE_PATTERN = re.compile("<h1>([a-zA-Z0-9!@#$%&*()_+=/., ]{1,100})</h1>")
 
 
 def print_to_stderr(*objs):

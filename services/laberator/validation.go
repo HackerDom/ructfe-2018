@@ -6,7 +6,7 @@ import (
 )
 
 var pattern, _ = regexp.Compile("^[\\w=/]{1,40}$")
-var phrasePattern, _ = regexp.Compile("^[a-zA-Z\\d!@#$%&*()_+=/., ]{1,100}$")
+var phrasePattern, _ = regexp.Compile("^[a-zA-Z0-9!@#$%&*()_+=/., ]{1,100}$")
 
 func IsValidLogin(login *string) bool {
 	return pattern.Match([]byte(*login))

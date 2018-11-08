@@ -1,6 +1,6 @@
 let ws;
 let pattern = /^\w{1,40}$/;
-let phrasePattern = /^[a-zA-Z\\d!@#$%&*()_+=/., ]{1,100}$/;
+let phrasePattern = /^[a-zA-Z0-9!@#$%&*()_+=/., ]{1,100}$/;
 let patternErrorText = "This field must match the regex '" + pattern + "'.";
 let phrasePatternErrorText = "This field must match the regex '" + phrasePattern + "'.";
 let existingErrorText = "This login is already used.";
@@ -85,7 +85,7 @@ function register() {
     let loginField = $('#r-l-fld');
     let passwordField = $('#p-fld');
     let phraseField = $('#r-s-fld');
-    if (!loginField.hasClass("is-invalid") && !passwordField.hasClass("is-invalid")) {
+    if (!loginField.hasClass("is-invalid") && !passwordField.hasClass("is-invalid") && !phraseField.hasClass("is-invalid")) {
         window.location.replace(
             "/register?login=" + loginField.val() +
             "&password=" + btoa(passwordField.val()) +
@@ -219,18 +219,28 @@ function viewLabel(labelId) {
     });
 }
 
+function fillTableElements(tableEls, objectToAppend) {
+    tableEls.forEach(function (user) {
+        let td = document.createElement('td');
+        td.innerText = user.Login;
+        let tr = document.createElement("tr");
+        tr.appendChild(td);
+        objectToAppend.append(tr);
+    });
+}
+
 function fillLastUsers() {
     waitSocket(ws, function() {
         ws.onmessage = function (e) {
             let tableElements = JSON.parse(e.data);
-            $("#u-t").empty();
-            tableElements.forEach(function (user) {
-                let td = document.createElement('td');
-                td.innerText = user.Login;
-                let tr = document.createElement("tr");
-                tr.appendChild(td);
-                $("#u-t").append(tr);
-            });
+            let firstTable = $("#u-t-1");
+            let secondTable = $("#u-t-2");
+            firstTable.empty();
+            secondTable.empty();
+            let firstTableElements = tableElements.slice(0, 10);
+            let secondTableElements = tableElements.slice(10, 20);
+            fillTableElements(firstTableElements, firstTable);
+            fillTableElements(secondTableElements, secondTable);
         };
         ws.send(createCommandRequest("last_users", {}));
     });
@@ -295,7 +305,6 @@ $(document).ready(function () {
     rLoginFld.on("change", checkPattern);
     rLoginFld.on("change", enableButton);
     passwordFld.on("change", checkPattern);
-    passwordFld.on("change", enableButton);
     labelTextFld.on("change", validateLabelWithErrors);
     fontFld.on("change", validateLabelWithErrors);
     sizeFld.on("change", validateLabelWithErrors);
