@@ -1,10 +1,11 @@
-from http.server import ThreadingHTTPServer
-from http.server import BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from http_helpers.routing import RoutingTable, Route
 from http_helpers.objects import Request
+
 from handlers import index_handler, machine_name_handler, \
     create_machine_handler, machine_manufacturer_handler, \
     machine_master_key_handler, machine_meta_handler
+
 from vmf import VendingMachinesFactory
 
 
