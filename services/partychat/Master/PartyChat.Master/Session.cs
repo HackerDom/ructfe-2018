@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Logging.Abstractions;
 
+#pragma warning disable 4014
+
 namespace PartyChat.Master
 {
     internal class Session
@@ -131,7 +133,7 @@ namespace PartyChat.Master
                     if (command.Name == Commands.Response)
                         HandleResponse(command.Id, command.Text);
                     else
-                        await commandHandler.HandleCommand(command, this);
+                        Task.Run(() => commandHandler.HandleCommand(command, this));
                 }
                 catch (Exception error)
                 {
