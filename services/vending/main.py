@@ -4,16 +4,15 @@ from http_helpers.objects import Request
 
 from handlers import index_handler, machine_name_handler, \
     create_machine_handler, machine_manufacturer_handler, \
-    machine_master_key_handler, machine_meta_handler
+    machine_master_key_handler, machine_meta_handler, \
+    create_vending_keys_handler, get_data_handler
 
 from vmf import VendingMachinesFactory
+from vmkeys import VMKeys
 
 
 VENDING_MACHINES = VendingMachinesFactory()
-
-# todo
-# CREATE_VENDING_KEYS = 4  # (id, k1-v1, ..., kN-vN -> key1, ..., keyN)
-# GET_DATA_BY_VENDING_KEY = 5  # (id, k -> bit)
+VM_KEYS = VMKeys()
 
 
 def create_route_table():
@@ -24,6 +23,8 @@ def create_route_table():
         Route("GET", "/machine_manufacturer", machine_manufacturer_handler.MachineManufacturerHandler(VENDING_MACHINES)),
         Route("GET", "/machine_meta", machine_meta_handler.MachineMetaHandler(VENDING_MACHINES)),
         Route("GET", "/machine_master_key", machine_master_key_handler.MachineMasterKeyHandler(VENDING_MACHINES)),
+        Route("CREATE", "/vending_item", create_vending_keys_handler.CreateVendingKeysHandler(VM_KEYS)),
+        Route("GET", "/vending_item", get_data_handler.GetDataHandler(VM_KEYS))
     )
 
 

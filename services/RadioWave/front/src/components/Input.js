@@ -1,7 +1,7 @@
 import React from "react";
 import "./Input.css";
 
-const Input = ({ field, onChangeChannel, form }) => {
+const Input = ({ field, onChangeChannel, form, type}) => {
   const onChange = (...args) => {
     if (onChangeChannel) {
       onChangeChannel(...args);
@@ -10,7 +10,7 @@ const Input = ({ field, onChangeChannel, form }) => {
   };
   return (
     <label className={"Input-label"} htmlFor={field.name}>
-      {field.name}: <input className={"Input"} {...field} onChange={onChange} />
+      {field.name}: <input className={"Input"} {...field} type={type} onChange={onChange} />
     </label>
   );
 };
