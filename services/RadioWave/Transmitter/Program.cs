@@ -37,7 +37,6 @@ namespace Transmitter
 			var handler = new WsHandler(channels);
 			var server = new WsServer(settings.Port, handler.ProcessWsConnectionAsync);
 			await server.StartAsync().ConfigureAwait(false);
-			channels.StartSending();
 			Thread.Sleep(Timeout.Infinite);
 		}
 

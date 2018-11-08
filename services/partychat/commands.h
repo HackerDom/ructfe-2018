@@ -228,6 +228,9 @@ struct hb_daemon {
 	bool master_available = false;
 	time_t last_hb = 0;
 	bool hb_sent = false;
+	const char *nick;
+
+	hb_daemon(const char *nick) : nick(nick) { }
 
 	bool tick(connection<node_state> &conn);
 
@@ -238,18 +241,21 @@ struct master_link {
 	connection<node_state> master_conn;
 	hb_daemon hb;
 
-	master_link() = default;
-	master_link(const addrinfo &master_addr, node_state &state) : master_conn(master_addr, state) { }
+	master_link(const addrinfo &master_addr, node_state &state, const char *nick) : master_conn(master_addr, state), hb(nick) { }
 
 	void tick();
 };
 
+
+
+#define CON_CT 8
+
 struct node_state {
 	master_link uplink;
+	std::unordered_map<pc_group, std::vector<connection<node_state> *>> talking_conns;
 	void *history_storage;
 
-	node_state() = default;
-	node_state(const addrinfo &master_addr) : uplink(master_addr, *this) { }
+	node_state(const addrinfo &master_addr, const char *nick) : uplink(master_addr, *this, nick) { }
 };
 
 struct face_state {
@@ -275,7 +281,7 @@ struct hb_command : command<node_state> {
 
 bool hb_daemon::tick(connection<node_state> &conn) {
 	if (!hb_sent && time(NULL) - last_hb >= HB_PERIOD) {
-		conn.send<hb_command>("HB!");
+		conn.send<hb_command>(nick);
 		hb_sent = true;
 	}
 }
@@ -301,9 +307,22 @@ struct say_command<node_state> : command<node_state> {
 	virtual const char *name() { return _name(); }
 
 	virtual void execute(responder<node_state> &rsp, connection<node_state> &conn, node_state &state) {
-		pc_log("say_command::execute: saying '%s'..", this->text);
-		state.uplink.master_conn.send<say_command>(this->text);
-		conn.flush(conn.send<say_command>(this->text));
+		if (&conn == &state.uplink.master_conn) {
+			pc_log("say_command::execute: saying '%s' to controllers..", this->text);
+			pc_group g(this->text);
+			for (auto c : state.talking_conns[g]) {
+				c->flush(c->send<say_command>(this->text));
+			}
+
+		}
+		else {
+			pc_log("say_command::execute: saying '%s'..", this->text);
+			pc_group g(this->text);
+			state.talking_conns[g].push_back(&conn);
+
+			state.uplink.master_conn.send<say_command>(this->text);
+			conn.flush(conn.send<say_command>(this->text));
+		}
 	}
 };
 
@@ -315,7 +334,7 @@ struct say_command<face_state> : command<face_state> {
 	virtual const char *name() { return _name(); }
 
 	virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) {
-		pc_log("say_command::execute: saying '%s' @ face..", this->text);
+		printf(": %s\n", this->text);
 	}
 };
 
@@ -332,10 +351,11 @@ bool parse_command<node_state>(char *str, command<node_state> *&cmd) {
 
 	char *id_str = strtok(str, " ");
 	char *name_str = strtok(NULL, " ");
-	char *text_str = strtok(NULL, " ");
 
 	if (!id_str || !name_str)
 		return false;
+
+	char *text_str = name_str + strlen(name_str) + 1;
 
 	pc_log("parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
 
@@ -357,10 +377,11 @@ bool parse_command(char *str, command<TState> *&cmd) {
 
 	char *id_str = strtok(str, " ");
 	char *name_str = strtok(NULL, " ");
-	char *text_str = strtok(NULL, " ");
 
 	if (!id_str || !name_str)
 		return false;
+
+	char *text_str = name_str + strlen(name_str) + 1;
 
 	pc_log("parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
 

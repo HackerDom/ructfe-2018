@@ -10,8 +10,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"regexp"
 	"strconv"
+	"strings"
 )
 
 const ConfigPath = "config"
@@ -19,8 +19,6 @@ const ConfigPath = "config"
 var dbApi DBApi
 var sm SessionManager
 var executor = CommandExecutor{&dbApi, &sm}
-var pattern, _ = regexp.Compile("^[\\w=]{1,40}$")
-var phrasePattern, _ = regexp.Compile("^.{1,100}$")
 
 func Redirect(w http.ResponseWriter, r *http.Request, url string) {
 	fmt.Fprintf(w, `<html><head></head><body><script>window.location.replace("%v")</script></body></html>`, url)
@@ -29,15 +27,10 @@ func Redirect(w http.ResponseWriter, r *http.Request, url string) {
 func Register(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	login := r.Form.Get("login")
-	password := r.Form.Get("password")
-	phrase := r.Form.Get("phrase")
+	password := strings.Replace(r.Form.Get("password"), " ", "+", -1)
+	phrase := strings.Replace(r.Form.Get("phrase"), " ", "+", -1)
 
-	if len(login) == 0 || len(password) == 0 {
-		w.WriteHeader(400)
-		return
-	}
-
-	if !pattern.Match([]byte(password)) || !pattern.Match([]byte(login)) || !phrasePattern.Match([]byte(phrase)) {
+	if !IsValidLogin(&login) || !IsValidPhrase(&phrase) || !IsValidPassword(&password) {
 		w.WriteHeader(400)
 		return
 	}
@@ -46,6 +39,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
+
 	dbApi.Register(&login, &password, &phrase)
 	cookies := sm.CreateSession(login)
 	for _, cookie := range cookies {
@@ -58,8 +52,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 func Login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	login := r.Form.Get("login")
-	password := r.Form.Get("password")
-	if len(login) == 0 || len(password) == 0 {
+	password := strings.Replace(r.Form.Get("password"), " ", "+", -1)
+	if !IsValidLogin(&login) || !IsValidPassword(&password) {
 		w.WriteHeader(400)
 	} else if !dbApi.Validate(&login, &password) {
 		w.WriteHeader(400)
@@ -105,12 +99,12 @@ func PhrasePage(w http.ResponseWriter, r *http.Request) {
 		Redirect(w, r, "/")
 		return
 	}
-	encodedPhrase, err := base64.StdEncoding.DecodeString(*phrase)
+	decodedPhrase, err := base64.StdEncoding.DecodeString(strings.Replace(*phrase, " ", "+", -1))
 	if err != nil {
 		Redirect(w, r, "/")
 		return
 	}
-	Exec(w, "templates/phrase.html", &State{Login: login, Phrase: string(encodedPhrase)})
+	Exec(w, "templates/phrase.html", &State{Login: login, Phrase: string(decodedPhrase)})
 }
 
 func RegisterPage(w http.ResponseWriter, r *http.Request) {

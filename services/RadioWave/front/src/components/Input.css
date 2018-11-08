@@ -1,0 +1,12 @@
+.Input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #FC63E3;
+    font: unset;
+    color: unset;
+    flex-grow: 1;
+}
+
+.Input-label {
+    display: flex;
+}

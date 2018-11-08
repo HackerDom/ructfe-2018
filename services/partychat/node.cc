@@ -32,22 +32,24 @@ int main(int argc, char **argv) {
 	addrinfo *master_address;
 	ushort control_port;
 
-	if (argc != 3 || !parse_args(argv[1], argv[2], &master_address, &control_port)) {
+	if (argc != 4 || !parse_args(argv[1], argv[2], &master_address, &control_port)) {
 		printf("Usage:\n");
-		printf("%s <master_endpoint> <control_port>\n", argv[0]);
+		printf("%s <master_endpoint> <control_port> <nick_name>\n", argv[0]);
 		exit(-1);
 	}
+	const char *nick = argv[3];
 
 	char log_file[64];
 	sprintf(log_file, "%s.log", argv[0]);
 	pc_init_logging(log_file, true);
 
-	pc_log("Running with args: %s:%d %d", 
+	pc_log("Running with args: %s:%d %d %s", 
 		inet_ntoa(((sockaddr_in *)master_address->ai_addr)->sin_addr), 
 		ntohs(((sockaddr_in *)master_address->ai_addr)->sin_port), 
-		control_port);
+		control_port,
+		nick);
 
-	node_state state(*master_address);
+	node_state state(*master_address, nick);
 
 	int server_sock = pc_start_server(control_port);
 
