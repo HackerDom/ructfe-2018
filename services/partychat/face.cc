@@ -75,27 +75,31 @@ int main(int argc, char **argv) {
 		bzero(buffer, sizeof(buffer));
 		if (!fgets(buffer, sizeof(buffer), stdin))
 			break;
-		if (strlen(buffer) > 0)
+		if (buffer[0])
 			buffer[strlen(buffer) - 1] = 0;
+		else
+			strcpy(buffer, last_cmd);
 
-		char *args = buffer;
-		if (buffer[0] == '!') {
-			if (strchr(buffer, ' ')) {
-				char *tok = strtok(buffer, " ");
-				strcpy(last_cmd, tok);
-				args = buffer + strlen(last_cmd) + 1;
-			}
-			else {
-				strcpy(last_cmd, buffer);
-				args = NULL;
-			}
-		}
-		else if (!last_cmd[0])
+		if (buffer[0] != '!')
 			continue;
 
-		pc_log("Executing command '%s' with args '%s'..", last_cmd, args);
+		strcpy(last_cmd, buffer);
 
-		if (!handle_command(last_cmd, args, conn))
+		char cmd[512];
+		char *args = buffer;
+		if (strchr(buffer, ' ')) {
+			char *tok = strtok(buffer, " ");
+			strcpy(cmd, tok);
+			args = buffer + strlen(cmd) + 1;
+		}
+		else {
+			strcpy(cmd, buffer);
+			args = NULL;
+		}
+
+		pc_log("Executing command '%s' with args '%s'..", cmd, args);
+
+		if (!handle_command(cmd, args, conn))
 			break;
 	}
 

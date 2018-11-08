@@ -62,8 +62,6 @@ int main(int argc, char **argv) {
 	fds[1].fd = state.uplink.master_conn.conn.socket;
 	fds[1].events = POLLIN;
 
-	connection<node_state> *controllers[CON_CT];
-
 	while (true) {
 
 		state.uplink.tick();
@@ -86,7 +84,7 @@ int main(int argc, char **argv) {
 					if (client_sock) {
 						int fd_idx = client_idx + SRV_CT;
 
-						controllers[client_idx] = new connection<node_state>(client_sock, state);
+						state.controllers[client_idx] = new connection<node_state>(client_sock, state);
 						fds[fd_idx].fd = client_sock;
 						fds[fd_idx].events = POLLIN;
 					}
@@ -102,18 +100,14 @@ int main(int argc, char **argv) {
 				continue;
 
 			int con_idx = i - SRV_CT;
-			if (!controllers[con_idx]->tick()) {
-				delete controllers[con_idx];
-				controllers[con_idx] = NULL;
+			if (!state.controllers[con_idx]->tick()) {
+				delete state.controllers[con_idx];
+				state.controllers[con_idx] = NULL;
 				bzero(&fds[i], sizeof(pollfd));
 				fds[0].events = POLLIN;
 			}
 		}
 	}
-
-	for (int i = 0; i < CON_CT; i++) {
-		delete controllers[i];
-	} 
 
 	pc_shutdown_logging();
 
