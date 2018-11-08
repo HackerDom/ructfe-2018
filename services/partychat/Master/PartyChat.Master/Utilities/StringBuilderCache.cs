@@ -5,7 +5,7 @@ namespace PartyChat.Master
 {
     internal static class StringBuilderCache
     {
-        private const int MaxBuilderSize = 360;
+        private const int MaxBuilderSize = 1024;
  
         [ThreadStatic]
         private static StringBuilder cachedInstance;

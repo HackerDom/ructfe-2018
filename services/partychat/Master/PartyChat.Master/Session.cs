@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Logging.Abstractions;
 
 namespace PartyChat.Master
 {
@@ -11,6 +12,7 @@ namespace PartyChat.Master
     {
         private readonly Link client;
         private readonly CommandHandler commandHandler;
+        private readonly ILog log;
         private readonly BlockingQueue<Command> pendingCommands = new BlockingQueue<Command>();
         private readonly ConcurrentDictionary<int, TaskCompletionSource<Response>> executingCommands = 
             new ConcurrentDictionary<int, TaskCompletionSource<Response>>();
@@ -25,10 +27,11 @@ namespace PartyChat.Master
 
         public IPEndPoint RemoteEndpoint => client.RemoteEndpoint;
         
-        public Session(Link client, CommandHandler commandHandler)
+        public Session(Link client, CommandHandler commandHandler, ILog log)
         {
             this.client = client;
             this.commandHandler = commandHandler;
+            this.log = log;
         }
 
         public void Run()
@@ -68,19 +71,35 @@ namespace PartyChat.Master
             SendResponse(id, "");
         }
 
-        public async Task Kill()
+        public async Task Kill(bool killNode = false)
         {
             if (!IsAlive)
                 return;
             
             IsAlive = false;
-            // TODO send command
+
+            try
+            {
+                await EndHimRightly(killNode);
             
-            client.Dispose();
-            pendingCommands.Dispose();
+                client.Dispose();
+                pendingCommands.Dispose();
             
-            await receiveTask.SilentlyContinue();
-            await sendTask.SilentlyContinue();
+                await receiveTask.SilentlyContinue();
+                await sendTask.SilentlyContinue();
+            }
+            catch (Exception error)
+            {
+                log.Warn(error);
+            }
+        }
+
+        private Task EndHimRightly(bool killNode)
+        {
+            var commandName = killNode ? Commands.Die : Commands.End;
+            var commandText = ThreadSafeRandom.Select(TerminationMessages);
+
+            return client.SendCommand(new Command(commandName, commandText, -1));
         }
 
         private async Task SendRoutine()
@@ -136,5 +155,14 @@ namespace PartyChat.Master
             waiter.TrySetResult(response);
             responseBuffers.Remove(id);
         }
+
+        private static readonly string[] TerminationMessages = {
+            "I'll do you for that.",
+            "Now go away or I will taunt you a second time.",
+            "Ni!",
+            "You make me sad.",
+            "I don't want to talk to you no more, you empty headed animal food trough wiper.",
+            "Now... go!"
+        };
     }
 }

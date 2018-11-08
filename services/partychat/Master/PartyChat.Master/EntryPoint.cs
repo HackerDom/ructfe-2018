@@ -1,8 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime;
 using System.Threading;
+using Vostok.Logging.Abstractions;
+using Vostok.Logging.Console;
+using Vostok.Logging.File;
+using Vostok.Logging.File.Configuration;
 
 namespace PartyChat.Master
 {
@@ -10,20 +15,27 @@ namespace PartyChat.Master
     {
         public static void Main(string[] args)
         {
-            SetupThreadPool();
+            var log = CreateLog(args);
             
-            var heartbeatStorage = new HeartbeatStorage(TimeSpan.FromSeconds(15));
-            var sessionStorage = new SessionStorage();
+            SetupThreadPool();
+            log.Info("Master is starting. IsServerGC = {IsServerGC}.", GCSettings.IsServerGC);
+
+            var sessionStorage = new SessionStorage(log);
+            var heartbeatStorage = new HeartbeatStorage(TimeSpan.FromSeconds(15), log);
+            var garbageCollector = new GarbageCollector(sessionStorage, heartbeatStorage, TimeSpan.FromSeconds(2), log);
             
             var server = new TcpListener(IPAddress.Any, 16770);
 
             server.Start(100);
+            garbageCollector.Start();
 
             while (true)
             {
                 var client = server.AcceptSocket();
 
-                var session = new Session(new Link(client), new CommandHandler(sessionStorage, heartbeatStorage));
+                var sessionLog = log.ForContext($"Session({client.RemoteEndPoint})");
+                sessionLog.Info("Accepted new client.");
+                var session = new Session(new Link(client), new CommandHandler(sessionStorage, heartbeatStorage, sessionLog), sessionLog);
                 session.Run();
             }
         }
@@ -34,6 +46,16 @@ namespace PartyChat.Master
             
             ThreadPool.SetMaxThreads(short.MaxValue, short.MaxValue);
             ThreadPool.SetMinThreads(threads, threads);   
+        }
+
+        private static ILog CreateLog(string[] args)
+        {
+            var fileLog = new FileLog(new FileLogSettings {FilePath = "master.log"});
+            
+            if (args.Contains("--quiet"))
+                return fileLog;
+            
+            return new CompositeLog(new ConsoleLog(), fileLog);
         }
     }
 }
