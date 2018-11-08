@@ -29,7 +29,9 @@ namespace Vch.Core.Meta
         private byte[] GetNextBytes()
         {
             lastComputed = shaProvider.ComputeHash(lastComputed);
-            return lastComputed.Take(6).Union(new byte[2]).ToArray();
+            var result = new byte[8];
+            Array.Copy(lastComputed, result, 6);
+            return result;
         }
 
         private byte[] lastComputed;

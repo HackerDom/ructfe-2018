@@ -14,7 +14,12 @@ namespace Vch.Checker
         static int Main(string[] args)
         {
             var checkerArgs = new CheckerArgs(args);
-            client = new VchClient(new Uri($"http://{checkerArgs.Host}"));
+
+            if (!checkerArgs.Mode.Equals("info", StringComparison.InvariantCultureIgnoreCase))
+            {
+                client = new VchClient(new Uri($"https://{checkerArgs.Host}"));
+
+            }
 
             var modes = new Dictionary<string, Func<CheckerArgs, Task<int>>>(StringComparer.InvariantCultureIgnoreCase)
             {
@@ -75,14 +80,14 @@ namespace Vch.Checker
                     VaultTimeSource = GetTimeSource().ToString()
                 });
 
-                await client.PostMessage(result.Id, GenerateMessage(result));
+                await client.PostMessage(result.UserId, GenerateMessage(result));
 
-                Console.Write(result.Id);
+                Console.Write(result.UserId);
             }
             catch (Exception e)
             {
+                Console.Write(e);
                 return (int) ServiceState.MUMBLE;
-
             }
 
             return (int) ServiceState.OK;

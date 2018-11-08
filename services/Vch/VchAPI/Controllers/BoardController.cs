@@ -30,26 +30,28 @@ namespace VchAPI.Controllers
         }
 
         [HttpPost("message/post/{userId}")]
-        public async Task<ActionResult<Message>> PostMessageAsync(UInt64 userId, [FromBody] string text)
+        public async Task<ActionResult<Message>> PostMessageAsync(string userId)
         {
             var user = userStorage.GetUser(userId);
             if (user == null)
                 return NotFound();
 
-            var message = Message.Create(text, user, uuidProvider);
-            messageStorage.AddMessage(message);
+            var text = await ParseContent<string>();
 
+            var message = Message.Create(text, user, uuidProvider);
+            messageStorage.UpdateMessage(new MessageId(uuidProvider.GetUUID(user.Meta)), user, text);
             return message.ToActionResult();
         }
 
+
         [HttpPost("messages/{userId}")]
-        public async Task<ActionResult<IEnumerable<Message>>> PostMessageAsync(UInt64 userId)
+        public async Task<ActionResult<IEnumerable<Message>>> GetMessagesAsync(string userId)
         {
             var user = userStorage.GetUser(userId);
             if (user == null)
                 return NotFound();
 
-            return messageStorage.GetAllMessage().Where(message => message.userInfo.Id.Equals(userId)).ToActionResult();
+            return messageStorage.GetAllMessage().Where(message => message.userInfo.UserId.Equals(userId)).ToActionResult();
         }
 
         [HttpPost("user")]
@@ -59,11 +61,17 @@ namespace VchAPI.Controllers
             return userStorage.AddUser(meta).ToActionResult();
         }
 
-        public async Task<TValue> ParseContent<TValue>()
+        public async Task<TValue> ParseContent<TValue>() where TValue : class
         {
             using (var memory = new StreamReader(Request.Body))
             {
                 var text = await memory.ReadToEndAsync();
+
+                if (typeof(TValue) == typeof(string))
+                {
+                    return text as TValue;
+                }
+
                 return text.FromJSON<TValue>();
             }
         }

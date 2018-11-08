@@ -19,6 +19,11 @@ namespace Vch.Core.Helpers
             }
         }
 
+        public static byte[] ToBytes(this double source)
+        {
+            return BitConverter.GetBytes(source);
+        }
+
         public static TValue FromBytes<TValue>(this byte[] source)
         {
             using (MemoryStream memoryStream = new MemoryStream(source))

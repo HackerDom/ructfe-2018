@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using Vch.Core.Meta;
 
@@ -12,42 +14,42 @@ namespace Vch.Core.Sorages
         public UserStorage(IMongoClient mongoClient, IUUIDProvider uuidProvider) : base(mongoClient)
         {
             this.uuidProvider = uuidProvider;
-            users = new ConcurrentDictionary<UInt64, UserInfo>();
+            users = new ConcurrentDictionary<string, UserInfo>();
             usersCollection = GetCollection<UserInfo>(NameReslover.UserCollectionName);
             Init().GetAwaiter().GetResult();
         }
 
         public UserInfo AddUser(UserMeta meta)
         {
-            var userInfo = new UserInfo(uuidProvider.GetUUID(meta));
+            var userInfo = new UserInfo(uuidProvider.GetUUID(meta).ToString())
+            {
+                Meta = meta
+            };
 
-            users[userInfo.Id] = userInfo;
+            users[userInfo.UserId] = userInfo;
 
-            usersCollection.InsertOne(userInfo);
+            usersCollection.InsertOneAsync(userInfo).Wait();
 
             return userInfo;
         }
 
-        public UserInfo GetUser(UInt64 userId)
+        public UserInfo GetUser(string userId)
         {
             return users.TryGetValue(userId, out var userInfo) ? userInfo : null;
         }
 
         private async Task Init()
         {
-            var usersFindResult = await usersCollection.FindAsync(info => true);
 
-            if (usersFindResult.Current == null)
-                return;
-
-            foreach (var userInfo in usersFindResult.Current)
+            var documents = await usersCollection.Find(_ => true).ToListAsync();
+            foreach (var userInfo in documents)
             {
-                users[userInfo.Id] = userInfo;
+                users[userInfo.UserId] = userInfo;
             }
         }
 
         private readonly IUUIDProvider uuidProvider;
-        private readonly ConcurrentDictionary<UInt64, UserInfo> users;
+        private readonly ConcurrentDictionary<string, UserInfo> users;
         private readonly IMongoCollection<UserInfo> usersCollection;
     }
 }

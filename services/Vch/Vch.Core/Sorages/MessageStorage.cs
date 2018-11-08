@@ -18,25 +18,20 @@ namespace Vch.Core.Sorages
             RemoveOldMessage();
         }
 
-        public void AddMessage(Message message)
+        public Message UpdateMessage(MessageId id, UserInfo userInfo, string text)
         {
-            messages[message.Id] = message;
-            messageCollection.InsertOne(message);
+            return messages.AddOrUpdate(id, messageId => Message.Create(text, userInfo, messageId),
+                (messageId, message) =>
+                {
+                    message.Text = text;
+                    return message;
+                });
         }
 
         public DeleteResult DeleteMessage(MessageId messageId)
         {
             messages.Remove(messageId, out var _);
-            try
-            {
-                return messageCollection.DeleteOne(message => messageId.Equals(message.Id));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-            
+            return messageCollection.DeleteOne(message => messageId.Equals(message.MessageId));
         }
 
         public IEnumerable<Message> GetAllMessage()
@@ -51,14 +46,11 @@ namespace Vch.Core.Sorages
 
         private async Task Init()
         {
-            var loadedMessages = await messageCollection.FindAsync(message => true);
+            var loadedMessages = await messageCollection.Find(message => true).ToListAsync();
 
-            if (loadedMessages.Current == null)
-                return;
-
-            foreach (var message in loadedMessages.Current)
+            foreach (var message in loadedMessages)
             {
-                messages[message.Id] = message;
+                messages[message.MessageId] = message;
             }
         }
 
@@ -67,17 +59,10 @@ namespace Vch.Core.Sorages
             while (true)
             {
                 await Task.Delay(new TimeSpan(0, 0, 5, 0));
-                foreach (var message in messages.Where(pair => (pair.Value.CreationTime - DateTime.UtcNow).TotalMinutes > 30))
+                foreach (var message in messages.Where(
+                    pair => (pair.Value.CreationTime - DateTime.UtcNow).TotalMinutes > 30))
                 {
-                    try
-                    {
-                        DeleteMessage(message.Value.Id);
-                    }
-                    catch (Exception e)
-                    {
-                        //TODO: log this
-                        Console.WriteLine(e);
-                    }
+                    DeleteMessage(message.Value.MessageId);
                 }
             }
         }

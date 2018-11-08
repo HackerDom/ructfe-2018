@@ -4,7 +4,7 @@ namespace Vch.Core.Meta
 {
     public interface IMessage
     {
-        MessageId Id { get; }
+        MessageId MessageId { get; }
         string Text { get; set; }
         DateTime CreationTime { get; }
     }

@@ -24,22 +24,21 @@ namespace VchUtils
                 };
             var response = await httpClient.SendAsync(request);
 
-            Console.WriteLine(await response.Content.ReadAsStringAsync());
-
-            response.EnsureSucces();
+            response.EnsureSucces("Can't register user");
             return (await response.Content.ReadAsStringAsync()).FromJSON<UserInfo>();
         }
 
 
-        public async Task<Message> PostMessage(UInt64 userId, string key)
+        public async Task<Message> PostMessage(string userId, string key)
         {
             var request =
-                new HttpRequestMessage(HttpMethod.Put, new Uri($"{apiBaseUri}message/post/{userId}"))
+                new HttpRequestMessage(HttpMethod.Post, new Uri($"{apiBaseUri}message/post/{userId}"))
                 {
                     Content = new StringContent(key)
                 };
             var response = await httpClient.SendAsync(request);
-            response.EnsureSucces();
+
+            response.EnsureSucces("Can't post message");
 
             return (await response.Content.ReadAsStringAsync()).FromJSON<Message>();
         }
@@ -52,7 +51,7 @@ namespace VchUtils
                     Content = new StringContent(userId.ToString())
                 };
             var response = await httpClient.SendAsync(request);
-            response.EnsureSucces();
+            response.EnsureSucces("Can't get user messages");
 
             return (await response.Content.ReadAsStringAsync()).FromJSON<IEnumerable<Message>>();
         }
@@ -62,7 +61,7 @@ namespace VchUtils
             var request =
                 new HttpRequestMessage(HttpMethod.Put, new Uri($"{apiBaseUri}messages"));
             var response = await httpClient.SendAsync(request);
-            response.EnsureSucces();
+            response.EnsureSucces("Can't get all messages");
 
             return (await response.Content.ReadAsStringAsync()).FromJSON<IEnumerable<IMessage>>();
         }

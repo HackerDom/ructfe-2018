@@ -43,7 +43,7 @@ namespace VchAPI
             containerBuilder.RegisterType<UUIDProvider>().As<IUUIDProvider>();
             containerBuilder.RegisterType<TimeProvider>().As<ITimeProvider>();
             containerBuilder.RegisterType<NTSourceProvider>().As<INTSourceProvider>().SingleInstance();
-            containerBuilder.RegisterType<BoardController>().PropertiesAutowired();
+            containerBuilder.RegisterType<BoardController>().PropertiesAutowired().SingleInstance();
         }
         
 

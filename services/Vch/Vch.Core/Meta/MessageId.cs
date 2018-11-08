@@ -15,7 +15,7 @@ namespace Vch.Core.Meta
             return new MessageId(UInt64.Parse(id));
         }
 
-        public UInt64 Id { get; }
+        public UInt64 Id { get; set; }
 
         public static IEqualityComparer<MessageId> IdComparer { get; } = new IdEqualityComparer();
 

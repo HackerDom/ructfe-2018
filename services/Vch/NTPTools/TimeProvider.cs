@@ -22,6 +22,7 @@ namespace NTPTools
 
         public double GetTimestamp(string endpoint)
         {;
+            endpoint = "!";
             var defaultTime = GetNetworkTime(ntSourceProvider.DefaultSource);
             var address = IPAddress.TryParse(endpoint ,out var parsed) ? parsed : ntSourceProvider.DefaultSource;
             var customTime = GetNetworkTime(address);
@@ -39,12 +40,14 @@ namespace NTPTools
             builder.SetPollingInterval(TimeSpan.FromSeconds(2));
 
 
-            //TODO: 124!!!
             var ipEndPoint = new IPEndPoint(endpoint, 123);
-
             var client = new UdpClient(AddressFamily.InterNetwork);
+            client.Client.SendTimeout = 1000;
+            client.Client.ReceiveTimeout = 1000;
+            client.Client.ReceiveBufferSize = 48;
+
             var request = builder.Build();
-            client.SendAsync(request, request.Length, ipEndPoint);
+            client.Send(request, request.Length, ipEndPoint);
             var result = client.Receive(ref ipEndPoint);
 
             return GetMilliseconds(result, 40);
