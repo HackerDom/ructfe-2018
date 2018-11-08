@@ -39,7 +39,7 @@ class Dumper:
 
     def make_vmk_snapshot(self):
         with open(VMK_JSON_TMP, mode="w") as file:
-            json.dump({}, file)
+            json.dump(self.vmk.get_dump(), file)
         os.rename(VMK_JSON_TMP, VMK_JSON)
 
     def load_vmf_snapshot(self):

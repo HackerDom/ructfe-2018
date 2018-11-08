@@ -7,7 +7,6 @@ server {
 	root /var/www/html;
 	index index.html index.htm;
 
-
 	location / {
 		# First attempt to serve request as file, then
 		# as directory, then fall back to displaying a 404.
@@ -17,14 +16,30 @@ server {
 
 # Laberator
 server {
-    listen 8081;
+    listen 8888;
 
     location / {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:18888;
     }
 
     location /cmdexec {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:18888;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# Vch
+server {
+    listen 9999;
+
+    location / {
+        proxy_pass http://127.0.0.1:19999;
+    }
+
+    location /cmdexec {
+        proxy_pass http://127.0.0.1:19999;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -36,25 +51,25 @@ server {
     listen 1883;
 
     location / {
-        proxy_pass http://127.0.0.1:18830;
+        proxy_pass http://127.0.0.1:11883;
     }
 }
 
 # RadioWave
 server {
-    listen 6455;
+    listen 7777;
 
     types_hash_max_size 4096;
     charset utf-8;
 
     location / {
-        root   /home/radiowave-static/;
+        root   /var/www/radiowave/static/;
         index  index.html;
     }
 
     location /radio {
         rewrite ^/radio(/.*)$ $1 break;
-        proxy_pass http://127.0.0.1:6456/;
+        proxy_pass http://127.0.0.1:17779/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -62,7 +77,7 @@ server {
 
     location /news {
         rewrite ^/news(/.*)$ $1 break;
-        proxy_pass http://127.0.0.1:7777/;
+        proxy_pass http://127.0.0.1:17777/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -70,6 +85,6 @@ server {
 
     location /db {
         rewrite ^/db(/.*)$ $1 break;
-        proxy_pass http://127.0.0.1:8888/;
+        proxy_pass http://127.0.0.1:17778/;
     }
 }
