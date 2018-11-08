@@ -354,3 +354,4 @@
 			return false;
 		return !strcmp(group, other.group);
 	}
+	

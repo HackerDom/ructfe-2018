@@ -1,3 +1,4 @@
+from base64 import b64encode
 from random import randint, choice
 from string import ascii_letters, digits
 
@@ -22,7 +23,7 @@ def generate_login():
 
 
 def generate_password():
-    return "".join(choice(ascii_letters + digits) for _ in range(20))
+    return b64encode("".join(choice(ascii_letters + digits) for _ in range(20)).encode()).decode()
 
 
 def generate_user_agent():
@@ -35,3 +36,7 @@ def generate_headers():
 
 def generate_label():
     return choice(FONTS), randint(10, 30)
+
+
+def generate_phrase():
+    return choice(NAMES) + " " + choice(LABELS) + "!"
