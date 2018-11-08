@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<head>
+    <link href='./style.css' type='text/css' rel='stylesheet'>
+    <title>РуЦТФЕ 2018</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body>
+    <div class="hand">
+        <img class="hand__background" src="pip-boy.svg" />
+        <div class="hand__screen">
+            <div id="menu-item-1" class="menu-item">
+                <a id="laberator" href="http://localhost:8081">
+                    <img width='100%' src='./icon/fonts.svg'>
+                </a>
+            </div>
+            <div id="menu-item-2" class="menu-item">
+                <a id="vch" href="http://localhost:9999">
+                    <img width='100%' src='./icon/vch.svg'>
+                </a>
+            </div>
+            <div id="menu-item-3" class="menu-item">
+                <a id="chat" href="http://localhost/partychat">
+                    <img width='100%' src='./icon/chat.svg'>
+                </a>
+            </div>
+            <div id="menu-item-4" class="menu-item">
+                <a id="vending" href="http://localhost:1883">
+                    <img width='100%' src='./icon/vending.svg'>
+                </a>
+            </div>
+            <div id="menu-item-5" class="menu-item">
+                <a id="radio" href="http://localhost:7777">
+                    <img width='100%' src='./icon/radio.svg'>
+                </a>
+            </div>
+        </div>
+        <div class="pointer">
+	    <img class="pointer__item default-shown" id="pointer-item-0" src='./animation/0_round_main.svg'>
+            <img class="pointer__item" id="pointer-item-1" src='./animation/1_round_fonts.svg'>
+            <img class="pointer__item" id="pointer-item-2" src='./animation/2_round_vch.svg'>
+            <img class="pointer__item" id="pointer-item-3" src='./animation/3_round_chat.svg'>
+            <img class="pointer__item" id="pointer-item-4" src='./animation/4_round_vending.svg'>
+            <img class="pointer__item" id="pointer-item-5" src='./animation/5_round_radio.svg'>
+        </div>
+    </div>
+
+<div class="welcome">
+	<p>Welcome to the vault! Prepare your pip-boys, my children.</p>
+	<p><a href="http://monitor.ructfe.org">Monitor</a> × <a href="https://cloud.ructfe.org">Cloud Console</a></p>
+</div>
+
+    <script>
+	document.getElementById("laberator").href = `http://${window.location.host}:8888`;
+	document.getElementById("vch").href = `http://${window.location.host}:9999`;
+	document.getElementById("chat").href = `http://${window.location.host}/partychat`;
+	document.getElementById("vending").href = `http://${window.location.host}:1883`;
+	document.getElementById("radio").href = `http://${window.location.host}:7777`;
+
+        [1, 2, 3, 4, 5].forEach(number => {
+            const icon = document.getElementById(`menu-item-${number}`);
+            const pointer = document.getElementById(`pointer-item-${number}`);
+
+            var defaultPointer = document.getElementById('pointer-item-0');
+
+            icon.addEventListener('mouseenter', () => {
+                defaultPointer.classList.remove('default-shown');
+                pointer.classList.add('shown');
+            });
+            icon.addEventListener('mouseleave', () => {
+                defaultPointer.classList.add('default-shown');
+                pointer.classList.remove('shown');
+            });
+        })
+		
+		
+    </script>
+</body>
