@@ -7,6 +7,7 @@ from handlers import index_handler, machine_name_handler, \
     machine_master_key_handler, machine_meta_handler
 from vmf import VendingMachinesFactory
 
+
 VENDING_MACHINES = VendingMachinesFactory()
 
 

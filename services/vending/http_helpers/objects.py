@@ -13,5 +13,5 @@ class Response:
 class Request:
     method: str
     path: str
-    body: BinaryIO
+    body: str
     headers: Tuple[Tuple[str, str]] = field(default=())

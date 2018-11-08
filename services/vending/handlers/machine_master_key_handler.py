@@ -8,4 +8,8 @@ class MachineMasterKeyHandler(BaseHandler):
         self.vm = vm_object
 
     def handle(self, request: Request) -> Response:
-        return Response(200, b"OK")
+        try:
+            vm_id, key = str(request.body).split()
+            return Response(200, bytes(self.vm.get_master_info(int(vm_id), key.encode('ascii'))))
+        except ValueError:
+            return Response(400, b'Bad Request')
