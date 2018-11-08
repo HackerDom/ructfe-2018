@@ -80,7 +80,7 @@
 			{
 				if (!g.group)
 					return 0;
-				
+
 				std::size_t h = 0;
 				for (const char *p = g.group; *p; p++)
 					h = (h * 167) ^ *p;
@@ -88,3 +88,10 @@
 			}
 		};
 	}
+
+// Storage
+
+	void pc_add_line(const pc_group &g, const char *line);
+
+	void pc_send_lines(const pc_group &g, std::function<void(const char *)> sender);
+
