@@ -1,0 +1,75 @@
+include /etc/nginx/proxy_params;
+
+server {
+	listen 80 default_server;
+	server_name _;
+
+	root /var/www/html;
+	index index.html index.htm;
+
+
+	location / {
+		# First attempt to serve request as file, then
+		# as directory, then fall back to displaying a 404.
+		try_files $uri $uri/ =404;
+	}
+}
+
+# Laberator
+server {
+    listen 8081;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+    }
+
+    location /cmdexec {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# Vending
+server {
+    listen 1883;
+
+    location / {
+        proxy_pass http://127.0.0.1:18830;
+    }
+}
+
+# RadioWave
+server {
+    listen 6455;
+
+    types_hash_max_size 4096;
+    charset utf-8;
+
+    location / {
+        root   /home/radiowave-static/;
+        index  index.html;
+    }
+
+    location /radio {
+        rewrite ^/radio(/.*)$ $1 break;
+        proxy_pass http://127.0.0.1:6456/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    location /news {
+        rewrite ^/news(/.*)$ $1 break;
+        proxy_pass http://127.0.0.1:7777/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    location /db {
+        rewrite ^/db(/.*)$ $1 break;
+        proxy_pass http://127.0.0.1:8888/;
+    }
+}

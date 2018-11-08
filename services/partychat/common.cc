@@ -33,7 +33,7 @@
 
 		va_list args;
 		va_start(args, format);
-		vsprintf(message, format, args);
+		vsnprintf(message, sizeof(message), format, args);
 		va_end(args);
 
 		char buffer[26];
@@ -61,7 +61,7 @@
 
 		va_list args;
 		va_start(args, format);
-		vsprintf(message, format, args);
+		vsnprintf(message, sizeof(message), format, args);
 		va_end(args);
 
 		pc_shutdown_logging();
@@ -76,7 +76,7 @@
 
 		va_list args;
 		va_start(args, format);
-		vsprintf(message, format, args);
+		vsnprintf(message, sizeof(message), format, args);
 		va_end(args);
 
 		pc_shutdown_logging();
@@ -370,12 +370,20 @@
 
 		FILE *f = fopen(filename, "a+");
 		if (!f)
-			pc_fatal("Failed to open file '%s': %d.", filename, errno);
+			pc_fatal("pc_add_line: failed to open file '%s': %d.", filename, errno);
 
-		size_t length = fread(large_buffer, 1, sizeof(large_buffer), f);
+		fseek(f, 0, SEEK_END);
+		size_t length = ftell(f);
+		if (length >= sizeof(large_buffer))
+			pc_fatal("pc_add_line: history file is too large.");
+
+		pc_log("pc_add_line: length is %d", length);
+
+		rewind(f);
+		fread(large_buffer, 1, length, f);
 		large_buffer[length] = 0;
-		pc_log("pc_add_line: large_buffer[0] = '%c'.", large_buffer[0]);
-		pc_log("pc_add_line: large_buffer = '%s'.", large_buffer);
+
+		pc_log("pc_add_line: existing lines: %.128s", large_buffer);
 
 		int lines = 0;
 		char *without_first_line = NULL;
@@ -391,20 +399,23 @@
 		if (lines + 1 > HIST_MAX)
 			write_back = without_first_line;
 
-		pc_log("pc_add_line: length = '%d'.", length);
-		pc_log("pc_add_line: write_back = '%s'.", write_back);
-		pc_log("pc_add_line: large_buffer = '%s'.", large_buffer);
-		pc_log("pc_add_line: line = '%s'.", line);
+		pc_log("pc_add_line: lines = '%d'.", lines);
 
-		rewind(f);
+		fclose(f);
+		f = fopen(filename, "w");
+		if (!f)
+			pc_fatal("pc_add_line: failed to open file '%s': %d.", filename, errno);
+
+		pc_log("pc_add_line: writing '%.128s' at %d..", write_back, ftell(f));
 		fwrite(write_back, 1, strlen(write_back), f);
+		pc_log("pc_add_line: strlen(write_back) = %d", strlen(write_back));
 
 		sprintf(large_buffer, "%s\n", line);
+		pc_log("pc_add_line: writing '%.128s' at %d..", large_buffer, ftell(f));
 		fwrite(large_buffer, 1, strlen(large_buffer), f);
+		pc_log("pc_add_line: strlen(large_buffer) = %d", strlen(large_buffer));
 
 		size_t size = ftell(f);
-		//truncate(filename, size);
-
 		fclose(f);
 	}
 

@@ -8,11 +8,11 @@ const host = window.location.host;
 
 
 const initialState = {
-  text: "RUCTF",
-  DpM: 70,
+  text: "SOS",
+  DpM: 500,
   freq: 1000,
-  ch: "radio",
-  password: "123",
+  ch: "RUCTFE",
+  password: "",
 };
 
 let currentChanel = initialState.ch;
@@ -21,7 +21,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      news: ["RUCTF", "RUCTF", "RUCTF", "RUCTF", "RUCTF"]
+      news: ["RUCTFE", "RUCTFE", "RUCTFE", "RUCTFE", "RUCTFE"]
     };
     this.tryConnectRadio(initialState.ch);
     this.tryConnectNews();
