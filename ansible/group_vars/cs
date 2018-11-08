@@ -199,3 +199,4 @@ teams: |
   {name => '0xNN', network => '10.60.155.0/24', host => '10.60.155.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'c03e2ce6-e67c-4a39-826b-c2777aacb398', country => 'Indonesia',},
 services: |
   {name => 'test',  path => 'checkers/test.py', timeout => 15, tcp_port => 8080},
+  {name => 'laberator',  path => 'checkers/laberator/checker.py', timeout => 20, tcp_port => 8080},

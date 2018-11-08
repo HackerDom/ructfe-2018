@@ -1,6 +1,8 @@
 {
   "db_host": "127.0.0.1:8888",
   "ws_host": "127.0.0.1:7777",
-  "cleanup_in_secs": 120,
+  "cleanup_sec": 120,
+  "ttl_sec": 180,
+  "snapshot_sec": 15,
   "threads": 64
 }
