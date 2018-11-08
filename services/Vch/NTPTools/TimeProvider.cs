@@ -23,11 +23,8 @@ namespace NTPTools
 
         public async Task<double> GetTimestamp(string endpoint)
         {
-            endpoint = "!";
-            var defaultTime = await GetNetworkTime(ntSourceProvider.DefaultSource);
             var address = IPAddress.TryParse(endpoint, out var parsed) ? parsed : ntSourceProvider.DefaultSource;
-            var customTime = await GetNetworkTime(address);
-            return Math.Abs(defaultTime - customTime) > normalDeviation ? defaultTime : customTime;
+            return await GetNetworkTime(address);
         }
 
 
