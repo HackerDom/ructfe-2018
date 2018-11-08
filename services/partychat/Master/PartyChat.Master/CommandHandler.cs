@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Vostok.Logging.Abstractions;
 
 namespace PartyChat.Master
 {
@@ -7,13 +8,15 @@ namespace PartyChat.Master
     {
         private readonly SessionStorage sessionStorage;
         private readonly HeartbeatStorage heartbeatStorage;
+        private readonly ILog log;
 
         private string nick;
 
-        public CommandHandler(SessionStorage sessionStorage, HeartbeatStorage heartbeatStorage)
+        public CommandHandler(SessionStorage sessionStorage, HeartbeatStorage heartbeatStorage, ILog log)
         {
             this.sessionStorage = sessionStorage;
             this.heartbeatStorage = heartbeatStorage;
+            this.log = log.ForContext(GetType());
         }
 
         public async Task HandleCommand(Command command, Session session)
@@ -24,6 +27,7 @@ namespace PartyChat.Master
                 case Commands.Heartbeat:
                     if (!TrySetNick(command.Text) || !sessionStorage.TryRegister(nick, session))
                     {
+                        log.Info("Failed to set nick '{nick}' for client at {endpoint}. Nick is already in use. Killing session..", command.Text, session.RemoteEndpoint);
                         await session.Kill(true);
                         return;
                     }
@@ -34,6 +38,9 @@ namespace PartyChat.Master
                 
                 case Commands.Say:
                     group = Group.ExtractGroup(command.Text);
+                    
+                    log.Info("Saying '{text}' to ({group})..", command.Text, group);
+                    
                     foreach (var member in group)
                     {
                         var memberSession = sessionStorage[member];
@@ -47,6 +54,9 @@ namespace PartyChat.Master
                 case Commands.History:
                     group = Group.ExtractGroup(command.Text);
                     group.Add(nick);
+                    
+                    log.Info("The history of group ({group}) was requested. Collecting..", command.Text, group);
+                    
                     var responses = new List<Response>();
                     foreach (var member in group)
                     {

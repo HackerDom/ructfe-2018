@@ -1,8 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Logging.Abstractions;
 
 namespace PartyChat.Master
 {
@@ -10,6 +12,7 @@ namespace PartyChat.Master
     {
         private readonly Link client;
         private readonly CommandHandler commandHandler;
+        private readonly ILog log;
         private readonly BlockingQueue<Command> pendingCommands = new BlockingQueue<Command>();
         private readonly ConcurrentDictionary<int, TaskCompletionSource<Response>> executingCommands = 
             new ConcurrentDictionary<int, TaskCompletionSource<Response>>();
@@ -24,10 +27,11 @@ namespace PartyChat.Master
 
         public IPEndPoint RemoteEndpoint => client.RemoteEndpoint;
         
-        public Session(Link client, CommandHandler commandHandler)
+        public Session(Link client, CommandHandler commandHandler, ILog log)
         {
             this.client = client;
             this.commandHandler = commandHandler;
+            this.log = log;
         }
 
         public void Run()
@@ -73,13 +77,21 @@ namespace PartyChat.Master
                 return;
             
             IsAlive = false;
-            await EndHimRightly(killNode);
+
+            try
+            {
+                await EndHimRightly(killNode);
             
-            client.Dispose();
-            pendingCommands.Dispose();
+                client.Dispose();
+                pendingCommands.Dispose();
             
-            await receiveTask.SilentlyContinue();
-            await sendTask.SilentlyContinue();
+                await receiveTask.SilentlyContinue();
+                await sendTask.SilentlyContinue();
+            }
+            catch (Exception error)
+            {
+                log.Warn(error);
+            }
         }
 
         private Task EndHimRightly(bool killNode)

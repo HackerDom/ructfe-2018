@@ -9,7 +9,7 @@ namespace PartyChat.Master
         [ThreadStatic]
         private static Random random;
 
-        public static int Next(int maxValue) => (random ?? (random = new Random())).Next();
+        public static int Next(int maxValue) => (random ?? (random = new Random())).Next(maxValue);
 
         public static T Select<T>(IReadOnlyList<T> items) => items[Next(items.Count)];
     }
