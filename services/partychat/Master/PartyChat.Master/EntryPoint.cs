@@ -11,13 +11,15 @@ namespace PartyChat.Master
         public static void Main(string[] args)
         {
             SetupThreadPool();
-            
-            var heartbeatStorage = new HeartbeatStorage(TimeSpan.FromSeconds(15));
+
             var sessionStorage = new SessionStorage();
+            var heartbeatStorage = new HeartbeatStorage(TimeSpan.FromSeconds(15));
+            var garbageCollector = new GarbageCollector(sessionStorage, heartbeatStorage, TimeSpan.FromSeconds(2));
             
             var server = new TcpListener(IPAddress.Any, 16770);
 
             server.Start(100);
+            garbageCollector.Start();
 
             while (true)
             {
