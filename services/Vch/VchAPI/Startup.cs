@@ -29,7 +29,7 @@ namespace VchAPI
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
         public void ConfigureContainer(ContainerBuilder containerBuilder)

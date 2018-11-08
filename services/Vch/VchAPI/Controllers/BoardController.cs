@@ -13,8 +13,8 @@ using Vch.Core.Sorages;
 namespace VchAPI.Controllers
 {
     [Route("api/[controller]")]
-	[Controller]
-	public class BoardController : ControllerBase
+    [ApiController]
+    public class BoardController : ControllerBase
     {
         public BoardController(IUUIDProvider uuidProvider, IUserStorage userStorage, IMessageStorage messageStorage)
         {
@@ -24,13 +24,13 @@ namespace VchAPI.Controllers
         }
 
         [HttpGet("messages")]
-        public async Task<IActionResult> GetAllMessages()
+        public async Task<ActionResult<IEnumerable<IMessage>>> GetAllMessages()
         {
-            return CreatedAtAction(nameof(GetAllMessages), messageStorage.GetAllMessage().Cast<IMessage>());
+            return messageStorage.GetAllMessage().Cast<IMessage>().ToActionResult();
         }
 
         [HttpPost("message/post/{userId}")]
-        public async Task<IActionResult> PostMessageAsync(string userId)
+        public async Task<ActionResult<Message>> PostMessageAsync(string userId)
         {
             var user = userStorage.GetUser(userId);
             if (user == null)
@@ -40,25 +40,25 @@ namespace VchAPI.Controllers
 
             var message = Message.Create(text, user, uuidProvider);
             messageStorage.UpdateMessage(new MessageId(uuidProvider.GetUUID(user.Meta)), user, text);
-            return CreatedAtAction(nameof(PostMessageAsync), message);
+            return message.ToActionResult();
         }
 
 
         [HttpPost("messages/{userId}")]
-        public async Task<IActionResult> GetMessagesAsync(string userId)
+        public async Task<ActionResult<IEnumerable<Message>>> GetMessagesAsync(string userId)
         {
             var user = userStorage.GetUser(userId);
             if (user == null)
                 return NotFound();
 
-	        return CreatedAtAction(nameof(GetMessagesAsync), messageStorage.GetAllMessage().Where(message => message.userInfo.UserId.Equals(userId)));
+            return messageStorage.GetAllMessage().Where(message => message.userInfo.UserId.Equals(userId)).ToActionResult();
         }
 
         [HttpPost("user")]
-        public async Task<IActionResult> RegisterUserAsync()
+        public async Task<ActionResult<UserInfo>> RegisterUserAsync()
         {
             var meta = await ParseContent<UserMeta>();
-	        return CreatedAtAction(nameof(RegisterUserAsync), userStorage.AddUser(meta));
+            return userStorage.AddUser(meta).ToActionResult();
         }
 
         public async Task<TValue> ParseContent<TValue>() where TValue : class
