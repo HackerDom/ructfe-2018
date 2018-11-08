@@ -24,6 +24,7 @@
       cp -t /home/partychat/ partychat-node partychat run.sh
       chown -R partychat:partychat /home/partychat
       chmod -R u=rwX,g=,o= /home/partychat
+      chmod u+x /home/partychat/run.sh
   args:
     chdir: /run/build_partychat/
   notify: restart partychat service

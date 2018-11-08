@@ -3,7 +3,7 @@ CFLAGS = -std=c++11
 %.o: %.cc
 	g++ -c -o $@ $< $(CFLAGS)
 
-all: face node checker
+all: clean face node checker
 
 FACE_OBJS = face.o common.o
 face: $(FACE_OBJS)

@@ -246,8 +246,13 @@ struct master_link {
 	void tick();
 };
 
+
+
+#define CON_CT 8
+
 struct node_state {
 	master_link uplink;
+	std::unordered_map<pc_group, std::vector<connection<node_state> *>> talking_conns;
 	void *history_storage;
 
 	node_state(const addrinfo &master_addr, const char *nick) : uplink(master_addr, *this, nick) { }
@@ -302,9 +307,22 @@ struct say_command<node_state> : command<node_state> {
 	virtual const char *name() { return _name(); }
 
 	virtual void execute(responder<node_state> &rsp, connection<node_state> &conn, node_state &state) {
-		pc_log("say_command::execute: saying '%s'..", this->text);
-		state.uplink.master_conn.send<say_command>(this->text);
-		conn.flush(conn.send<say_command>(this->text));
+		if (&conn == &state.uplink.master_conn) {
+			pc_log("say_command::execute: saying '%s' to controllers..", this->text);
+			pc_group g(this->text);
+			for (auto c : state.talking_conns[g]) {
+				c->flush(c->send<say_command>(this->text));
+			}
+
+		}
+		else {
+			pc_log("say_command::execute: saying '%s'..", this->text);
+			pc_group g(this->text);
+			state.talking_conns[g].push_back(&conn);
+
+			state.uplink.master_conn.send<say_command>(this->text);
+			conn.flush(conn.send<say_command>(this->text));
+		}
 	}
 };
 
@@ -316,7 +334,7 @@ struct say_command<face_state> : command<face_state> {
 	virtual const char *name() { return _name(); }
 
 	virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) {
-		pc_log("say_command::execute: saying '%s' @ face..", this->text);
+		printf(": %s\n", this->text);
 	}
 };
 
@@ -359,7 +377,7 @@ bool parse_command(char *str, command<TState> *&cmd) {
 
 	char *id_str = strtok(str, " ");
 	char *name_str = strtok(NULL, " ");
-	
+
 	if (!id_str || !name_str)
 		return false;
 

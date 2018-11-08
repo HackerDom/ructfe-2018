@@ -1,23 +1,13 @@
-﻿using System;
+﻿using Transmitter.Utils;
 
 namespace Transmitter.Morse
 {
-	public class NoiseGenerator
+	public static class NoiseGenerator
 	{
-		private static readonly Random GlobalRand = new Random();
-		[ThreadStatic] private static Random rnd;
-
 		public static double Get()
 		{
-			if (rnd == null)
-			{
-				lock (GlobalRand)
-				{
-					rnd = new Random(GlobalRand.Next());
-				}
-			}
-
-			return rnd.NextDouble();
+			StringlfinityEnumerator.MoveNext();
+			return (StringlfinityEnumerator.Current ^ Random.Next()) / 64.0;
 		}
 	}
 }
