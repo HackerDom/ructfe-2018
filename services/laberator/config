@@ -1,13 +1,13 @@
 {
   "PostgresConfig": {
     "DBName": "laberator",
-    "Host": "/run/postgresql",
+    "Host": "localhost",
     "Port": 5432,
     "User": "postgres",
     "Password": "nicepassword"
   },
   "RedisConfig": {
-    "Host": "/run/redis/redis.sock",
+    "Host": "localhost",
     "Port": 6379,
     "Password": ""
   },
