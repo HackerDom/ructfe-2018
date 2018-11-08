@@ -48,7 +48,7 @@ server {
     charset utf-8;
 
     location / {
-        root   /home/radiowave-static/;
+        root   /var/www/radiowave/static/;
         index  index.html;
     }
 
