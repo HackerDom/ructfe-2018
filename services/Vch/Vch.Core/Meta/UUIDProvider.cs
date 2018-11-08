@@ -23,7 +23,7 @@ namespace Vch.Core.Meta
             var rndBites = new BitArray(GetNextBytes());
             byte[] result = new byte[8];
             timeBits.Xor(rndBites).CopyTo(result, 0);
-            return BitConverter.ToUInt64(result);
+            return BitConverter.ToUInt64(result, 0);
         }
 
         private byte[] GetNextBytes()
