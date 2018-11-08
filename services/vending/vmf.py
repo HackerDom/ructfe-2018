@@ -1,6 +1,7 @@
+import struct
+
 from array import array
 from threading import Lock
-import struct
 
 
 class VendingMachinesFactory:
@@ -27,7 +28,7 @@ class VendingMachinesFactory:
     @staticmethod
     def slice_range(sls: slice) -> int: return sls.stop - sls.start
 
-    def add_new_machine(self, name, inventor, meta, key, master_key) -> int:
+    def add_new_machine(self, name: str, inventor: str, meta: str, key: str, master_key: str) -> int:
         name = name.encode('ascii')[:self.slice_range(self.__name)]
         inventor = inventor.encode('ascii')[:self.slice_range(self.__manufacturer)]
         meta = meta.encode('ascii')[:self.slice_range(self.__meta)]

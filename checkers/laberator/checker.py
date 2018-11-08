@@ -1,22 +1,25 @@
 #!/usr/bin/python3
 from base64 import b64encode
 from hashlib import sha1
+from sys import argv, stderr
 import json
 import pickle
-from sys import argv, stderr
+import re
 import socket
 import traceback
 
 import requests
 import websocket
 
-from generators import generate_headers, generate_login, generate_password, generate_label
+from generators import generate_headers, generate_login, generate_password, generate_label, generate_phrase
 
-REGISTER_URL = "http://{hostport}/register?login={login}&password={password}"
+REGISTER_URL = "http://{hostport}/register?login={login}&password={password}&phrase={phrase}"
 LOGIN_URL = "http://{hostport}/login?login={login}&password={password}"
+PHRASE_URL = "http://{hostport}/phrase"
 WS_URL = "ws://{}:{}/cmdexec"
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 PORT = 8080
+PHRASE_PATTERN = re.compile("<p>([a-zA-Z\\d!@#$%&*()_+=/., ]{1,100})</p>")
 
 
 def print_to_stderr(*objs):
@@ -27,11 +30,12 @@ def get_hash(obj):
     return b64encode(sha1(pickle.dumps(obj)).digest()).decode()
 
 
-def signup(hostport, login, password):
+def signup(hostport, login, password, phrase):
     register_url = REGISTER_URL.format(
         hostport=hostport,
         login=login,
-        password=password
+        password=password,
+        phrase=b64encode(phrase.encode()).decode()
     )
     r = requests.get(
         url=register_url,
@@ -69,7 +73,7 @@ def get_raw_cookies(cookies):
 
 
 def info():
-    print("vulns: 1")
+    print("vulns: 1:7")
     exit(OK)
 
 
@@ -102,12 +106,22 @@ def list_labels(ws, cookies):
     return json.loads(response.encode())
 
 
-def put(hostname, flag_id, flag, vuln):
+def get_phrase_data(hostname, cookies):
+    r = requests.get(
+        url=PHRASE_URL.format(hostport="{}:{}".format(hostname, PORT)),
+        headers=generate_headers(),
+        cookies=cookies
+    )
+    r.raise_for_status()
+    return PHRASE_PATTERN.findall(r.content.decode())
+
+
+def put_first(hostname, flag_id, flag):
     login = generate_login()
     password = generate_password()
     exit_code = OK
     try:
-        cookies = signup("{}:{}".format(hostname, PORT), login, password)
+        cookies = signup("{}:{}".format(hostname, PORT), login, password, generate_phrase())
         label_font, label_size = generate_label()
         ws = websocket.create_connection(
             WS_URL.format(hostname, PORT),
@@ -140,7 +154,7 @@ def put(hostname, flag_id, flag, vuln):
     exit(exit_code)
 
 
-def get(hostname, flag_id, flag, _):
+def get_first(hostname, flag_id, flag):
     login, password, expected_label_hash = flag_id.split(',')
     exit_code = OK
     try:
@@ -185,6 +199,59 @@ def get(hostname, flag_id, flag, _):
         traceback.print_exc()
         exit_code = MUMBLE
     exit(exit_code)
+
+
+def put_second(hostname, flag_id, flag):
+    login = generate_login()
+    password = generate_password()
+    exit_code = OK
+    try:
+        signup("{}:{}".format(hostname, PORT), login, password, flag)
+        print("{},{},{}".format(
+            login,
+            password,
+            flag
+        ))
+    except (requests.exceptions.ConnectTimeout, socket.timeout, requests.exceptions.ConnectionError):
+        traceback.print_exc()
+        exit_code = DOWN
+    except (
+        requests.exceptions.HTTPError, UnicodeDecodeError, json.decoder.JSONDecodeError,
+        TypeError, requests.exceptions.ReadTimeout
+    ):
+        traceback.print_exc()
+        exit_code = MUMBLE
+    exit(exit_code)
+
+
+def get_second(hostname, flag_id, flag):
+    login, password, encoded_flag = flag_id.split(',')
+    exit_code = OK
+    try:
+        cookies = signin("{}:{}".format(hostname, PORT), login, password)
+        phrase_data = get_phrase_data(hostname, cookies)
+        if len(phrase_data) != 1:
+            exit(CORRUPT)
+        phrase = phrase_data[0]
+        if phrase != flag:
+            exit(CORRUPT)
+    except (requests.exceptions.ConnectTimeout, socket.timeout, requests.exceptions.ConnectionError):
+        traceback.print_exc()
+        exit_code = DOWN
+    except (
+        requests.exceptions.HTTPError, UnicodeDecodeError, TypeError, requests.exceptions.ReadTimeout, KeyError
+    ):
+        traceback.print_exc()
+        exit_code = MUMBLE
+    exit(exit_code)
+
+
+def get(hostname, flag_id, flag, vuln):
+    {'1': get_first, '2': get_second}[vuln](hostname, flag_id, flag)
+
+
+def put(hostname, flag_id, flag, vuln):
+    {'1': put_first, '2': put_second}[vuln](hostname, flag_id, flag)
 
 
 COMMANDS = {'check': check, 'put': put, 'get': get, 'info': info}

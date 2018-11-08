@@ -1,7 +1,7 @@
 from dataclasses import dataclass
+
 from http_helpers.objects import Request, Response
 from handlers.base_handler import BaseHandler
-from itertools import chain
 
 
 @dataclass(frozen=True)
