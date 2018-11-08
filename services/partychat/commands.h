@@ -199,9 +199,14 @@
 		}
 	};
 
+	template<typename TState>
+	struct say_command;
+
 // State
 
 	#define HB_PERIOD 3
+
+	struct hb_command;
 
 	struct hb_daemon {
 		bool master_available = false;
@@ -227,6 +232,30 @@
 		}
 	};
 
+	struct master_link {
+		connection<node_state> master_conn;
+		hb_daemon hb;
+
+		master_link(const addrinfo &master_addr, node_state &state, const char *nick) : master_conn(master_addr, state), hb(nick) { }
+
+		void tick() {
+			hb.tick(master_conn);
+			master_conn.tick();
+		}
+	};
+
+	struct node_state {
+		master_link uplink;
+		std::unordered_map<pc_group, std::vector<connection<node_state> *>> talking_conns;
+		void *history_storage;
+
+		node_state(const addrinfo &master_addr, const char *nick) : uplink(master_addr, *this, nick) { }
+	};
+
+	struct face_state {
+
+	};
+
 	struct hb_command : command<node_state> {
 		using command<node_state>::command;
 
@@ -242,30 +271,7 @@
 		}
 	};
 
-	struct master_link {
-		connection<node_state> master_conn;
-		hb_daemon hb;
 
-		master_link(const addrinfo &master_addr, node_state &state, const char *nick) : master_conn(master_addr, state), hb(nick) { }
-
-		void tick() {
-			hb.tick(master_conn);
-			master_conn.tick();
-		}
-	};
-
-
-	struct node_state {
-		master_link uplink;
-		std::unordered_map<pc_group, std::vector<connection<node_state> *>> talking_conns;
-		void *history_storage;
-
-		node_state(const addrinfo &master_addr, const char *nick) : uplink(master_addr, *this, nick) { }
-	};
-
-	struct face_state {
-
-	};
 
 // Commands (specialized)
 
@@ -283,7 +289,7 @@
 				for (auto c : state.talking_conns[g]) {
 					c->flush(c->send<say_command>(this->text));
 				}
-
+				pc_add_line(g, this->text);
 			}
 			else {
 				pc_log("say_command::execute: saying '%s'..", this->text);
@@ -345,7 +351,6 @@
 
 		pc_log("parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
 
-		COMMAND_CASE(test_command<node_state>)
 		COMMAND_CASE(hb_command)
 		COMMAND_CASE(die_command<node_state>)
 		COMMAND_CASE(end_command<node_state>)
@@ -371,7 +376,6 @@
 
 		pc_log("parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
 
-		COMMAND_CASE(test_command<TState>)
 		COMMAND_CASE(die_command<TState>)
 		COMMAND_CASE(end_command<TState>)
 		COMMAND_CASE(say_command<TState>)
@@ -380,4 +384,3 @@
 
 		return false;
 	}
-

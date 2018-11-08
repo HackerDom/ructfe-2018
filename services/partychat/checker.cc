@@ -19,8 +19,18 @@ void make_name(char *buffer) {
 	sprintf(buffer, "%s%s", pt1, pt2);
 }
 
-bool get_team_name(char *ip, char *buffer) {
-	char *part = strtok(ip)
+bool get_team_name(char *host, char *buffer) {
+	char buf[256];
+	strcpy(buf, host);
+
+	strtok(host, ".");
+	char *part = strtok(NULL, ".");
+
+	if (!part)
+		return false;
+
+	strcpy(buffer, part);
+	return true;
 }
 
 void checker_fail(int status, const char *format, ...) {
