@@ -9,10 +9,12 @@ from handlers import index_handler, machine_name_handler, \
 
 from vmf import VendingMachinesFactory
 from vmkeys import VMKeys
+from dumper import Dumper
 
 
 VENDING_MACHINES = VendingMachinesFactory()
 VM_KEYS = VMKeys()
+DUMPER = Dumper(VENDING_MACHINES, VM_KEYS).start()
 
 
 def create_route_table():
@@ -53,7 +55,7 @@ class ConfigurableThreadingHTTPServer(ThreadingHTTPServer):
 
 
 if __name__ == '__main__':
-    port = 1883  # https://en.wikipedia.org/wiki/Vending_machine#Modern_vending_machines
+    port = 11883  # https://en.wikipedia.org/wiki/Vending_machine#Modern_vending_machines
     print("Starting server...")
     server = ConfigurableThreadingHTTPServer(
         ('', port),
@@ -61,5 +63,5 @@ if __name__ == '__main__':
         500
     )
     print("Server started!")
-    print(f"Listening for 'http://localhost:{port}/'...")
+    print(f"Listening for 'http://127.0.0.1:{port}/'...")
     server.serve_forever()
