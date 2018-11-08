@@ -199,6 +199,7 @@ function viewLabel(labelId) {
                 return;
             }
             let canvas = $("#l-c")[0];
+
             let context = canvas.getContext("2d");
             let image = $("#l-i")[0];
             context.font = label.Size + "px " + label.Font;

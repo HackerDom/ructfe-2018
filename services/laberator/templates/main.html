@@ -50,11 +50,14 @@
 
 <main role="main" class="wrapper">
     {{ if .Login }}
-        <p class="text-center">
-            Hello! In Laberator you can create awesome labels with custom text, font and size.
-        </p>
         <div class="row h-50">
-            <div class="col-sm-4"></div>
+            <div class="col-sm-4">
+                <p class="text-center">
+                    Hello! In Laberator you can create awesome labels with custom text, font and size.
+                    Example:
+                    123
+                </p>
+            </div>
             <div class="col-sm-4 my-auto">
                 <table class="table table-condensed">
                     <thead>
@@ -68,10 +71,11 @@
             </div>
         </div>
     {{else}}
-        <div class="container">
+        <div class="container form-top">
             <div class="row h-100">
                 <div class="col-sm-4"></div>
                 <div class="col-sm-4 my-auto">
+                    <h3>Sign In</h3>
                     <label>Login</label>
                     <div class="form-group">
                         <input type="text" class="form-control" placeholder="Login" id="l-fld" data-toggle="tooltip" data-placement="right" value="login">
