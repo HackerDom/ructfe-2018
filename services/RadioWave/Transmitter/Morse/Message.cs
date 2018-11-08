@@ -9,7 +9,6 @@ namespace Transmitter.Morse
 		[DataMember(Name = "text", Order = 1)] public string Text;
 		[DataMember(Name = "dpm", Order = 2)] public int DPM;
 		[DataMember(Name = "frequency", Order = 3)] public int Frequency;
-		[DataMember(Name = "key", Order = 5)] public string Key;
 
 		private sealed class MessageComparer : IEqualityComparer<Message>
 		{
