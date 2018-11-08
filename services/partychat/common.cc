@@ -2,6 +2,7 @@
 #include <time.h>
 #include <vector>
 #include <algorithm>
+#include <sys/stat.h>
 
 #include "common.h"
 
@@ -354,4 +355,72 @@
 			return false;
 		return !strcmp(group, other.group);
 	}
-	
+
+
+// Storage
+
+	#define HIST_MAX 50
+
+	char large_buffer[HIST_MAX * CONN_BUFFER_LENGTH];
+	void pc_add_line(const pc_group &g, const char *line) {
+		mkdir("histories", 0775);
+
+		char filename[256];
+		sprintf(filename, "histories/%s", g.group);
+
+		FILE *f = fopen(filename, "a+");
+		if (!f)
+			pc_fatal("Failed to open file '%s': %d.", filename, errno);
+
+		size_t length = fread(large_buffer, 1, sizeof(large_buffer), f);
+		large_buffer[length] = 0;
+		pc_log("pc_add_line: large_buffer[0] = '%c'.", large_buffer[0]);
+		pc_log("pc_add_line: large_buffer = '%s'.", large_buffer);
+
+		int lines = 0;
+		char *without_first_line = NULL;
+		for (char *p = large_buffer; *p; p++) {
+			if (*p == '\n') {
+				if (lines == 0)
+					without_first_line = p + 1;
+				lines++;
+			}
+		}
+
+		char *write_back = large_buffer;
+		if (lines + 1 > HIST_MAX)
+			write_back = without_first_line;
+
+		pc_log("pc_add_line: length = '%d'.", length);
+		pc_log("pc_add_line: write_back = '%s'.", write_back);
+		pc_log("pc_add_line: large_buffer = '%s'.", large_buffer);
+		pc_log("pc_add_line: line = '%s'.", line);
+
+		rewind(f);
+		fwrite(write_back, 1, strlen(write_back), f);
+
+		sprintf(large_buffer, "%s\n", line);
+		fwrite(large_buffer, 1, strlen(large_buffer), f);
+
+		size_t size = ftell(f);
+		//truncate(filename, size);
+
+		fclose(f);
+	}
+
+	void pc_send_lines(const pc_group &g, std::function<void(const char *)> sender) {
+		char filename[256];
+		sprintf(filename, "histories/%s", g.group);
+
+		FILE *f = fopen(filename, "r");
+		if (!f)
+			return;
+
+		char line_buffer[CONN_BUFFER_LENGTH];
+		while (!feof(f)) {
+			fread(line_buffer, 1, sizeof(line_buffer), f);
+			sender(line_buffer);
+		}
+
+		fclose(f);
+	}
