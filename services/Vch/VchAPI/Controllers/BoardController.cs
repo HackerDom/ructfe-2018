@@ -24,9 +24,9 @@ namespace VchAPI.Controllers
         }
 
         [HttpGet("messages")]
-        public async Task<ActionResult<IEnumerable<IMessage>>> GetAllMessages()
+        public async Task<ActionResult<IEnumerable<PublicMessage>>> GetAllMessages()
         {
-            return messageStorage.GetAllMessage().Cast<IMessage>().ToActionResult();
+            return messageStorage.GetAllMessage().Select(message => new PublicMessage(message)).ToActionResult();
         }
 
         [HttpPost("message/post/{userId}")]

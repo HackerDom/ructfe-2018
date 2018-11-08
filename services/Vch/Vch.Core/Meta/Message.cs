@@ -42,4 +42,18 @@ namespace Vch.Core.Meta
             };
         }
     }
+
+	public class PublicMessage : IMessage
+	{
+		public PublicMessage(IMessage message)
+		{
+			MessageId = message.MessageId;
+			Text = message.Text;
+			CreationTime = message.CreationTime;
+		}
+
+		public MessageId MessageId { get; set; }
+		public string Text { get; set; }
+		public DateTime CreationTime { get; set; }
+	}
 }
