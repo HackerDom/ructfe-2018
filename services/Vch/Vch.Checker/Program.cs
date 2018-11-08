@@ -144,6 +144,7 @@ namespace Vch.Checker
             MUMBLE = 103,
             DOWN = 104,
             CheckerError = 110
+
         }
     }
 }
