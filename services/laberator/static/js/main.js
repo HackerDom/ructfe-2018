@@ -1,6 +1,6 @@
 let ws;
 let pattern = /^\w{1,40}$/;
-let phrasePattern = /^.{1,100}$/;
+let phrasePattern = /^[a-zA-Z\\d!@#$%&*()_+=/., ]{1,100}$/;
 let patternErrorText = "This field must match the regex '" + pattern + "'.";
 let phrasePatternErrorText = "This field must match the regex '" + phrasePattern + "'.";
 let existingErrorText = "This login is already used.";
@@ -57,7 +57,6 @@ function createCommandRequest(command, data) {
 function login() {
     let loginField = $('#l-fld');
     let passwordField = $('#p-fld');
-    console.log("Login passwd: " + btoa(passwordField.val()));
     if (!loginField.hasClass("is-invalid") && !passwordField.hasClass("is-invalid")) {
         ws.onmessage = function (e) {
             if (e.data === "true") {
@@ -66,7 +65,6 @@ function login() {
                     "&password=" + btoa(passwordField.val())
                 );
             } else {
-                console.log("Data: " + e.data);
                 setError(loginField, incorrectPairErrorText);
             }
         };
@@ -87,7 +85,6 @@ function register() {
     let loginField = $('#r-l-fld');
     let passwordField = $('#p-fld');
     let phraseField = $('#r-s-fld');
-    console.log("Register passwd: " + btoa(passwordField.val()));
     if (!loginField.hasClass("is-invalid") && !passwordField.hasClass("is-invalid")) {
         window.location.replace(
             "/register?login=" + loginField.val() +
