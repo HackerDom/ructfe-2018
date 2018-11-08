@@ -32,6 +32,8 @@ namespace PartyChat.Master
             members.Sort();
         }
 
+        public override string ToString() => string.Join(", ", members);
+
         public IEnumerator<string> GetEnumerator() => members.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable) members).GetEnumerator();

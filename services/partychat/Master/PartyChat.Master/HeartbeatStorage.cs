@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Vostok.Logging.Abstractions;
 
 namespace PartyChat.Master
 {
@@ -8,8 +9,13 @@ namespace PartyChat.Master
     {
         private readonly ConcurrentDictionary<string, DateTime> lastHeartbeats = new ConcurrentDictionary<string, DateTime>();
         private readonly TimeSpan keepAlive;
+        private readonly ILog log;
 
-        public HeartbeatStorage(TimeSpan keepAlive) => this.keepAlive = keepAlive;
+        public HeartbeatStorage(TimeSpan keepAlive, ILog log)
+        {
+            this.keepAlive = keepAlive;
+            this.log = log.ForContext(GetType());
+        }
 
         public void RegisterHeartbeat(string nick) => lastHeartbeats[nick] = DateTime.UtcNow;
 
