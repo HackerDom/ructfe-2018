@@ -44,7 +44,7 @@ namespace PartyChat.Master
 
         public void SendCommand(string name, string text) => SendCommand(name, text, Interlocked.Increment(ref commandId));
 
-        public async Task<Response> SendCommandWithResponse(string name, string text)
+        public async Task<Response> SendCommandWithResponse(string name, string text, TimeSpan timeout)
         {
             var tcs = new TaskCompletionSource<Response>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -52,11 +52,11 @@ namespace PartyChat.Master
             executingCommands[id] = tcs;
             
             SendCommand(name, text, id);
-            var result = await tcs.Task;
+            var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
             
             executingCommands.TryRemove(id, out _);
             
-            return result;
+            return completedTask is Task<Response> taskWithResponse ? taskWithResponse.Result : null;
         }
 
         public void SendResponse(int id, string response) => SendCommand(Commands.Response, response, id);
@@ -80,7 +80,7 @@ namespace PartyChat.Master
 
             try
             {
-                await EndHimRightly(killNode);
+                await Task.WhenAny(EndHimRightly(killNode), Task.Delay(1000));
             
                 client.Dispose();
                 pendingCommands.Dispose();
