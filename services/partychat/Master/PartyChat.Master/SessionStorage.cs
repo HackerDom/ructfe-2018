@@ -9,7 +9,7 @@ namespace PartyChat.Master
         private readonly ILog log;
         private readonly ConcurrentDictionary<string, Session> sessions = new ConcurrentDictionary<string, Session>();
 
-        public SessionStorage(ILog log) => this.log = log.ForContext(GetType());
+        public SessionStorage(ILog log) => this.log = log.ForContext(GetType().Name);
 
         public Session this[string nick] => sessions.TryGetValue(nick, out var session) ? session : null;
 

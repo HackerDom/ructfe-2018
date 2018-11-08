@@ -106,9 +106,17 @@ namespace PartyChat.Master
         {
             while (IsAlive)
             {
-                var command = await pendingCommands.TakeAsync();
+                try
+                {
+                    var command = await pendingCommands.TakeAsync();
 
-                await client.SendCommand(command);
+                    await client.SendCommand(command);
+                }
+                catch (Exception error)
+                {
+                    log.Error(error);
+                    throw;
+                }
             }
         }
 
@@ -116,12 +124,20 @@ namespace PartyChat.Master
         {
             while (IsAlive)
             {
-                var command = await client.ReceiveCommand();
+                try
+                {
+                    var command = await client.ReceiveCommand();
 
-                if (command.Name == Commands.Response)
-                    HandleResponse(command.Id, command.Text);
-                else
-                    await commandHandler.HandleCommand(command, this);
+                    if (command.Name == Commands.Response)
+                        HandleResponse(command.Id, command.Text);
+                    else
+                        await commandHandler.HandleCommand(command, this);
+                }
+                catch (Exception error)
+                {
+                    log.Error(error);
+                    throw;
+                }
             }
         }
 

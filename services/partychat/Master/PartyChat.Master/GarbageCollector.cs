@@ -16,7 +16,7 @@ namespace PartyChat.Master
             this.sessionStorage = sessionStorage;
             this.heartbeatStorage = heartbeatStorage;
             this.period = period;
-            this.log = log.ForContext(GetType());
+            this.log = log.ForContext(GetType().Name);
         }
 
         public void Start()
