@@ -35,7 +35,7 @@ class State:
 				'User-Agent': UserAgents.get(),
 			})
 	def __del__(self):
-		self.session.close()
+		asyncio.ensure_future(self.session.close())
 	def get_url(self, path='', proto='http'):
 		return '{}://{}{}/{}'.format(proto, self.hostname, self.port, path.lstrip('/'))
 
@@ -67,12 +67,12 @@ class State:
 		except Exception as ex:
 			checker.down(error='{}\n{}'.format(log_info, data), exception=ex)
 
-	def get_connection(self, url):
+	async def get_connection(self, url):
 		url = self.get_url(url, proto='ws')
 		log_info = get_log_info(self.name, url)
 		try:
-			connection = self.session.ws_connect(url, origin=self.get_url(''))
+			connection = await self.session.ws_connect(url, origin=self.get_url(''))
 			checker.log(log_info + ' connected')
 		except Exception as ex:
 			checker.down(error=log_info, exception=ex)
-		return log_info,  connection
+		return log_info, connection
