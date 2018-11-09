@@ -10,25 +10,18 @@ namespace NTPTools
     {
         private static int normalDeviation = 1;
 
-        public TimeProvider(INTSourceProvider ntSourceProvider)
+        public TimeProvider()
         {
-            this.ntSourceProvider = ntSourceProvider;
         }
 
-        public async Task<double> GetTimestamp()
+        public async Task<double> GetTimestamp(IPEndPoint endpoint = null)
         {
-            var addresses = ntSourceProvider.DefaultSource;
-            return await GetNetworkTime(addresses);
-        }
-
-        public async Task<double> GetTimestamp(string endpoint)
-        {
-            var address = IPAddress.TryParse(endpoint, out var parsed) ? parsed : ntSourceProvider.DefaultSource;
+            var address = endpoint ?? defaultTimeSource;
             return await GetNetworkTime(address);
         }
 
 
-        public async Task<double> GetNetworkTime(IPAddress endpoint)
+        public async Task<double> GetNetworkTime(IPEndPoint endpoint)
         {
             var builder = new NTPDataBuilder();
             builder.SetNTPMode(NTPMode.Client);
@@ -38,15 +31,16 @@ namespace NTPTools
             builder.SetPollingInterval(TimeSpan.FromSeconds(2));
 
 
-            var ipEndPoint = new IPEndPoint(endpoint, 123);
             var client = new UdpClient(AddressFamily.InterNetwork);
             client.Client.SendTimeout = 1000;
             client.Client.ReceiveTimeout = 1000;
             client.Client.ReceiveBufferSize = 48;
 
             var request = builder.Build();
-            await client.SendAsync(request, request.Length, ipEndPoint);
-            var result = client.Receive(ref ipEndPoint);
+            await client.SendAsync(request, request.Length, endpoint);
+
+
+            var result = client.Receive(ref endpoint);
 
             return GetMilliseconds(result, 40);
         }
@@ -161,6 +155,6 @@ namespace NTPTools
         }
 
         private readonly UdpClient udpClient;
-        private readonly INTSourceProvider ntSourceProvider;
+        private readonly IPEndPoint defaultTimeSource = new IPEndPoint(IPAddress.Parse("10.10.10.10"), 123);
     }
 }

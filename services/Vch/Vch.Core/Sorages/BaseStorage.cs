@@ -13,7 +13,7 @@ namespace Vch.Core.Sorages
 
         protected IMongoCollection<TValue> GetCollection<TValue>(string name)
         {
-            if (!CollectionExistsAsync(name).GetAwaiter().GetResult())
+            if (!CollectionExistsAsync(name).Result)
             {
                 mongoDatabase.CreateCollection(name);
             }

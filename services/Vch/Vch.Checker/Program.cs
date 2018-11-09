@@ -77,7 +77,7 @@ namespace Vch.Checker
                     FirstName = GenerateFirstName(),
                     LastName = GenerateLastName(),
                     TrackingCode = args.Flag,
-                    VaultTimeSource = GetTimeSource().ToString()
+                    VaultTimeSource = new IPEndPoint(GetTimeSource(), 123)
                 });
 
                 await client.PostMessage(result.UserId, GenerateMessage(result));
