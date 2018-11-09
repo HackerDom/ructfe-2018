@@ -13,8 +13,8 @@ namespace Transmitter
 	{
 		private static void Main()
 		{
+			SetupThreadPool();
 			Log4NetHelper.Init();
-
 			AppDomain.CurrentDomain.UnhandledException += LogUnhandledException;
 
 			var settings = Settings.Load();
@@ -37,6 +37,14 @@ namespace Transmitter
 			var server = new WsServer(settings.Port, WsHandler.ProcessWsConnectionAsync);
 			await server.StartAsync().ConfigureAwait(false);
 			Thread.Sleep(Timeout.Infinite);
+		}
+		
+		private static void SetupThreadPool()
+		{
+			var threads = Math.Min(Environment.ProcessorCount * 128, short.MaxValue);
+            
+			ThreadPool.SetMaxThreads(short.MaxValue, short.MaxValue);
+			ThreadPool.SetMinThreads(threads, threads);   
 		}
 
 		private static readonly ILog Log = LogManager.GetLogger(typeof(Program));
