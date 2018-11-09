@@ -39,9 +39,7 @@ int main(int argc, char **argv) {
 	}
 	const char *nick = argv[3];
 
-	char log_file[64];
-	sprintf(log_file, "%s.log", argv[0]);
-	pc_init_logging(log_file, true);
+	pc_init_logging("/dev/null", true);
 
 	pc_log("Running with args: %s:%d %d %s", 
 		inet_ntoa(((sockaddr_in *)master_address->ai_addr)->sin_addr), 

@@ -17,6 +17,9 @@
     append: yes
     shell: /usr/sbin/nologin
 
+- name: Ensure perm 0750 on home
+  file: path=/home/laberator mode='0750'
+
 - name: Configure postgres
   copy:
     src: postgresql.conf

@@ -40,6 +40,9 @@
     system: yes
     shell: /usr/sbin/nologin
 
+- name: Ensure perm 0750 on home
+  file: path=/home/vch mode='0750'
+
 - name: Copy sources
   copy:
     src: '../services/Vch/{{ item }}'
