@@ -1,6 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using Vostok.Logging.Abstractions;
+
+#pragma warning disable 4014
 
 namespace PartyChat.Master
 {
@@ -24,7 +27,7 @@ namespace PartyChat.Master
             if (ReferenceEquals(existingSession, session))
                 return true;
             
-            if (!Equals(existingSession.RemoteEndpoint.Address, session.RemoteEndpoint.Address))
+            if (existingSession.IsAlive && !Equals(existingSession.RemoteEndpoint.Address, session.RemoteEndpoint.Address))
                 return false;
 
             existingSession.Kill(true);
@@ -41,5 +44,8 @@ namespace PartyChat.Master
                     ((ICollection<KeyValuePair<string, Session>>) sessions).Remove(pair);
             }
         }
+
+        public Response ListAlive() => 
+            new Response(sessions.Where(pair => pair.Value.IsAlive).Select(pair => pair.Key).OrderBy(e => e));
     }
 }
