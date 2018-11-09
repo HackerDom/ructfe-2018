@@ -67,7 +67,7 @@ namespace PartyChat.Master
                         if (memberSession == null || !memberSession.IsAlive)
                             continue;
                         
-                        var response = await memberSession.SendCommandWithResponse(Commands.History, command.Text, HistoryRequestTimeout);
+                        var response = await memberSession.SendCommandWithResponse(Commands.History, group.ToString(), HistoryRequestTimeout);
                         responses.Add(response);
                     }
                     
