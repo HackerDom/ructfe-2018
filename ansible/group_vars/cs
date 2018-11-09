@@ -264,5 +264,8 @@ teams: |
   {name => 'D0g3', network => '10.60.219.0/24', host => '10.60.219.2', logo => 'https://ructfe.org/ctf-media/uploads/2018/teams_logo/d0g3', token => 'e1f6737e-8a9b-4e75-a428-23e1434a73e4', country => 'China',},
   {name => 'The legendary majestic rectal worm and his grandson famous programmer fat crab  come in to gay-bar and bartender starts dance the jig', network => '10.60.220.0/24', host => '10.60.220.2', logo => 'https://ructfe.org/ctf-static/dummy.69777ab438ae.png', token => 'cb053454-e19e-45c8-a893-87e1733f2f44', country => 'Russia',},
 services: |
-  {name => 'test',  path => 'checkers/test.py', timeout => 15, tcp_port => 8080},
-  {name => 'laberator',  path => 'checkers/laberator/checker.py', timeout => 20, tcp_port => 8080},
+  {name => 'vending',    path => 'checkers/vending/checker.py',   timeout => 20, tcp_port => 1883},
+  {name => 'partychat',  path => 'checkers/partychat/checker',    timeout => 20, tcp_port => 6666},
+  {name => 'radiowave',  path => 't/checkers/random.pl',          timeout => 20, tcp_port => 7777},
+  {name => 'laberator',  path => 'checkers/laberator/checker.py', timeout => 20, tcp_port => 8888},
+  {name => 'Vch',        path => 't/checkers/random.pl',          timeout => 20, tcp_port => 9999},
