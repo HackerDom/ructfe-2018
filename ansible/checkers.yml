@@ -23,3 +23,5 @@
       - aiohttp
       - scipy
       - numpy
+      - websocket-client
+

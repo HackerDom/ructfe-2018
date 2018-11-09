@@ -7,6 +7,7 @@
 
 [Service]
     Type=simple
+    ExecStartPre=+/bin/chmod 770 /run/mongodb/mongodb-27017.sock
     ExecStart=/usr/bin/dotnet run -c Release
     KillMode=control-group
     WorkingDirectory=/home/vch/VchAPI/

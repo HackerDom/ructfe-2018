@@ -24,7 +24,8 @@ ansible-playbook -i ansible_hosts setup.yml
 
 # Power off VM
 ssh -p2222 localhost poweroff || echo 'OK'
-sleep 8
+sleep 20
 
 # Export image
+mv ructfe2018-tmp.ova{,.bak} || echo 'no file?'
 time vboxmanage export "ructfe2018-master" -o ructfe2018-tmp.ova

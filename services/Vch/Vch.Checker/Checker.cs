@@ -9,7 +9,7 @@ using VchUtils;
 
 namespace Vch.Checker
 {
-    class Program
+    class Checker
     {
         static int Main(string[] args)
         {
@@ -77,7 +77,11 @@ namespace Vch.Checker
                     FirstName = GenerateFirstName(),
                     LastName = GenerateLastName(),
                     TrackingCode = args.Flag,
-//                    VaultTimeSource = GetTimeSource().ToString()
+                    VaultTimeSource = args.NTP ?? new IPEndpointWrapper
+                    {
+                        IPAddres = GetTimeSource().ToString(),
+                        Port = 123
+                    }
                 });
 
                 await client.PostMessage(result.UserId, GenerateMessage(result));
@@ -135,6 +139,8 @@ namespace Vch.Checker
             public string Host => args[1];
             public string FlagId => args[2];
             public string Flag => args[3];
+            public IPEndpointWrapper NTP => args.Length > 3  ?
+                new IPEndpointWrapper{Port = args.Length > 4 ? int.Parse(args[5]) : 123, IPAddres = args[4] } : null;
         }
 
         enum ServiceState
@@ -144,7 +150,6 @@ namespace Vch.Checker
             MUMBLE = 103,
             DOWN = 104,
             CheckerError = 110
-
         }
     }
 }

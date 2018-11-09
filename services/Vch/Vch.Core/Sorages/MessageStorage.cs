@@ -51,6 +51,8 @@ namespace Vch.Core.Sorages
 
         private async Task Init()
         {
+            //messagesCollection.DeleteManyAsync(message => true).Wait();
+
             var loadedMessages = await messagesCollection.Find(_ => true).ToListAsync();
             foreach (var message in loadedMessages)
                 messages[message.MessageId] = message;

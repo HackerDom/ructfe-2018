@@ -13,7 +13,34 @@
     name: laberator
     createhome: yes
     system: yes
+    groups: redis
+    append: yes
     shell: /usr/sbin/nologin
+
+- name: Configure postgres
+  copy:
+    src: postgresql.conf
+    dest: /etc/postgresql/10/main/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: u=rw,g=r,o=r
+
+- name: Configure redis
+  copy:
+    src: redis.conf
+    dest: /etc/redis/redis.conf
+    owner: redis
+    group: redis
+    mode: u=rw,g=r,o=
+
+- name: restart postgre and redis
+  systemd:
+    name: '{{ item }}'
+    state: restarted
+    daemon_reload: yes
+  with_items:
+    - postgresql@10-main
+    - redis
 
 - name: Provision postgres
   become_user: postgres
@@ -64,6 +91,9 @@
       done
   args:
     chdir: /home/laberator/
+
+  #- name: Install postgres and redis systemd service
+  #copy: src=postgresql@.service dest=/etc/systemd/system/postgresql@.service
 
 - name: Install laberator systemd service
   copy: src=laberator.service dest=/etc/systemd/system/laberator.service
