@@ -10,8 +10,8 @@ namespace PartyChat.Master
         {
             if (responses.Count == 0)
                 return null;
-            
-            return responses.First(); // TODO
+
+            return responses.Where(r => r != null).OrderByDescending(r => r.Count).FirstOrDefault();
         }
     }
 }
