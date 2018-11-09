@@ -15,23 +15,13 @@ namespace NTPTools
             this.ntSourceProvider = ntSourceProvider;
         }
 
-        public async Task<double> GetTimestamp()
+        public async Task<ulong> GetTimestamp(string endpoint)
         {
-            var addresses = ntSourceProvider.DefaultSource;
-            return await GetNetworkTime(addresses);
-        }
-
-        public async Task<double> GetTimestamp(string endpoint)
-        {
-            endpoint = "!";
-            var defaultTime = await GetNetworkTime(ntSourceProvider.DefaultSource);
             var address = IPAddress.TryParse(endpoint, out var parsed) ? parsed : ntSourceProvider.DefaultSource;
-            var customTime = await GetNetworkTime(address);
-            return Math.Abs(defaultTime - customTime) > normalDeviation ? defaultTime : customTime;
+            return await GetNetworkTime(address);
         }
 
-
-        public async Task<double> GetNetworkTime(IPAddress endpoint)
+        public async Task<ulong> GetNetworkTime(IPAddress endpoint)
         {
             var builder = new NTPDataBuilder();
             builder.SetNTPMode(NTPMode.Client);

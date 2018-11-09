@@ -90,14 +90,17 @@
 	pc_connection::pc_connection(int sock) {
 		socket = sock;
 		recv_buffer = new char[CONN_BUFFER_LENGTH];
+		recv_leftover = new char[CONN_BUFFER_LENGTH];
 		send_buffer = new char[CONN_BUFFER_LENGTH];
 		alive = true;
+		bzero(recv_leftover, CONN_BUFFER_LENGTH);
 	}
 
 	pc_connection::~pc_connection() {
 		if (socket) {
 			close(socket);
 			delete[] recv_buffer;
+			delete[] recv_leftover;
 			delete[] send_buffer;
 		}
 	}
@@ -174,27 +177,39 @@
 		if (recv_length == 0)
 			pc_fatal("pc_connection::poll_receive: there is no active receive operation.");
 
-		int result = read(socket, recv_buffer + recv_index, recv_length - recv_index);
-		if (result < 0) {
-			if (errno == EWOULDBLOCK || errno == EAGAIN)
-				return 0;
+		if (recv_leftover[0]) {
+			strcpy(recv_buffer, recv_leftover);
+			bzero(recv_leftover, CONN_BUFFER_LENGTH);
 
-			pc_log("Error: poll_receive: errno = %d.", result, errno);
-			alive = false;
-			return -1;
+			recv_index = strlen(recv_buffer);
 		}
-		if (result == 0) {
-			pc_log("Error: poll_receive: connection was closed.");
-			alive = false;
-			return -1;
-		}
+		else {
 
-		recv_index += result;
+			int result = read(socket, recv_buffer + recv_index, recv_length - recv_index);
+			if (result < 0) {
+				if (errno == EWOULDBLOCK || errno == EAGAIN)
+					return 0;
+
+				pc_log("Error: poll_receive: errno = %d.", result, errno);
+				alive = false;
+				return -1;
+			}
+			if (result == 0) {
+				pc_log("Error: poll_receive: connection was closed.");
+				alive = false;
+				return -1;
+			}
+
+			recv_index += result;
+		}
 
 		recv_buffer[recv_index] = 0;
 		char *endl = strchr(recv_buffer, '\n');
 		if (endl) {
 			*endl = 0;
+			if (recv_buffer + recv_index > endl + 1) {
+				strcpy(recv_leftover, endl + 1);
+			}
 			recv_length = recv_index = 0;
 			return 1;
 		}
@@ -326,18 +341,26 @@
 
 		std::sort(names.begin(), names.end(), [](const char *a, const char *b) { return strcmp(a, b) < 0; });
 
+		std::vector<char *> unique_names;
+		unique_names.push_back(names[0]);
+		for (int i = 1; i < names.size(); i++) {
+			if (!strcmp(names[i], names[i - 1]))
+				continue;
+			unique_names.push_back(names[i]);
+		}
+
 		int length = 0;
-		for (auto s : names) {
+		for (auto s : unique_names) {
 			length += 1 + strlen(s);
 		}
 
 		char *g = new char[length + 1];
 		bzero(g, length + 1);
-		for (auto s : names) {
+		for (auto s : unique_names) {
 			strcat(g, s);
 			strcat(g, " ");
 		}
-		g[length] = 0;
+		g[length - 1] = 0;
 
 		return g;
 	}
@@ -355,7 +378,6 @@
 			return false;
 		return !strcmp(group, other.group);
 	}
-
 
 // Storage
 
@@ -429,9 +451,11 @@
 
 		char line_buffer[CONN_BUFFER_LENGTH];
 		while (!feof(f)) {
-			fread(line_buffer, 1, sizeof(line_buffer), f);
+			fgets(line_buffer, sizeof(line_buffer), f);
 			sender(line_buffer);
+			pc_log("pc_send_lines: sent '%s'", line_buffer);
 		}
 
 		fclose(f);
 	}
+

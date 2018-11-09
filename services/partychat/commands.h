@@ -11,6 +11,7 @@
 
 	struct node_state;
 	struct face_state;
+	struct checker_state;
 
 	template<typename TState>
 	struct response;
@@ -95,7 +96,10 @@
 			this->addr = &addr;
 			reconnect();
 		}
-		void reconnect(){
+		~connection() {
+			pc_log("connection::tick: they killed me!");
+		}
+		void reconnect() {
 			if (addr) {
 				pc_log("connection::reconnect: connecting to remote endpoint..");
 				pc_connect(*addr, conn);
@@ -159,6 +163,7 @@
 		}
 
 		void flush(int id) {
+			pc_log("connection::flush() id = %d", id);
 			tick();
 			while (alive() && (conn.is_sending() || !pending_commands.empty() || executing_commands.find(id) != executing_commands.end()))
 				tick();
@@ -200,16 +205,20 @@
 	};
 
 	template<typename TState>
+	struct hb_command;
+
+	template<typename TState>
 	struct say_command;
 
 	template<typename TState>
 	struct history_command;
 
+	template<typename TState>
+	struct list_command;
+
 // State
 
 	#define HB_PERIOD 3
-
-	struct hb_command;
 
 	struct hb_daemon {
 		bool master_available = false;
@@ -221,7 +230,7 @@
 
 		bool tick(connection<node_state> &conn) {
 			if (!hb_sent && time(NULL) - last_hb >= HB_PERIOD) {
-				conn.send<hb_command>(nick);
+				conn.send<hb_command<node_state>>(nick);
 				hb_sent = true;
 			}
 		}
@@ -269,7 +278,22 @@
 
 	};
 
-	struct hb_command : command<node_state> {
+	struct checker_state {
+		const char *team_nick;
+		bool team_listed = false;
+
+		const char *flag;
+		bool flag_found = false;
+
+		checker_state(const char *team_nick) : team_nick(team_nick), flag(NULL) { }
+
+		checker_state(const char *team_nick, const char *flag) : team_nick(team_nick), flag(flag) { }
+	};
+
+// Commands (specialized)
+
+	template<>
+	struct hb_command<node_state> : command<node_state> {
 		using command<node_state>::command;
 
 		static const char *_name() { return "hb"; }
@@ -281,10 +305,20 @@
 
 		virtual bool handle_response(const char *response, node_state &state) {
 			state.uplink.hb.process_response(response);
+			return true;
 		}
 	};
 
-// Commands (specialized)
+	template<>
+	struct hb_command<checker_state> : command<checker_state> {
+		using command<checker_state>::command;
+
+		static const char *_name() { return "hb"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<checker_state> &rsp, connection<checker_state> &conn, checker_state &state) { }
+		virtual bool needs_response() { return true; }
+	};
 
 	template<>
 	struct say_command<node_state> : command<node_state> {
@@ -299,7 +333,10 @@
 				pc_group g(this->text);
 
 				for (int i = 0; i < CON_CT; i++) {
-					state.controllers[i]->send<say_command>(this->text);
+					if (state.controllers[i]) {
+						pc_log("say_command::execute: saying '%s' to a controller..", this->text);
+						state.controllers[i]->send<say_command>(this->text);
+					}
 				}
 				pc_add_line(g, this->text);
 			}
@@ -307,8 +344,9 @@
 				pc_log("say_command::execute: saying '%s'..", this->text);
 				pc_group g(this->text);
 
-				state.uplink.master_conn.send<say_command>(this->text);
-				conn.flush(conn.send<say_command>(this->text));
+				char buffer[CONN_BUFFER_LENGTH];
+				snprintf(buffer, sizeof(buffer), "%s says: %s", state.uplink.hb.nick, this->text);
+				state.uplink.master_conn.send<say_command>(buffer);
 			}
 		}
 	};
@@ -321,8 +359,20 @@
 		virtual const char *name() { return _name(); }
 
 		virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) {
+			pc_log("say_command::execute: saying '%s'..", this->text);
 			printf(": %s\n", this->text);
 		}
+	};
+
+
+	template<>
+	struct say_command<checker_state> : command<checker_state> {
+		using command<checker_state>::command;
+
+		static const char *_name() { return "say"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<checker_state> &rsp, connection<checker_state> &conn, checker_state &state) { }
 	};
 
 	template<>
@@ -343,7 +393,7 @@
 			else {
 				pc_log("history_command::execute: getting history from master '%s'..", this->text);
 				pc_group g(this->text);
-				
+
 				state.uplink.master_conn.send<history_command>(this->text);
 			}
 		}
@@ -351,10 +401,13 @@
 		virtual bool needs_response() { return true; }
 
 		virtual bool handle_response(const char *response, node_state &state) {
+			pc_log("history_command::handle_response: %s", response);
 			if (!response || strlen(response) == 0)
 				return true;
+
 			for (int i = 0; i < CON_CT; i++) {
-				state.controllers[i]->send<history_command>(this->text);
+				if (state.controllers[i])
+					state.controllers[i]->send<history_command>(this->text);
 			}
 			return false;
 		}
@@ -372,6 +425,56 @@
 		}
 	};
 
+	template<>
+	struct history_command<checker_state> : command<checker_state> {
+		using command<checker_state>::command;
+
+		static const char *_name() { return "history"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<checker_state> &rsp, connection<checker_state> &conn, checker_state &state) { }
+
+		virtual bool needs_response() { return true; }
+
+		virtual bool handle_response(const char *response, checker_state &state) {
+			pc_log("history_command::handle_response: %s", response);
+			if (!response || strlen(response) == 0)
+				return true;
+
+			if (!strncmp(response, state.flag, strlen(state.flag))) {
+				state.flag_found = true;
+				return true;
+			}
+
+			return false;
+		}
+	};
+
+	template<>
+	struct list_command<checker_state> : command<checker_state> {
+		using command<checker_state>::command;
+
+		static const char *_name() { return "list"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<checker_state> &rsp, connection<checker_state> &conn, checker_state &state) { }
+
+		virtual bool needs_response() { return true; }
+
+		virtual bool handle_response(const char *response, checker_state &state) {
+			pc_log("list_command::handle_response: %s", response);
+			if (!response || strlen(response) == 0)
+				return true;
+
+			if (!strcmp(response, state.team_nick)) {
+				state.team_listed = true;
+				return true;
+			}
+
+			return false;
+		}
+	};
+
 
 // Parse commands
 
@@ -380,31 +483,6 @@
 			cmd = new x(text_str, atoi(id_str)); \
 			return true; \
 		}
-
-	template<>
-	bool parse_command<node_state>(char *str, command<node_state> *&cmd) {
-
-		pc_log("parse_command: '%s'", str);
-
-		char *id_str = strtok(str, " ");
-		char *name_str = strtok(NULL, " ");
-
-		if (!id_str || !name_str)
-			return false;
-
-		char *text_str = name_str + strlen(name_str) + 1;
-
-		pc_log("parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
-
-		COMMAND_CASE(hb_command)
-		COMMAND_CASE(die_command<node_state>)
-		COMMAND_CASE(end_command<node_state>)
-		COMMAND_CASE(say_command<node_state>)
-		COMMAND_CASE(history_command<node_state>)
-		COMMAND_CASE(response<node_state>)
-
-		return false;
-	}
 
 	template<typename TState>
 	bool parse_command(char *str, command<TState> *&cmd) {
