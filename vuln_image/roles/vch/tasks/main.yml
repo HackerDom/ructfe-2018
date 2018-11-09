@@ -3,11 +3,12 @@
   apt:
     deb: https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
 
-- name: Install .NET Core 2.1 and MongoDB
+- name: Install .NET Core 2.1 and MongoDB and NTP server
   apt:
     name:
      - dotnet-sdk-2.1
      - mongodb
+     - ntp
     state: latest
     update_cache: yes
 
@@ -16,6 +17,8 @@
     name: vch
     createhome: yes
     system: yes
+    groups: mongodb
+    append: yes
     shell: /usr/sbin/nologin
 
 - name: Copy sources
@@ -39,14 +42,22 @@
     chdir: /home/vch/VchAPI/
   notify: restart vch service
 
-- name: Install vch systemd service
-  copy: src=vch.service dest=/etc/systemd/system/vch.service
+- name: Install systemd units
+  copy:
+    src: '{{ item }}'
+    dest: '/etc/systemd/system/{{ item }}'
   notify: restart vch service
+  with_items:
+    - vch.service
+    - mongodb.service
 
-- name: Enable vch service
+- name: Enable services
   systemd:
-    name: vch
+    name: '{{ item }}'
     enabled: yes
-    state: started
+    state: restarted
     daemon_reload: yes
+  with_items:
+    - vch
+    - mongodb
 

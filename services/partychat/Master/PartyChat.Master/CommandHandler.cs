@@ -39,6 +39,11 @@ namespace PartyChat.Master
                     session.SendResponse(command.Id, "OK");
                     break;
                 
+                case Commands.End:
+                    heartbeatStorage.RemoveSession(nick);
+                    await session.Kill();
+                    break;
+                
                 case Commands.Say:
                     group = Group.ExtractGroup(command.Text);
                     
@@ -56,7 +61,7 @@ namespace PartyChat.Master
                 
                 case Commands.History:
                     group = Group.ExtractGroup(command.Text);
-                    group.Add(nick);
+                    group = group.Add(nick);
                     
                     log.Info("The history of group ({group}) was requested. Collecting..", group);
                     
@@ -67,7 +72,7 @@ namespace PartyChat.Master
                         if (memberSession == null || !memberSession.IsAlive)
                             continue;
                         
-                        var response = await memberSession.SendCommandWithResponse(Commands.History, command.Text, HistoryRequestTimeout);
+                        var response = await memberSession.SendCommandWithResponse(Commands.History, group.ToString(), HistoryRequestTimeout);
                         responses.Add(response);
                     }
                     

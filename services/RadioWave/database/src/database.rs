@@ -116,11 +116,14 @@ impl Database {
         }
 
         value.prepare();
+        
         {
-            let _ = self.lock_obj.lock().unwrap();
+            let lock = self.lock_obj.lock().unwrap();
 
             writeln!(append_file(TAIL_FILE), "{}",
                      json::encode(&TailPair { key, value: value.clone() }).unwrap());
+            
+            drop(lock);
         }
         
         vec.push(value);
@@ -173,9 +176,12 @@ impl Database {
         let tail = TAIL_FILE.to_string();
         
         {
-            let _ = self.lock_obj.lock().unwrap();
+            let lock = self.lock_obj.lock().unwrap();
+            
             rename(&tail, &(tail.clone() + ".old")).unwrap();
             create_file(&tail);
+            
+            drop(lock);
         }
 
         let mut file = create_file(&(snapshot.clone() + ".tmp"));

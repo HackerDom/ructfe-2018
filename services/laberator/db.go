@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
@@ -62,7 +63,11 @@ func (api *DBApi) Register(login, password, phrase *string) error {
 	if len(users) != 0 {
 		return DBApiError(fmt.Sprintf("User with login '%s' is already exist", *login))
 	}
-	passwordHash := hasher.GetHash(([]byte)(*password))
+	decodedPassword, err := base64.StdEncoding.DecodeString(*password)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	passwordHash := hasher.GetHash(decodedPassword)
 	phraseObj := Phrase{Value: *phrase}
 	phraseObjId := api.db.Create(&phraseObj).Value.(*Phrase).ID
 	user := User{Login: *login, PasswordHash: passwordHash[:], PhraseID: phraseObjId}
@@ -85,7 +90,11 @@ func (api *DBApi) Validate(login, password *string) bool {
 	if len(users) != 1 {
 		return false
 	}
-	passwordHash := hasher.GetHash([]byte(*password))
+	decodedPassword, err := base64.StdEncoding.DecodeString(*password)
+	if err != nil {
+		return false
+	}
+	passwordHash := hasher.GetHash(decodedPassword)
 	if bytes.Equal(users[0].PasswordHash, passwordHash[:]) {
 		return true
 	}

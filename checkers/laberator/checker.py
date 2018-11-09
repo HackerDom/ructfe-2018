@@ -18,7 +18,7 @@ LOGIN_URL = "http://{hostport}/login?login={login}&password={password}"
 PHRASE_URL = "http://{hostport}/phrase"
 WS_URL = "ws://{}:{}/cmdexec"
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
-PORT = 18888
+PORT = 8888
 PHRASE_PATTERN = re.compile("<h1>([a-zA-Z0-9!@#$%&*()_+=/., ]{1,100})</h1>")
 
 
