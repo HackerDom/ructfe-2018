@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
 		pc_log("Master: %s", state.uplink.hb.master_available ? "available" : "unavailable");
 
-		if (!state.uplink.master_conn.alive()) {
+		if (!state.uplink.master_conn.alive() || !state.uplink.hb.master_available) {
 			sleep(1);
 			continue;
 		}

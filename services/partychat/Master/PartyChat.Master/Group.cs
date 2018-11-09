@@ -34,7 +34,7 @@ namespace PartyChat.Master
             return  new Group(newMembers);
         }
 
-        public override string ToString() => string.Join(", ", members);
+        public override string ToString() => string.Join(" ", members);
 
         public IEnumerator<string> GetEnumerator() => members.GetEnumerator();
 

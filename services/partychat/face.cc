@@ -14,6 +14,7 @@ bool handle_command(const char *command, const char *args, connection<face_state
 	if (!strcmp("!help", command)) {
 		printf("Available commands:\n");
 		printf("\t!help - display this message.\n");
+		printf("\t!list - see who's online.\n");
 		printf("\t!say <message> - say something.\n");
 		printf("\t!history <group> - show the history of a conversation.\n");
 		printf("\t!quit - exit partychat.\n");
@@ -24,8 +25,11 @@ bool handle_command(const char *command, const char *args, connection<face_state
 		conn.flush(conn.send<end_command<face_state>>(args));
 		return false;
 	}
+	if (!strcmp("!list", command)) {
+		conn.flush(conn.send<list_command<face_state>>(args));
+		return true;
+	}
 	if (!strcmp("!say", command)) {
-		// load history if needed
 		conn.flush(conn.send<say_command<face_state>>(args));
 		return true;
 	}
@@ -44,7 +48,7 @@ int main(int argc, char **argv) {
 
 	char log_file[64];
 	sprintf(log_file, "%s.log", argv[0]);
-	pc_init_logging(log_file, true);
+	pc_init_logging(log_file, false);
 
 	addrinfo *addr;
 	if (!pc_parse_endpoint("localhost:6666", &addr))
