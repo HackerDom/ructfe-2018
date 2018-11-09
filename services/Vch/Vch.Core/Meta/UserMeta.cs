@@ -4,7 +4,7 @@
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string VaultTimeSource { get; set; }
+        public IPEndpointWrapper VaultTimeSource { get; set; }
         public string TrackingCode { get; set; }
     }
 }

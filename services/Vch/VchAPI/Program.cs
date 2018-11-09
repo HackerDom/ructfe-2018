@@ -15,6 +15,8 @@ namespace VchAPI
             WebHost.CreateDefaultBuilder(args)
                 .ConfigureServices(services => services.AddAutofac())
                 .UseStartup<Startup>()
-                .UseKestrel();
+                .UseKestrel(options => 
+                    options.ListenAnyIP(19999)
+                );
     }
 }
