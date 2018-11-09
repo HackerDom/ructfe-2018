@@ -5,7 +5,7 @@ services:
     command: dotnet run -c Release
     working_dir: /app/VchAPI
     ports:
-     - "19999:19999"
+      - "127.0.0.1:19999:19999"
     restart: always
     volumes:
      - ./:/app
