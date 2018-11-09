@@ -341,18 +341,26 @@
 
 		std::sort(names.begin(), names.end(), [](const char *a, const char *b) { return strcmp(a, b) < 0; });
 
+		std::vector<char *> unique_names;
+		unique_names.push_back(names[0]);
+		for (int i = 1; i < names.size(); i++) {
+			if (!strcmp(names[i], names[i - 1]))
+				continue;
+			unique_names.push_back(names[i]);
+		}
+
 		int length = 0;
-		for (auto s : names) {
+		for (auto s : unique_names) {
 			length += 1 + strlen(s);
 		}
 
 		char *g = new char[length + 1];
 		bzero(g, length + 1);
-		for (auto s : names) {
+		for (auto s : unique_names) {
 			strcat(g, s);
 			strcat(g, " ");
 		}
-		g[length] = 0;
+		g[length - 1] = 0;
 
 		return g;
 	}
