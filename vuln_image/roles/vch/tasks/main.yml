@@ -1,15 +1,37 @@
 ---
-- name: Install dotnet repo keys
-  apt:
-    deb: https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
-
-- name: Install .NET Core 2.1 and MongoDB
+- name: Install prerequisites for docker
   apt:
     name:
-     - dotnet-sdk-2.1
-     - mongodb
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
     state: latest
     update_cache: yes
+
+- name:    Add Docker GPG key
+  apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+
+- name:    Add Docker APT repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+
+- name: Install Docker and NTP server
+  apt:
+    name:
+     - docker-ce
+     - ntp
+    state: latest
+    update_cache: yes
+
+- name: Install Docker Compose
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/1.23.1/docker-compose-Linux-x86_64"
+    dest: "/usr/local/bin/docker-compose"
+    force: true
+    owner: "root"
+    group: "root"
+    mode: "0755"
 
 - name: Create user
   user:
@@ -17,6 +39,9 @@
     createhome: yes
     system: yes
     shell: /usr/sbin/nologin
+
+- name: Ensure perm 0750 on home
+  file: path=/home/vch mode='0750'
 
 - name: Copy sources
   copy:
@@ -29,24 +54,28 @@
     - 'NTPTools'
     - 'VchAPI'
     - 'Vch.Core'
+    - 'docker-compose.yml'
   notify: restart vch service
 
-- name: Build service
-  become_user: vch
-  shell: |
-      dotnet build -c Release
+- name: Build service in docker
+  shell: docker-compose run vch dotnet build -c Release
   args:
-    chdir: /home/vch/VchAPI/
-  notify: restart vch service
+    chdir: /home/vch/
 
-- name: Install vch systemd service
-  copy: src=vch.service dest=/etc/systemd/system/vch.service
+- name: Install systemd units
+  copy:
+    src: '{{ item }}'
+    dest: '/etc/systemd/system/{{ item }}'
   notify: restart vch service
+  with_items:
+    - vch.service
 
-- name: Enable vch service
+- name: Enable services
   systemd:
-    name: vch
+    name: '{{ item }}'
     enabled: yes
-    state: started
+    state: restarted
     daemon_reload: yes
+  with_items:
+    - vch
 

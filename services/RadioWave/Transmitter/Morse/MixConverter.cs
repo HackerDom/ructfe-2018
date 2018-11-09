@@ -18,10 +18,7 @@ namespace Transmitter.Morse
 		public void Sync(List<Message> messages)
 		{
 			if (messages == null)
-			{
-				Remove(generators.Keys.ToList());
 				return;
-			}
 
 			var add = messages.Except(generators.Keys, Message.Comparer).ToList();
 			var remove = generators.Keys.Except(messages, Message.Comparer).ToList();

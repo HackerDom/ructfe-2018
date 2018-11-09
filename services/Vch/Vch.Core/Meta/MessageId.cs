@@ -1,41 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
 
 namespace Vch.Core.Meta
 {
     public class MessageId
     {
-	    [JsonConstructor]
-		public MessageId(ulong id)
+        [JsonConstructor]
+        public MessageId(string id)
         {
             Id = id;
         }
 
         public static MessageId Parse(string id)
         {
-            return new MessageId(UInt64.Parse(id));
+            return new MessageId(id.ToString());
         }
 
-        public UInt64 Id { get; set; }
-
-        public static IEqualityComparer<MessageId> IdComparer { get; } = new IdEqualityComparer();
-
-        private sealed class IdEqualityComparer : IEqualityComparer<MessageId>
+        public static MessageId From(UInt64 id)
         {
-            public bool Equals(MessageId x, MessageId y)
-            {
-                if (ReferenceEquals(x, y)) return true;
-                if (ReferenceEquals(x, null)) return false;
-                if (ReferenceEquals(y, null)) return false;
-                if (x.GetType() != y.GetType()) return false;
-                return x.Id == y.Id;
-            }
+            return new MessageId(id.ToString());
+        }
 
-            public int GetHashCode(MessageId obj)
-            {
-                return obj.Id.GetHashCode();
-            }
+        [BsonId]
+        public string Id { get; set; }
+
+        protected bool Equals(MessageId other)
+        {
+            return string.Equals(Id, other.Id, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((MessageId) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Id != null ? Id.GetHashCode() : 0);
         }
     }
 }

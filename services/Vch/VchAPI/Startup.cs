@@ -37,11 +37,10 @@ namespace VchAPI
 
             containerBuilder.RegisterInstance(client).As<IMongoClient>();
 
-            containerBuilder.RegisterType<UserStorage>().As<IUserStorage>();
-            containerBuilder.RegisterType<MessageStorage>().As<IMessageStorage>();
-            containerBuilder.RegisterType<UUIDProvider>().As<IUUIDProvider>();
+            containerBuilder.RegisterType<UserStorage>().As<IUserStorage>().SingleInstance();
+            containerBuilder.RegisterType<MessageStorage>().As<IMessageStorage>().SingleInstance();
+            containerBuilder.RegisterType<UUIDProvider>().As<IUUIDProvider>().SingleInstance();
             containerBuilder.RegisterType<TimeProvider>().As<ITimeProvider>();
-            containerBuilder.RegisterType<NTSourceProvider>().As<INTSourceProvider>().SingleInstance();
             containerBuilder.RegisterType<BoardController>().PropertiesAutowired().SingleInstance();
         }
 

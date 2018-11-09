@@ -13,6 +13,9 @@
     system: yes
     shell: /usr/sbin/nologin
 
+- name: Ensure perm 0750 on home
+  file: path=/home/partychat mode='0750'
+
 - name: Copy sources to tmp dir (/run/build_partychat)
   copy:
     src: ../services/partychat/

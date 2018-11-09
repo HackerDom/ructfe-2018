@@ -60,10 +60,15 @@ impl Handler for PostMessageHandler {
         let ref key = get_http_param!(req, "key");
         let mut payload = String::new();
         try_it!(req.body.read_to_string(&mut payload));
-        
+
         let msg: Message = try_it!(json::decode(&payload), status::BadRequest);
+
+        if !is_valid_str(&key.to_string()) | !msg.is_valid() {
+            return Ok(Response::with(status::BadRequest));
+        }
+
         let result = &self.database.add(key.to_string(), msg);
-        
+
         Ok(Response::with((status::Ok, try_it!(json::encode(result)))))
     }
 }
@@ -75,10 +80,12 @@ pub struct GetMessageHandler {
 impl Handler for GetMessageHandler {
     fn handle(&self, req: &mut Request) -> IronResult<Response> {
         let ref key = get_http_param!(req, "key");
-        
+        if !is_valid_str(&key.to_string()) {
+            return Ok(Response::with(status::BadRequest));
+        }
         match self.database.get(&key.to_string()) {
             Some(msg) => Ok(Response::with((status::Ok, try_it!(json::encode(&msg))))),
-            None => Ok(Response::with(status::NotFound))
+            None => Ok(Response::with((status::Ok, "[]")))
         }
     }
 }
@@ -90,4 +97,9 @@ impl AfterMiddleware for JsonAfterMiddleware {
         res.headers.set(ContentType::json());
         Ok(res)
     }
+}
+
+
+fn is_valid_str(string: &String) -> bool {
+    string.len() < 100
 }

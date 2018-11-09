@@ -1,0 +1,16 @@
+version: '3'
+services:
+  vch:
+    image: "microsoft/dotnet:2.1-sdk"
+    command: dotnet run -c Release
+    working_dir: /app/VchAPI
+    ports:
+      - "127.0.0.1:19999:19999"
+    restart: always
+    volumes:
+     - ./:/app
+  mongo:
+    image: "mongo"
+    restart: always
+    volumes:
+     - ./db_data:/data/db

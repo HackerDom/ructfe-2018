@@ -2,7 +2,7 @@
     Description=RuCTFE 2018: Radiowave Transmitter
     After=network-online.target
     Wants=network-online.target
-    StartLimitBurst=4
+    StartLimitBurst=10
     StartLimitInterval=60s
 
 [Service]
@@ -17,7 +17,7 @@
 
 # Autorestart on failure
     Restart=always
-    RestartSec=10s
+    RestartSec=0.2s
 
 # Restrict directories and permissions
     NoNewPrivileges=true
@@ -32,15 +32,12 @@
     UMask=0027
 
 # Resource limits
-    TasksMax=2048
-    MemoryMax=1024M
-    MemorySwapMax=1024M
+    TasksMax=1024
+    MemoryMax=512M
+    MemorySwapMax=512M
     CPUQuota=150%
     LimitNOFILE=65536
 
-# Optional TODO:
-# * IO accounting and limits
-# * network isolation
 
 [Install]
     WantedBy=multi-user.target

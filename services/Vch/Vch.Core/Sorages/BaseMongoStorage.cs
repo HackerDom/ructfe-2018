@@ -14,9 +14,18 @@ namespace Vch.Core.Sorages
         protected IMongoCollection<TValue> GetOrCreateCollection<TValue>(string name)
         {
 	        if(!CollectionExistsAsync(name).Result)
-		        mongoDatabase.CreateCollection(name);
+            {
+                mongoDatabase.CreateCollection(name);
 
-	        return mongoDatabase.GetCollection<TValue>(name);
+                OnCollectionCreate(name);
+            }
+
+            return mongoDatabase.GetCollection<TValue>(name);
+        }
+
+        protected virtual void OnCollectionCreate(string name)
+        {
+
         }
 
         public async Task<bool> CollectionExistsAsync(string collectionName)
@@ -26,6 +35,6 @@ namespace Vch.Core.Sorages
             return await collections.AnyAsync();
         }
 
-        private readonly IMongoDatabase mongoDatabase;
+        protected readonly IMongoDatabase mongoDatabase;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Vch.Core.Helpers;
@@ -22,10 +23,28 @@ namespace VchUtils
                 {
                     Content = new StringContent(meta.ToJson()),
                 };
-            var response = await httpClient.SendAsync(request);
 
-            response.EnsureSucces("Can't register user");
-            return (await response.Content.ReadAsStringAsync()).FromJSON<UserInfo>();
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.SendAsync(request);
+            }
+            catch (Exception e)
+            {
+                throw new ConntectionFailed();
+            }
+
+            try
+            {
+                response.EnsureSucces("Can't register user");
+                return (await response.Content.ReadAsStringAsync()).FromJSON<UserInfo>();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw new InternalServerError();
+            }
+           
         }
 
 
@@ -36,35 +55,97 @@ namespace VchUtils
                 {
                     Content = new StringContent(key)
                 };
-            var response = await httpClient.SendAsync(request);
 
-            response.EnsureSucces("Can't post message");
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.SendAsync(request);
+            }
+            catch (Exception e)
+            {
+                throw new ConntectionFailed();
+            }
 
-            return (await response.Content.ReadAsStringAsync()).FromJSON<Message>();
+            try
+            {
+                response.EnsureSucces("Can't post message");
+                return (await response.Content.ReadAsStringAsync()).FromJSON<Message>();
+            }
+            catch (Exception e)
+            {
+                throw new InternalServerError();
+            }
+
         }
 
         public async Task<IEnumerable<Message>> GetUserMessages(UInt64 userId)
         {
-	        var request =
-		        new HttpRequestMessage(HttpMethod.Get, new Uri($"{apiBaseUri}messages/{userId}"));
-            var response = await httpClient.SendAsync(request);
-            response.EnsureSucces("Can't get user messages");
+            var request =
+                new HttpRequestMessage(HttpMethod.Get, new Uri($"{apiBaseUri}messages/{userId}"));
 
-            return (await response.Content.ReadAsStringAsync()).FromJSON<IEnumerable<Message>>();
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.SendAsync(request);
+            }
+            catch (Exception e)
+            {
+                throw new ConntectionFailed();
+            }
+
+            try
+            {
+                response.EnsureSucces("Can't get user messages");
+
+                return (await response.Content.ReadAsStringAsync()).FromJSON<IEnumerable<Message>>(true);
+            }
+            catch (Exception e)
+            {
+                throw new InternalServerError();
+            }
+
         }
 
         public async Task<IEnumerable<IMessage>> GetAll()
         {
             var request =
                 new HttpRequestMessage(HttpMethod.Get, new Uri($"{apiBaseUri}messages"));
-            var response = await httpClient.SendAsync(request);
-            response.EnsureSucces("Can't get all messages");
 
-            return (await response.Content.ReadAsStringAsync()).FromJSON<IEnumerable<IMessage>>();
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.SendAsync(request);
+            }
+            catch (Exception e)
+            {
+                throw new ConntectionFailed();
+            }
+
+            try
+            {
+                response.EnsureSucces("Can't get all messages");
+
+                return (await response.Content.ReadAsStringAsync()).FromJSON<IEnumerable<IMessage>>();
+            }
+            catch (Exception e)
+            {
+                throw new InternalServerError();
+            }
+         
         }
 
         private readonly Uri apiBaseUri;
         private readonly HttpClient httpClient;
 
+
+        public class InternalServerError : Exception
+        {
+            
+        }
+
+        public class ConntectionFailed : Exception
+        {
+
+        }
     }
 }

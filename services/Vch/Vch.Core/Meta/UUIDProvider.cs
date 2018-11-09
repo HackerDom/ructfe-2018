@@ -15,28 +15,32 @@ namespace Vch.Core.Meta
             this.timeProvider = timeProvider;
             shaProvider = new SHA512Managed();
 
-			lastComputed = Guid.NewGuid().ToByteArray().Take(6).Concat(new byte[] { 0, 0 }).ToArray();
-		}
+            lastComputedHash = new byte[8];
+            Array.Copy(Guid.NewGuid().ToByteArray(), lastComputedHash, 6);
+        }
 
         public async Task<UInt64> GetUUID(UserMeta meta)
         {
-	        var timestamp = await timeProvider.GetTimestamp(meta.VaultTimeSource);
-	        var timeBits = new BitArray(timestamp.ToBytes());
-            var rndBites = new BitArray(GetNextSecureRandomBytes());
+            var timestamp = await timeProvider.GetTimestamp(meta.VaultTimeSource.Endpoint());
+            var secure = GetNextSecureRandomBytes();
+
+            var timeBits = new BitArray(timestamp.ToBytes());
+            var rndBites = new BitArray(secure);
 
             byte[] result = new byte[8];
             timeBits.Xor(rndBites).CopyTo(result, 0);
+
             return BitConverter.ToUInt64(result);
         }
 
         private byte[] GetNextSecureRandomBytes()
         {
-            var hash = shaProvider.ComputeHash(lastComputed);
-            Array.Copy(hash, lastComputed, 6);
-            return lastComputed.ToArray();
+            var hash = shaProvider.ComputeHash(lastComputedHash);
+            Array.Copy(hash, lastComputedHash, 6);
+            return lastComputedHash.ToArray();
         }
 
-        private byte[] lastComputed;
+        private byte[] lastComputedHash;
         private readonly SHA512 shaProvider;
         private readonly ITimeProvider timeProvider;
     }

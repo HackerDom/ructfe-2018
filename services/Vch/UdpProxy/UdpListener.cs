@@ -1,10 +1,12 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace UdpProxy
 {
-    class UdpListener
+    public class UdpListener : IDisposable
     {
         public UdpListener(int port) : this(new IPEndPoint(IPAddress.Any, port))
         {
@@ -32,5 +34,10 @@ namespace UdpProxy
         }
 
         private readonly UdpClient client;
+
+        public void Dispose()
+        {
+            client.Close();
+        }
     }
 }

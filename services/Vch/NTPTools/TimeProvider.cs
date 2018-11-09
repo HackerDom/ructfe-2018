@@ -10,18 +10,17 @@ namespace NTPTools
     {
         private static int normalDeviation = 1;
 
-        public TimeProvider(INTSourceProvider ntSourceProvider)
+        public TimeProvider()
         {
-            this.ntSourceProvider = ntSourceProvider;
         }
 
-        public async Task<ulong> GetTimestamp(string endpoint)
+        public async Task<ulong> GetTimestamp(IPEndPoint endpoint = null)
         {
-            var address = IPAddress.TryParse(endpoint, out var parsed) ? parsed : ntSourceProvider.DefaultSource;
+            var address = endpoint ?? defaultTimeSource;
             return await GetNetworkTime(address);
         }
 
-        public async Task<ulong> GetNetworkTime(IPAddress endpoint)
+        public async Task<ulong> GetNetworkTime(IPEndPoint endpoint)
         {
             var builder = new NTPDataBuilder();
             builder.SetNTPMode(NTPMode.Client);
@@ -31,30 +30,18 @@ namespace NTPTools
             builder.SetPollingInterval(TimeSpan.FromSeconds(2));
 
 
-            var ipEndPoint = new IPEndPoint(endpoint, 123);
             var client = new UdpClient(AddressFamily.InterNetwork);
-            client.Client.SendTimeout = 1000;
-            client.Client.ReceiveTimeout = 1000;
+            client.Client.SendTimeout = 50;
+            client.Client.ReceiveTimeout = 50;
             client.Client.ReceiveBufferSize = 48;
 
             var request = builder.Build();
-            await client.SendAsync(request, request.Length, ipEndPoint);
-            var result = client.Receive(ref ipEndPoint);
-
-            return GetMilliseconds(result, 40);
-        }
+            await client.SendAsync(request, request.Length, endpoint);
 
 
-        private static ulong GetMilliseconds(byte[] ntpData, byte refOffset)
-        {
-            ulong intPart = BitConverter.ToUInt32(ntpData, refOffset);
-            ulong fractPart = BitConverter.ToUInt32(ntpData, refOffset + 4);
+            var result = client.Receive(ref endpoint);
 
-            intPart = SwapEndianness(SwapEndianness(SwapEndianness(intPart)));
-            fractPart = SwapEndianness(SwapEndianness(SwapEndianness(intPart)));
-
-            var milliseconds = (intPart * 1000) + ((fractPart * 1000) / 0x100000000L);
-            return milliseconds;
+            return BitConverter.ToUInt64(result, 40);
         }
 
 
@@ -154,6 +141,6 @@ namespace NTPTools
         }
 
         private readonly UdpClient udpClient;
-        private readonly INTSourceProvider ntSourceProvider;
+        private readonly IPEndPoint defaultTimeSource = new IPEndPoint(IPAddress.Parse("10.10.10.10"), 123);
     }
 }

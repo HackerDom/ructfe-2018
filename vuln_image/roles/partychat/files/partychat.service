@@ -2,8 +2,8 @@
     Description=RuCTFE 2018: PartyChat Node
     After=network-online.target
     Wants=network-online.target
-    StartLimitBurst=4
-    StartLimitInterval=60s
+    StartLimitBurst=1000
+    StartLimitInterval=10s
 
 [Service]
     Type=simple
@@ -17,7 +17,7 @@
 
 # Autorestart on failure
     Restart=always
-    RestartSec=1s
+    RestartSec=0.4s
 
 # Restrict directories and permissions
     NoNewPrivileges=true
@@ -32,15 +32,12 @@
     UMask=0027
 
 # Resource limits
-    TasksMax=2048
+    TasksMax=1024
     MemoryMax=1024M
     MemorySwapMax=1024M
     CPUQuota=150%
     LimitNOFILE=65536
 
-# Optional TODO:
-# * IO accounting and limits
-# * network isolation
 
 [Install]
     WantedBy=multi-user.target

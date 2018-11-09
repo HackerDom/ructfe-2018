@@ -17,6 +17,9 @@
     system: yes
     shell: /usr/sbin/nologin
 
+- name: Ensure perm 0750 on home
+  file: path=/home/radiowave mode='0750'
+
 - name: Install Rust
   become_user: radiowave
   shell: curl https://sh.rustup.rs -sSf | sh -s -- -y

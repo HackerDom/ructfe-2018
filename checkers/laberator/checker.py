@@ -42,6 +42,8 @@ def signup(hostport, login, password, phrase):
         headers=generate_headers(),
         timeout=10
     )
+    if r.status_code // 100 == 5:
+        exit(DOWN)
     r.raise_for_status()
     return r.cookies
 
@@ -57,6 +59,8 @@ def signin(hostport, login, password):
         headers=generate_headers(),
         timeout=10
     )
+    if r.status_code // 100 == 5:
+        exit(DOWN)
     r.raise_for_status()
     return r.cookies
 
@@ -73,7 +77,7 @@ def get_raw_cookies(cookies):
 
 
 def info():
-    print("vulns: 1:7")
+    print("vulns: 1:3")
     exit(OK)
 
 
@@ -113,7 +117,7 @@ def list_labels(hostname, cookies):
     }))
     response = ws.recv()
     ws.close()
-    return json.loads(response.encode())
+    return json.loads(response)
 
 
 def view_label(hostname, cookies, label_id):
@@ -127,7 +131,7 @@ def view_label(hostname, cookies, label_id):
     }))
     response = ws.recv()
     ws.close()
-    return json.loads(response.encode())
+    return json.loads(response)
 
 
 def get_phrase_data(hostname, cookies):
@@ -136,6 +140,8 @@ def get_phrase_data(hostname, cookies):
         headers=generate_headers(),
         cookies=cookies
     )
+    if r.status_code // 100 == 5:
+        exit(DOWN)
     r.raise_for_status()
     return PHRASE_PATTERN.findall(r.content.decode())
 
@@ -148,7 +154,7 @@ def get_last_users(hostname):
     ws.send(create_command_request("last_users", {}))
     response = ws.recv()
     ws.close()
-    return json.loads(response.encode())
+    return json.loads(response)
 
 
 def put_first(hostname, flag_id, flag):
@@ -222,6 +228,8 @@ def check_users_correctness(users, login):
 
 
 def get_first(hostname, flag_id, flag):
+    if '-' in flag_id:
+        exit(CORRUPT)
     login, password, expected_label_hash = flag_id.split(',')
     exit_code = OK
     try:
@@ -274,6 +282,8 @@ def put_second(hostname, flag_id, flag):
 
 
 def get_second(hostname, flag_id, flag):
+    if '-' in flag_id:
+        exit(CORRUPT)
     login, password, encoded_flag = flag_id.split(',')
     exit_code = OK
     try:
