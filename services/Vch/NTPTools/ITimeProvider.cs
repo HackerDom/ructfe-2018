@@ -6,6 +6,6 @@ namespace NTPTools
 {
     public interface ITimeProvider
     {
-	    Task<double> GetTimestamp(IPEndPoint timeProvider);
+	    Task<ulong> GetTimestamp(IPEndPoint timeProvider);
     }
 }

@@ -14,14 +14,13 @@ namespace NTPTools
         {
         }
 
-        public async Task<double> GetTimestamp(IPEndPoint endpoint = null)
+        public async Task<ulong> GetTimestamp(IPEndPoint endpoint = null)
         {
             var address = endpoint ?? defaultTimeSource;
             return await GetNetworkTime(address);
         }
 
-        public async Task<ulong> GetNetworkTime(IPAddress endpoint)
-        public async Task<double> GetNetworkTime(IPAddress endpoint)
+        public async Task<ulong> GetNetworkTime(IPEndPoint endpoint)
         {
             var builder = new NTPDataBuilder();
             builder.SetNTPMode(NTPMode.Client);

@@ -2,7 +2,7 @@
   "profiles": {
     "Vch.Checker": {
       "commandName": "Project",
-      "commandLineArgs": "put 127.0.0.1:5000 asd asda"
+      "commandLineArgs": "put 127.0.0.1:19999 id flag1 129.70.130.70"
     }
   }
 }

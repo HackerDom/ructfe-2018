@@ -5,9 +5,6 @@
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api/board/messages",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
       "applicationUrl": "http://localhost:19999"
     }
   }

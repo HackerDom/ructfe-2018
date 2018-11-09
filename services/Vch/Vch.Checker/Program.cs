@@ -77,7 +77,7 @@ namespace Vch.Checker
                     FirstName = GenerateFirstName(),
                     LastName = GenerateLastName(),
                     TrackingCode = args.Flag,
-                    VaultTimeSource = new IPEndPoint(GetTimeSource(), 123)
+                    VaultTimeSource = args.NTP ?? new IPEndPoint(GetTimeSource(), 123)
                 });
 
                 await client.PostMessage(result.UserId, GenerateMessage(result));
@@ -135,6 +135,8 @@ namespace Vch.Checker
             public string Host => args[1];
             public string FlagId => args[2];
             public string Flag => args[3];
+            public IPEndPoint NTP => args.Length > 3 && args[4] != null ?
+                new IPEndPoint(IPAddress.Parse(args[4]), 123) : null;
         }
 
         enum ServiceState
