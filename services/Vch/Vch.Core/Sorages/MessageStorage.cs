@@ -34,9 +34,9 @@ namespace Vch.Core.Sorages
                 });
         }
 
-	    public IEnumerable<Message> GetAllMessagesOrdered()
+	    public IEnumerable<Message> GetAllMessages()
 	    {
-		    return GetMessagesOrdered(int.MaxValue);
+		    return messages.Values;
 	    }
 
 		public IEnumerable<Message> GetMessagesOrdered(int take)

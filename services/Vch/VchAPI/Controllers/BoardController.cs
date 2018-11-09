@@ -50,7 +50,7 @@ namespace VchAPI.Controllers
             if (user == null)
                 return NotFound();
 
-            return messageStorage.GetAllMessagesOrdered().Where(message => message.userInfo.UserId.Equals(userId)).ToActionResult();
+            return messageStorage.GetAllMessages().Where(message => message.userInfo.UserId.Equals(userId)).ToActionResult();
         }
 
         [HttpPost("user")]
