@@ -426,7 +426,9 @@
 		static const char *_name() { return "history"; }
 		virtual const char *name() { return _name(); }
 
-		virtual void execute(responder<checker_state> &rsp, connection<checker_state> &conn, checker_state &state) { }
+		virtual void execute(responder<checker_state> &rsp, connection<checker_state> &conn, checker_state &state) {
+			rsp.respond("");
+		}
 
 		virtual bool needs_response() { return true; }
 
@@ -435,7 +437,7 @@
 			if (!response || strlen(response) == 0)
 				return true;
 
-			if (!strncmp(response, state.flag, strlen(state.flag))) {
+			if (strstr(response, state.flag)) {
 				state.flag_found = true;
 				return true;
 			}

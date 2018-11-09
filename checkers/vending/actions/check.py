@@ -5,7 +5,7 @@ from time import sleep
 from random import randint, choice
 
 COUNTER_MAX = 100000
-META_RANGE = slice(16, 128)
+META_RANGE = slice(16, 127)
 
 
 def check(team_host):
@@ -34,7 +34,7 @@ def check(team_host):
         if not (id1 < id2 < id3 or id2 < id3 < id1 or id3 < id1 < id2):
             return {"code": MUMBLE, "public": "Machine id's should grow incrementally"}
     except ValueError as e:
-        return {"code": MUMBLE, "public": "Machine id's should be int"}
+        return {"code": MUMBLE, "public": "Machine id's should be int", "private": e}
 
     # final checks
 
@@ -45,10 +45,14 @@ def check(team_host):
 
     meta_start = randint(META_RANGE.start, META_RANGE.stop)
     meta_end = randint(meta_start, META_RANGE.stop)
-    print(meta[meta_start:meta_end], client.get_machine_meta(choice(replicas), meta_start, meta_end))
 
-    chk3 = meta[meta_start:meta_end] == client.get_machine_meta(choice(replicas), meta_start, meta_end)
-    chk4 = client.get_machine_master_key(choice(replicas), key).strip().startswith(flag)
+    chk3 = client.get_machine_meta(choice(replicas), meta_start, meta_end)\
+        .startswith(meta[meta_start-META_RANGE.start:meta_end-META_RANGE.start])
+    chk4 = client.get_machine_master_key(choice(replicas), key).strip()\
+        .startswith(flag)
+
+    # dbg
+    # print(meta[meta_start-META_RANGE.start:meta_end-META_RANGE.start], client.get_machine_meta(choice(replicas), meta_start, meta_end))
 
     if all((chk1, chk2, chk3, chk4)):
         return {"code": OK}
