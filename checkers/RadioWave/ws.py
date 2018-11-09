@@ -3,8 +3,6 @@ import asyncio
 import aiohttp
 import sys
 
-import matplotlib.pyplot as plt
-
 class WSHelper:
 	def __init__(self, connection, type):
 		self.connection = connection
