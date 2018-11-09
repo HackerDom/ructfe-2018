@@ -11,7 +11,12 @@ namespace Vch.Core.Helpers
 
         public static TValue FromJSON<TValue>(this string item)
         {
-            return JsonConvert.DeserializeObject<TValue>(item);
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new IPEndPointConverter());
+            settings.Formatting = Formatting.Indented;
+
+            return JsonConvert.DeserializeObject<TValue>(item, settings);
         }
+
     }
 }
