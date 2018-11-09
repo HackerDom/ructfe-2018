@@ -18,6 +18,10 @@
     <DefineConstants>RELEASE;NETCOREAPP2_0</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="deniszykov.WebSocketListener" Version="4.2.4" />
     <PackageReference Include="log4net" Version="2.0.8" />
