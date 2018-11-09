@@ -87,8 +87,7 @@ async def handler_check(hostname):
 
 async def handler_get(hostname, id, flag):
     first = State(hostname, PORT, 'first')
-    key = 'FROM STDOUT'
-    text = await first.get(key)
+    text = await first.get(id)
 
     if flag not in text:
         print('NO FLAG')
@@ -116,8 +115,9 @@ async def handler_put(hostname, id, flag):
     if status != 200:
         print('CANT PUT')
         checker.mumble()
-
-    checker.ok(message="{}\n{}".format(key, json.dumps(msg)))
+    
+    print(key)
+    checker.ok()
 
 
 def main(argv):
