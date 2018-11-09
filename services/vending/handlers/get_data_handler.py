@@ -9,7 +9,7 @@ class GetDataHandler(BaseHandler):
 
     def handle(self, request: Request) -> Response:
         try:
-            machine, key = str(request.body).split()
+            machine, key = request.body.readline().decode().split()
             return Response(200, (self.vm_keys[machine][key]).encode())
         except (IndexError, KeyError):
             return Response(404, b'Not Found')

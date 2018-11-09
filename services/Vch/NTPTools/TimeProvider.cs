@@ -20,8 +20,8 @@ namespace NTPTools
             return await GetNetworkTime(address);
         }
 
-
-        public async Task<double> GetNetworkTime(IPEndPoint endpoint)
+        public async Task<ulong> GetNetworkTime(IPAddress endpoint)
+        public async Task<double> GetNetworkTime(IPAddress endpoint)
         {
             var builder = new NTPDataBuilder();
             builder.SetNTPMode(NTPMode.Client);

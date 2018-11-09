@@ -6,7 +6,7 @@ namespace Vch.Core.Sorages
 {
     public interface IUserStorage
     {
-	    Task<UserInfo> AddUser(UserMeta userInfo);
-        UserInfo GetUser(string userId);
+	    Task<UserInfo> AddUser(UserMeta userMeta);
+        UserInfo FindUser(string userId);
     }
 }

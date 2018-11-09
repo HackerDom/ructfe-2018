@@ -19,7 +19,7 @@ namespace Vch.Core.Helpers
             }
         }
 
-        public static byte[] ToBytes(this double source)
+        public static byte[] ToBytes(this ulong source)
         {
             return BitConverter.GetBytes(source);
         }

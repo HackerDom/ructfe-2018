@@ -4,29 +4,25 @@ using MongoDB.Driver;
 
 namespace Vch.Core.Sorages
 {
-    public abstract class BaseStorage
+    public abstract class BaseMongoStorage
     {
-        protected BaseStorage(IMongoClient mongoClient)
+        protected BaseMongoStorage(IMongoClient mongoClient)
         {
             mongoDatabase = mongoClient.GetDatabase(NameReslover.MongoDBName);
         }
 
-        protected IMongoCollection<TValue> GetCollection<TValue>(string name)
+        protected IMongoCollection<TValue> GetOrCreateCollection<TValue>(string name)
         {
-            if (!CollectionExistsAsync(name).Result)
-            {
-                mongoDatabase.CreateCollection(name);
-            }
+	        if(!CollectionExistsAsync(name).Result)
+		        mongoDatabase.CreateCollection(name);
 
-            return mongoDatabase.GetCollection<TValue>(name);
+	        return mongoDatabase.GetCollection<TValue>(name);
         }
 
         public async Task<bool> CollectionExistsAsync(string collectionName)
         {
             var filter = new BsonDocument("name", collectionName);
-            //filter by collection name
             var collections = await mongoDatabase.ListCollectionsAsync(new ListCollectionsOptions { Filter = filter });
-            //check for existence
             return await collections.AnyAsync();
         }
 

@@ -40,7 +40,7 @@ class ServiceHttpHandler(BaseHTTPRequestHandler):
         return self.__getattribute__(item)
 
     def handle_request(self):
-        response = self.router.handle(Request(self.command, self.path, self.headers, self.rfile))
+        response = self.router.handle(Request(self.command, self.path, self.rfile, self.headers))
         self.send_response(response.code)
         for header in response.headers:
             self.send_header(header[0], header[1])

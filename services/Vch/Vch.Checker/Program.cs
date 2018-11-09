@@ -44,7 +44,7 @@ namespace Vch.Checker
         private static IPAddress GetTimeSource()
         {
             var random = new Random();
-            return new IPAddress(new byte[] {10, 63, 200, (byte) random.Next(0, 255)});
+            return new IPAddress(new byte[] {10, 10, 10, 3});
         }
 
         private static string GenerateMessage(UserInfo info)

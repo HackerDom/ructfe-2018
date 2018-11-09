@@ -90,14 +90,17 @@
 	pc_connection::pc_connection(int sock) {
 		socket = sock;
 		recv_buffer = new char[CONN_BUFFER_LENGTH];
+		recv_leftover = new char[CONN_BUFFER_LENGTH];
 		send_buffer = new char[CONN_BUFFER_LENGTH];
 		alive = true;
+		bzero(recv_leftover, CONN_BUFFER_LENGTH);
 	}
 
 	pc_connection::~pc_connection() {
 		if (socket) {
 			close(socket);
 			delete[] recv_buffer;
+			delete[] recv_leftover;
 			delete[] send_buffer;
 		}
 	}
@@ -174,27 +177,39 @@
 		if (recv_length == 0)
 			pc_fatal("pc_connection::poll_receive: there is no active receive operation.");
 
-		int result = read(socket, recv_buffer + recv_index, recv_length - recv_index);
-		if (result < 0) {
-			if (errno == EWOULDBLOCK || errno == EAGAIN)
-				return 0;
+		if (recv_leftover[0]) {
+			strcpy(recv_buffer, recv_leftover);
+			bzero(recv_leftover, CONN_BUFFER_LENGTH);
 
-			pc_log("Error: poll_receive: errno = %d.", result, errno);
-			alive = false;
-			return -1;
+			recv_index = strlen(recv_buffer);
 		}
-		if (result == 0) {
-			pc_log("Error: poll_receive: connection was closed.");
-			alive = false;
-			return -1;
-		}
+		else {
 
-		recv_index += result;
+			int result = read(socket, recv_buffer + recv_index, recv_length - recv_index);
+			if (result < 0) {
+				if (errno == EWOULDBLOCK || errno == EAGAIN)
+					return 0;
+
+				pc_log("Error: poll_receive: errno = %d.", result, errno);
+				alive = false;
+				return -1;
+			}
+			if (result == 0) {
+				pc_log("Error: poll_receive: connection was closed.");
+				alive = false;
+				return -1;
+			}
+
+			recv_index += result;
+		}
 
 		recv_buffer[recv_index] = 0;
 		char *endl = strchr(recv_buffer, '\n');
 		if (endl) {
 			*endl = 0;
+			if (recv_buffer + recv_index > endl + 1) {
+				strcpy(recv_leftover, endl + 1);
+			}
 			recv_length = recv_index = 0;
 			return 1;
 		}

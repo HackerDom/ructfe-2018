@@ -5,8 +5,9 @@ namespace Vch.Core.Sorages
 {
     public interface IMessageStorage
     {
-        Message UpdateMessage(MessageId id, UserInfo userInfo, string text);
-        IEnumerable<Message> GetAllMessage();
-        IMessage GetMessage(MessageId messageId);
+        Message AddOrUpdateMessage(MessageId id, UserInfo userInfo, string text);
+        IEnumerable<Message> GetAllMessages();
+        IEnumerable<Message> GetMessagesOrdered(int take);
+        IMessage FindMessage(MessageId messageId);
     }
 }

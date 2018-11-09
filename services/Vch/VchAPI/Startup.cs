@@ -22,9 +22,8 @@ namespace VchAPI
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
-            this.Configuration = builder.Build();
+            Configuration = builder.Build();
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -34,7 +33,7 @@ namespace VchAPI
 
         public void ConfigureContainer(ContainerBuilder containerBuilder)
         {
-            var client = new MongoClient(MongoUrl.Create("mongodb://localhost"));
+            var client = new MongoClient(MongoUrl.Create(Configuration.GetConnectionString("mongo")));
 
             containerBuilder.RegisterInstance(client).As<IMongoClient>();
 
@@ -44,13 +43,10 @@ namespace VchAPI
             containerBuilder.RegisterType<TimeProvider>().As<ITimeProvider>();
             containerBuilder.RegisterType<BoardController>().PropertiesAutowired().SingleInstance();
         }
-        
 
-        public void Configure(
-            IApplicationBuilder app,
-            ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(this.Configuration.GetSection("Logging"));
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
             app.UseMvc();
         }
