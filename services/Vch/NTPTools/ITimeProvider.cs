@@ -5,7 +5,6 @@ namespace NTPTools
 {
     public interface ITimeProvider
     {
-	    Task<double> GetTimestamp();
-	    Task<double> GetTimestamp(string timeProvider);
+	    Task<ulong> GetTimestamp(string timeProvider);
     }
 }
