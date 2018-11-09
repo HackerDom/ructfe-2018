@@ -15,6 +15,8 @@
 
 	template<typename TState>
 	struct response;
+	template<typename TState>
+	struct end_command;
 
 	template<typename TState>
 	struct responder {
@@ -168,6 +170,9 @@
 			return !closed && conn.alive;
 		}
 		void close() {
+			send<end_command<TState>>("bye");
+			for (int i = 0; i < 10; i++)
+				tick();
 			closed = true;
 		}
 	};
@@ -175,29 +180,10 @@
 // Commands (generic)
 
 	template<typename TState>
-	struct die_command : command<TState> {
-		using command<TState>::command;
-
-		static const char *_name() { return "die"; }
-		virtual const char *name() { return _name(); }
-
-		virtual void execute(responder<TState> &rsp, connection<TState> &conn, TState &state) {
-			pc_quit("Master told us to die.");
-		}
-	};
+	struct die_command;
 
 	template<typename TState>
-	struct end_command : command<TState> {
-		using command<TState>::command;
-
-		static const char *_name() { return "end"; }
-		virtual const char *name() { return _name(); }
-
-		virtual void execute(responder<TState> &rsp, connection<TState> &conn, TState &state) {
-			pc_log("end_command::execute: closing connection..");
-			conn.close();
-		}
-	};
+	struct end_command;
 
 	template<typename TState>
 	struct hb_command;
@@ -256,7 +242,7 @@
 	struct node_state {
 		master_link uplink;
 		connection<node_state> *controllers[CON_CT];
-		void *history_storage;
+		int list_id = -1;
 
 		node_state(const addrinfo &master_addr, const char *nick) : uplink(master_addr, *this, nick) {
 			bzero(controllers, sizeof(controllers));
@@ -286,6 +272,84 @@
 	};
 
 // Commands (specialized)
+
+	template<>
+	struct die_command<checker_state> : command<checker_state> {
+		using command<checker_state>::command;
+
+		static const char *_name() { return "die"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<checker_state> &rsp, connection<checker_state> &conn, checker_state &state) {
+			pc_log("die_command::execute: closing connection..");
+			conn.close();
+		}
+	};
+
+	template<>
+	struct end_command<checker_state> : command<checker_state> {
+		using command<checker_state>::command;
+
+		static const char *_name() { return "end"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<checker_state> &rsp, connection<checker_state> &conn, checker_state &state) {
+			pc_log("end_command::execute: closing connection..");
+			conn.close();
+		}
+	};
+
+	template<>
+	struct die_command<node_state> : command<node_state> {
+		using command<node_state>::command;
+
+		static const char *_name() { return "die"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<node_state> &rsp, connection<node_state> &conn, node_state &state) {
+			conn.close();
+			pc_quit("Master told us to die.");
+		}
+	};
+
+	template<>
+	struct end_command<node_state> : command<node_state> {
+		using command<node_state>::command;
+
+		static const char *_name() { return "end"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<node_state> &rsp, connection<node_state> &conn, node_state &state) {
+			pc_log("end_command::execute: closing connection..");
+			conn.close();
+		}
+	};
+
+	template<>
+	struct die_command<face_state> : command<face_state> {
+		using command<face_state>::command;
+
+		static const char *_name() { return "die"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) {
+			conn.close();
+			pc_quit("Node told us to die.");
+		}
+	};
+
+	template<>
+	struct end_command<face_state> : command<face_state> {
+		using command<face_state>::command;
+
+		static const char *_name() { return "end"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) {
+			pc_log("end_command::execute: closing connection..");
+			conn.close();
+		}
+	};
 
 	template<>
 	struct hb_command<node_state> : command<node_state> {
@@ -471,6 +535,60 @@
 		}
 	};
 
+	template<>
+	struct list_command<face_state> : command<face_state> {
+		using command<face_state>::command;
+
+		static const char *_name() { return "list"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) { }
+
+		virtual bool needs_response() { return true; }
+
+		virtual bool handle_response(const char *response, face_state &state) {
+			if (!response || strlen(response) == 0)
+				return true;
+
+			printf("- %s\n", response);
+			return false;
+		}
+	};
+
+	template<>
+	struct list_command<node_state> : command<node_state> {
+		using command<node_state>::command;
+
+		static const char *_name() { return "list"; }
+		virtual const char *name() { return _name(); }
+
+		virtual void execute(responder<node_state> &rsp, connection<node_state> &conn, node_state &state) {
+			state.list_id = cmd_id;
+			state.uplink.master_conn.send<list_command>(this->text);
+		}
+
+		virtual bool needs_response() { return true; }
+
+		virtual bool handle_response(const char *rsp, node_state &state) {
+			if (state.list_id < 0)
+				return true;
+			if (!rsp || strlen(rsp) == 0) {
+
+				for (int i = 0; i < CON_CT; i++) {
+					if (state.controllers[i])
+						state.controllers[i]->pending_commands.push(new response<node_state>("", state.list_id));
+				}
+				return true;
+			}
+
+			for (int i = 0; i < CON_CT; i++) {
+				if (state.controllers[i])
+					state.controllers[i]->pending_commands.push(new response<node_state>(rsp, state.list_id));
+			}
+			return false;
+		}
+	};
+
 
 // Parse commands
 
@@ -499,6 +617,7 @@
 		COMMAND_CASE(end_command<TState>)
 		COMMAND_CASE(say_command<TState>)
 		COMMAND_CASE(history_command<TState>)
+		COMMAND_CASE(list_command<TState>)
 		COMMAND_CASE(response<TState>)
 
 		return false;

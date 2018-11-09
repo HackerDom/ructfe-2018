@@ -89,6 +89,7 @@ void handle_check(int argc, char ** argv) {
 	connection<checker_state> conn(*get_master_addr(), state);
 	conn.flush(conn.send<hb_command<checker_state>>(checker_name));
 	conn.flush(conn.send<list_command<checker_state>>(""));
+	conn.close();
 
 	if (state.team_listed)
 		checker_pass();
@@ -121,6 +122,7 @@ void handle_put(int argc, char **argv) {
 	connection<checker_state> conn(*get_master_addr(), state);
 	conn.flush(conn.send<hb_command<checker_state>>(checker_name));
 	conn.flush(conn.send<say_command<checker_state>>(text));
+	conn.close();
 
 	printf("%s\n", checker_name);
 
@@ -148,6 +150,7 @@ void handle_get(int argc, char **argv) {
 	connection<checker_state> conn(*get_master_addr(), state);
 	conn.flush(conn.send<hb_command<checker_state>>(flag_id));
 	conn.flush(conn.send<history_command<checker_state>>(team_name));
+	conn.close();
 
 	if (state.flag_found)
 		checker_pass();
