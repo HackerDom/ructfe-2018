@@ -32,5 +32,7 @@ namespace PartyChat.Master
                 ((ICollection<KeyValuePair<string, DateTime>>) lastHeartbeats).Remove(pair);
             }
         }
+
+        public void RemoveSession(string nick) => lastHeartbeats.TryRemove(nick, out var _);
     }
 }
