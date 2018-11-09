@@ -1,9 +1,10 @@
 from typing import Tuple
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
-from socket import timeout as TIMEOUT_ERR
+from socket import timeout as STimeoutError
 from http.client import RemoteDisconnected
 from useragents import get
+from actions import MUMBLE, DOWN
 
 
 class VendingClient:
@@ -50,15 +51,23 @@ class VendingClient:
     def retry_request(self, req: Request) -> str or None:
         try:
             resp = urlopen(req, timeout=self.timeout).read().decode().strip()
-        except (HTTPError, URLError, TIMEOUT_ERR, RemoteDisconnected):
+        except (HTTPError, URLError, STimeoutError, RemoteDisconnected):
             try:
                 resp = urlopen(req, timeout=self.timeout).read().decode().strip()
-            except Exception as e:
-                print(e)
-                return None  # todo fixme (more info about dat shit)
+            except (HTTPError, URLError) as e:
+                raise VendingClientException(MUMBLE, "Incorrect page was given!", e)
+            except (STimeoutError, RemoteDisconnected) as e:
+                raise VendingClientException(DOWN, "Can't reach server!", e)
         return resp
 
     def create_request(self, method: str, url: str, body: bytes):
         request = Request("http://" + self.url + url, method=method, headers={"User-Agent": get()})
         request.data = body + b"\n"
         return request
+
+
+class VendingClientException(Exception):
+    def __init__(self, exit_code, message_public, message_private):
+        self.code = exit_code
+        self.public = message_public
+        self.private = message_private
