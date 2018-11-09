@@ -115,7 +115,7 @@ void handle_put(int argc, char **argv) {
 	make_name(checker_name);
 
 	char text[64];
-	sprintf(text, "%s %s", flag, team_name);
+	sprintf(text, "%s says: have this, %s ! %s", checker_name, team_name, flag);
 
 	checker_state state(team_name);
 	connection<checker_state> conn(*get_master_addr(), state);
