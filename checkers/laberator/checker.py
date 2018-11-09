@@ -73,7 +73,7 @@ def get_raw_cookies(cookies):
 
 
 def info():
-    print("vulns: 1:7")
+    print("vulns: 1:3")
     exit(OK)
 
 
@@ -113,7 +113,7 @@ def list_labels(hostname, cookies):
     }))
     response = ws.recv()
     ws.close()
-    return json.loads(response.encode())
+    return json.loads(response.decode())
 
 
 def view_label(hostname, cookies, label_id):
@@ -127,7 +127,7 @@ def view_label(hostname, cookies, label_id):
     }))
     response = ws.recv()
     ws.close()
-    return json.loads(response.encode())
+    return json.loads(response.decode())
 
 
 def get_phrase_data(hostname, cookies):
@@ -148,7 +148,7 @@ def get_last_users(hostname):
     ws.send(create_command_request("last_users", {}))
     response = ws.recv()
     ws.close()
-    return json.loads(response.encode())
+    return json.loads(response.decode())
 
 
 def put_first(hostname, flag_id, flag):
