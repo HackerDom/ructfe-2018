@@ -8,7 +8,7 @@ from actions import MUMBLE, DOWN
 
 
 class VendingClient:
-    def __init__(self, host, timeout=5):
+    def __init__(self, host, timeout=8):
         self.url = host
         self.timeout = timeout
 
