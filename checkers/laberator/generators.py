@@ -23,7 +23,8 @@ def generate_login():
 
 
 def generate_password():
-    return b64encode("".join(choice(ascii_letters + digits) for _ in range(20)).encode()).decode()
+    password_len = randint(17, 31)
+    return b64encode("".join(choice(ascii_letters + digits) for _ in range(password_len)).encode()).decode()
 
 
 def generate_user_agent():
