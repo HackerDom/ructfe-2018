@@ -30,6 +30,7 @@
 		int socket = 0;
 
 		char *recv_buffer;
+		char *recv_leftover;
 		int recv_index = 0;
 		int recv_length = 0;
 

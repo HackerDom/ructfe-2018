@@ -23,7 +23,7 @@ wait_for_ssh
 ansible-playbook -i ansible_hosts setup.yml
 
 # Power off VM
-ssh -p2222 localhost poweroff
+ssh -p2222 localhost poweroff || echo 'OK'
 sleep 8
 
 # Export image

@@ -7,7 +7,6 @@ import pickle
 import re
 import socket
 import traceback
-from time import sleep
 
 import requests
 import websocket
@@ -19,7 +18,7 @@ LOGIN_URL = "http://{hostport}/login?login={login}&password={password}"
 PHRASE_URL = "http://{hostport}/phrase"
 WS_URL = "ws://{}:{}/cmdexec"
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
-PORT = 8080
+PORT = 18888
 PHRASE_PATTERN = re.compile("<h1>([a-zA-Z0-9!@#$%&*()_+=/., ]{1,100})</h1>")
 
 
@@ -265,7 +264,9 @@ def put_second(hostname, flag_id, flag):
         exit_code = DOWN
     except (
         requests.exceptions.HTTPError, UnicodeDecodeError, json.decoder.JSONDecodeError,
-        TypeError, requests.exceptions.ReadTimeout
+        TypeError, websocket._exceptions.WebSocketBadStatusException,
+        websocket._exceptions.WebSocketConnectionClosedException,
+        requests.exceptions.ReadTimeout, KeyError
     ):
         traceback.print_exc()
         exit_code = MUMBLE
@@ -291,7 +292,10 @@ def get_second(hostname, flag_id, flag):
         traceback.print_exc()
         exit_code = DOWN
     except (
-        requests.exceptions.HTTPError, UnicodeDecodeError, TypeError, requests.exceptions.ReadTimeout, KeyError
+        requests.exceptions.HTTPError, UnicodeDecodeError, json.decoder.JSONDecodeError,
+        TypeError, websocket._exceptions.WebSocketBadStatusException,
+        websocket._exceptions.WebSocketConnectionClosedException,
+        requests.exceptions.ReadTimeout, KeyError
     ):
         traceback.print_exc()
         exit_code = MUMBLE

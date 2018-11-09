@@ -16,3 +16,11 @@
     - {src: "default", dest: "sites-available/default"}
   notify: "reload nginx"
 
+- name: Copy front
+  copy:
+    src: ../pipboy_front/
+    dest: /var/www/html/
+    mode: u=rwX,g=rX,o=rX
+    owner: www-data
+    group: www-data
+  notify: "reload nginx"
