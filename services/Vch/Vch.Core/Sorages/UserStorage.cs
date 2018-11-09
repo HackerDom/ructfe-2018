@@ -38,6 +38,8 @@ namespace Vch.Core.Sorages
 
         private async Task Init()
         {
+            //usersCollection.DeleteManyAsync(info => true).Wait();
+
 			var documents = await usersCollection.Find(_ => true).ToListAsync();
             foreach (var userInfo in documents)
                 users[userInfo.UserId] = userInfo;

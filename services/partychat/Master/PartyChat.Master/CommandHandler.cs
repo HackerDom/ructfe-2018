@@ -39,6 +39,11 @@ namespace PartyChat.Master
                     session.SendResponse(command.Id, "OK");
                     break;
                 
+                case Commands.End:
+                    heartbeatStorage.RemoveSession(nick);
+                    await session.Kill();
+                    break;
+                
                 case Commands.Say:
                     group = Group.ExtractGroup(command.Text);
                     

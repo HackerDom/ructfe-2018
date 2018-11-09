@@ -26,38 +26,63 @@ namespace VchAPI.Controllers
         [HttpGet("messages")]
         public async Task<ActionResult<IEnumerable<PublicMessage>>> GetAllMessages()
         {
-            return messageStorage.GetMessagesOrdered(MaxTakeSize).Select(message => new PublicMessage(message)).ToActionResult();
+            try
+            {
+                return messageStorage.GetMessagesOrdered(MaxTakeSize).Select(message => new PublicMessage(message)).ToActionResult();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
         }
 
         [HttpPost("message/post/{userId}")]
         public async Task<ActionResult<Message>> PostMessageAsync(string userId)
         {
-            var user = userStorage.FindUser(userId);
-            if (user == null)
-                return NotFound();
+            try
+            {
+                var user = userStorage.FindUser(userId);
+                if (user == null)
+                    return NotFound();
 
-            var text = await ParseContent<string>();
-
-            var message = await Message.Create(text, user, uuidProvider);
-            messageStorage.AddOrUpdateMessage(new MessageId(await uuidProvider.GetUUID(user.Meta)), user, text);
-            return message.ToActionResult();
+                var text = await ParseContent<string>();
+                return messageStorage.AddOrUpdateMessage(new MessageId(await uuidProvider.GetUUID(user.Meta)), user, text).ToActionResult();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
         }
 
         [HttpGet("messages/{userId}")]
         public async Task<ActionResult<IEnumerable<Message>>> GetMessagesAsync(string userId)
         {
-            var user = userStorage.FindUser(userId);
-            if (user == null)
-                return NotFound();
+            try
+            {
+                var user = userStorage.FindUser(userId);
+                if (user == null)
+                    return NotFound();
 
-            return messageStorage.GetAllMessages().Where(message => message.userInfo.UserId.Equals(userId)).ToActionResult();
+                return messageStorage.GetAllMessages().Where(message => message.userInfo.UserId.Equals(userId)).ToActionResult();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
         }
 
         [HttpPost("user")]
         public async Task<ActionResult<UserInfo>> RegisterUserAsync()
         {
-            var meta = await ParseContent<UserMeta>();
-            return (await userStorage.AddUser(meta)).ToActionResult();
+            try
+            {
+                var meta = await ParseContent<UserMeta>();
+                return (await userStorage.AddUser(meta)).ToActionResult();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
         }
 
 	    private const int MaxTakeSize = 5000;

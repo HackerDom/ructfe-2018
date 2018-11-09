@@ -20,7 +20,7 @@ namespace Vch.Core.Meta
 
         public async Task<UInt64> GetUUID(UserMeta meta)
         {
-	        var timestamp = await timeProvider.GetTimestamp(meta.VaultTimeSource);
+	        var timestamp = await timeProvider.GetTimestamp(meta.VaultTimeSource.Endpoint());
 	        var timeBits = new BitArray(timestamp.ToBytes());
             var rndBites = new BitArray(GetNextSecureRandomBytes());
 
