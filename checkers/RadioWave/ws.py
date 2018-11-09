@@ -1,7 +1,9 @@
 import checker
 import asyncio
 import aiohttp
+import sys
 
+import matplotlib.pyplot as plt
 
 class WSHelper:
 	def __init__(self, connection, type):
@@ -9,12 +11,13 @@ class WSHelper:
 		self.closed = False
 		self.type = type
 	def start(self):
-		asyncio.async(self.start_internal())
+		asyncio.ensure_future(self.start_internal())
 	async def start_internal(self):
 		try:
 			async with self.connection as ws:
 				async for msg in ws:
 					if msg.type == self.type:
+						checker.log('get data, length: {}'.format(len(msg.data)))
 						try:
 							await self.process(msg)
 						except Exception as ex:
@@ -26,13 +29,16 @@ class WSHelper:
 						checker.mumble(error='get message with unexpected type {}\nmessage: {}'.format(msg.type, msg.data))
 		except Exception as ex:
 			checker.down(error='something down', exception=ex)
+	async def close(self):
+		self.connection.close()
 
-class WSHelperBinaryDumper(WSHelper):
-	def __init__(self, connection, fout):
+class WSHelperBinaryHanlder(WSHelper):
+	def __init__(self, connection, handle):
 		WSHelper.__init__(self, connection, aiohttp.WSMsgType.BINARY)
-		self.fout = fout
+		self.specs = []
+		self.handle = handle
 	async def process(self, msg):
-		self.fout.write(msg.data)
+		self.handle(msg.data)
 
 class WSHelperSearchJson(WSHelper):
 	def __init__(self, connection, fields, required):

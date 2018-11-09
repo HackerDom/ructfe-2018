@@ -65,11 +65,13 @@ def get_value_or_rand_text(value):
 def get_rand_string(l, additional=''):
 	return ''.join(random.choice(string.ascii_lowercase + additional) for _ in range(l + random.randint(-l//2, l//2))).strip()
 
-def parse_json(string, *expected):
+def parse_json(string):
 	try:
-		data = json.loads(string)
+		return json.loads(string)
 	except Exception as ex:
 		mumble(error='can\'t parse string "{}" as json'.format(string), exception=ex)
+
+def check_object_fields(data, *expected):
 	if len(expected) == 0:
 		return data
 	for fields in expected:
@@ -78,10 +80,25 @@ def parse_json(string, *expected):
 			if field not in data:
 				errors.append(field)
 		if len(errors) == 0:
-			return data
+			return
 	else:
 		if len(errors) > 0:
 			mumble(error='not all expected fields have founded in json. last expexted: {}'.format(str(errors)))
+
+def parse_json_object(string, *expected):
+	data = parse_json(string)
+	if type(data) is not dict:
+		mumble(error='"{}" is not an object, but {}'.format(string, type(data)))
+	check_object_fields(data, *expected)
+	return data
+
+def parse_json_list(string, *expected):
+	data = parse_json(string)
+	if type(data) is not list:
+		mumble(error='"{}" is not a list, but {}'.format(string, type(data)))
+	for it in data:
+		check_object_fields(it, *expected)
+	return data
 
 class Checker:
 	def __init__(self, check, flag_handlers):

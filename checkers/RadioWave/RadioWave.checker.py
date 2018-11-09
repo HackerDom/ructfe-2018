@@ -8,28 +8,128 @@ import random
 import json
 import asyncio
 import time
+import TextGenerator
+import base64
 
-#PORT = 6454
-PORT = 8080
+from MorseParser import MorseParser
+from SoundFinder import SoundFinder
 
-def dump(self, msg, fout):
-	fout.write(msg.data)
+PORT = 7777
 
+def get_message(text=None, dpm=None, freq=None, is_private=None, need_base32=None, password=None):
+	if text is None:
+		text = TextGenerator.get_text().upper() 
+	password = checker.get_value_or_rand_string(password, 30)
+	if need_base32 is None:
+		need_base32 = not bool(random.getrandbits(2))
+	if is_private is None:
+		is_private = bool(random.getrandbits(1))
+	if dpm is None:
+		dpm = random.randint(35 * 60 // 4, 35 * 60 // 3)
+	if freq is None:
+		freq = random.randint(50, 3999)
+	data = {
+		'text': text,
+		'dpm': dpm,
+		'frequency': freq,
+		'is_private': is_private,
+		'need_base32': need_base32,
+	}
+	if password:
+		data['password'] = password
+	return data
+
+def get_second_message(freq, **kwargs):
+	f = random.randint(50, 3999) 
+	if freq is not None:
+		while 0.5 <= f / freq <= 2:
+			f = random.randint(50, 3999)
+	return get_message(freq=f, **kwargs)
+	
 async def handler_check(hostname):
-	first = State(hostname, PORT, 'first')
-	with open('dump', 'wb') as fout:
-		listener = first.get_binary_dumper('/ghslkgfhsyfth/data', fout)
-		await listener.start_internal()
 	checker.ok()
 
-async def handler_get(hostname, id, flag):
+async def handler_put_pass(hostname, id, flag):
+	checker.log('put pass')
+	message = get_message(password=flag, is_private=True)
+	state = State(hostname, PORT)
+	await state.post('/db/{}'.format(id), message)
 	checker.ok()
 
-async def handler_put(hostname, id, flag):
-	checker.ok(message=json.dumps(id))
+async def handler_get_pass(hostname, id, flag):
+	checker.log('get pass')
+	message = get_message(password=flag, is_private=True)
+	state = State(hostname, PORT)
+	res = await state.post('/db/{}'.format(id), message)
+	messages = checker.parse_json_list(res)
+	if len(messages) <= 1:
+		checker.corrupt(error='no old messages')
+	if 'password' not in messages[0]:
+		checker.corrupt(error='first message has not password')
+	if messages[0]['password'] != flag:
+		checker.corrupt(error='first message has not right password: bad "{}"'.format(messages[0]['password']))
+	checker.ok()
+
+async def handler_put_channel(hostname, id, flag):
+	checker.log('put channel')
+	message = get_message(is_private=True)
+	state = State(hostname, PORT)
+	await state.post('/db/{}'.format(flag), message)
+	checker.ok()
+
+async def handler_get_channel(hostname, id, flag):
+	checker.log('get channel')
+	message = get_message(is_private=True)
+	state = State(hostname, PORT)
+	finder = SoundFinder()
+	listener = state.get_binary_dumper('/radio/{}'.format(flag), finder.get_new_data)
+	listener.start()
+	await asyncio.sleep(10)
+	await listener.close()
+
+	if not finder.result:
+		checker.corrupt(error='no signal for 10 seconds')
+
+	checker.ok()
+
+async def handler_put_morse(hostname, id, flag):
+	checker.log('put morse')
+	message = get_message(is_private=True, text=flag, need_base32=True)
+	state = State(hostname, PORT)
+	await state.post('/db/{}'.format(id), message)
+	checker.ok(message=json.dumps({'channel': id, 'freq': message['frequency']}))
+	
+async def handler_put_morse_2(hostname, id, flag):
+	checker.log('put morse 2')
+	message = get_message(is_private=True, text=flag, need_base32=True)
+	state = State(hostname, PORT, 'first')
+	await state.post('/db/{}'.format(id), message)
+	state2 = State(hostname, PORT, 'second')
+	message2 = get_second_message(message['frequency'], password=message['password'])
+	await state2.post('/db/{}'.format(id), message2)
+	checker.ok(message=json.dumps({'channel': id, 'freq': message['frequency']}))
+
+async def handler_get_morse(hostname, id, flag):
+	checker.log('get morse')
+	id = json.loads(id)
+	state = State(hostname, PORT)
+	parser = MorseParser(id['freq'])
+	listener = state.get_binary_dumper('/radio/{}'.format(id['channel']), parser.save)
+	listener.start()
+
+	flag = base64.b32encode(flag.encode('ascii')).decode('ascii')
+
+	await asyncio.sleep(10)
+	await listener.close()
+
+	text = parser.process()
+	if text not in flag:
+		checker.corrupt(error='{} not in {}'.format(text, flag))
+
+	checker.ok(message=text)
 
 def main(argv):
-	checker = Checker(handler_check, [(handler_put, handler_get)])
+	checker = Checker(handler_check, [(handler_put_pass, handler_get_pass), (handler_put_channel, handler_get_channel, 5), (handler_put_morse, handler_get_morse, 2), (handler_put_morse_2, handler_get_morse, 2)])
 	checker.process(argv)
 
 if __name__ == "__main__":
