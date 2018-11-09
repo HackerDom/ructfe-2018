@@ -85,7 +85,7 @@ impl Handler for GetMessageHandler {
         }
         match self.database.get(&key.to_string()) {
             Some(msg) => Ok(Response::with((status::Ok, try_it!(json::encode(&msg))))),
-            None => Ok(Response::with(status::NotFound))
+            None => Ok(Response::with((status::Ok, "[]")))
         }
     }
 }
