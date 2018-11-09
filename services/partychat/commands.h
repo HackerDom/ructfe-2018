@@ -217,7 +217,7 @@
 		}
 
 		bool process_response(const char *response) {
-			pc_log("hb_daemon::process_response: received '%s'.", response);
+			//pc_log("hb_daemon::process_response: received '%s'.", response);
 			last_hb = time(NULL);
 			master_available = true;
 			hb_sent = false;
@@ -388,7 +388,7 @@
 
 		virtual void execute(responder<node_state> &rsp, connection<node_state> &conn, node_state &state) {
 			if (&conn == &state.uplink.master_conn) {
-				pc_log("say_command::execute: saying '%s' to controllers..", this->text);
+				//pc_log("say_command::execute: saying '%s' to controllers..", this->text);
 				pc_group g(this->text);
 
 				for (int i = 0; i < CON_CT; i++) {
@@ -399,7 +399,7 @@
 				pc_add_line(g, this->text);
 			}
 			else {
-				pc_log("say_command::execute: saying '%s'..", this->text);
+				//pc_log("say_command::execute: saying '%s'..", this->text);
 				pc_group g(this->text);
 
 				char buffer[CONN_BUFFER_LENGTH];
@@ -417,7 +417,7 @@
 		virtual const char *name() { return _name(); }
 
 		virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) {
-			pc_log("say_command::execute: saying '%s'..", this->text);
+			//pc_log("say_command::execute: saying '%s'..", this->text);
 			printf(": %s\n", this->text);
 		}
 	};
@@ -442,14 +442,14 @@
 
 		virtual void execute(responder<node_state> &rsp, connection<node_state> &conn, node_state &state) {
 			if (&conn == &state.uplink.master_conn) {
-				pc_log("history_command::execute: loading history for '%s'..", this->text);
+				//pc_log("history_command::execute: loading history for '%s'..", this->text);
 				pc_group g(this->text);
 
 				pc_send_lines(g, [&rsp](const char *line) { rsp.respond(line); });
 				rsp.respond("");
 			}
 			else {
-				pc_log("history_command::execute: getting history from master '%s'..", this->text);
+				//pc_log("history_command::execute: getting history from master '%s'..", this->text);
 				pc_group g(this->text);
 
 				state.uplink.master_conn.send<history_command>(this->text);
@@ -459,7 +459,7 @@
 		virtual bool needs_response() { return true; }
 
 		virtual bool handle_response(const char *response, node_state &state) {
-			pc_log("history_command::handle_response: %s", response);
+			//pc_log("history_command::handle_response: %s", response);
 			if (!response || strlen(response) == 0)
 				return true;
 
@@ -497,7 +497,7 @@
 		virtual bool needs_response() { return true; }
 
 		virtual bool handle_response(const char *response, checker_state &state) {
-			pc_log("history_command::handle_response: %s", response);
+			//pc_log("history_command::handle_response: %s", response);
 			if (!response || strlen(response) == 0)
 				return true;
 
@@ -522,7 +522,7 @@
 		virtual bool needs_response() { return true; }
 
 		virtual bool handle_response(const char *response, checker_state &state) {
-			pc_log("list_command::handle_response: %s", response);
+			//pc_log("list_command::handle_response: %s", response);
 			if (!response || strlen(response) == 0)
 				return true;
 
@@ -601,7 +601,7 @@
 	template<typename TState>
 	bool parse_command(char *str, command<TState> *&cmd) {
 
-		pc_log("parse_command: '%s'", str);
+		//pc_log("parse_command: '%s'", str);
 
 		char *id_str = strtok(str, " ");
 		char *name_str = strtok(NULL, " ");
@@ -611,7 +611,7 @@
 
 		char *text_str = name_str + strlen(name_str) + 1;
 
-		pc_log("parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
+		//pc_log("parse_command: id: '%d', name: '%s', text: '%s'", atoi(id_str), name_str, text_str);
 
 		COMMAND_CASE(die_command<TState>)
 		COMMAND_CASE(end_command<TState>)

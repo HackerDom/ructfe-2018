@@ -13,6 +13,9 @@
     system: yes
     shell: /usr/sbin/nologin
 
+- name: Ensure perm 0750 on home
+  file: path=/home/vending mode='0750'
+
 - name: Install vending service
   copy:
     src: ../services/vending/

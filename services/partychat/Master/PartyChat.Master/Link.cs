@@ -44,6 +44,11 @@ namespace PartyChat.Master
                 while (!dataToSend.IsEmpty)
                 {
                     var bytesSent = await client.SendAsync(dataToSend, SocketFlags.None);
+                    if (bytesSent == 0)
+                    {
+                        log.Warn("0 bytes sent, closing connection..");
+                        throw new InvalidOperationException();
+                    }
                     dataToSend = dataToSend.Slice(bytesSent);
                 }
             }
@@ -57,6 +62,11 @@ namespace PartyChat.Master
                 while (true)
                 {
                     var bytesReceived = await client.ReceiveAsync(buffer.Memory, SocketFlags.None);
+                    if (bytesReceived == 0)
+                    {
+                        log.Warn("0 bytes received, closing connection..");
+                        throw new InvalidOperationException();
+                    }
                     if (handle.Builder.Length + bytesReceived > MaxCommandLength)
                         throw new InvalidOperationException("The command was too long.");
                     

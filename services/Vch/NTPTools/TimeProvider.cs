@@ -22,35 +22,26 @@ namespace NTPTools
 
         public async Task<ulong> GetNetworkTime(IPEndPoint endpoint)
         {
-            try
-            {
-                var builder = new NTPDataBuilder();
-                builder.SetNTPMode(NTPMode.Client);
-                builder.SetLeapIndicator(LeapIndicator.NoWarining);
-                builder.SetNTPVersion(NTPVersionNumber.V3);
-                builder.SetPeerClockStratum(3);
-                builder.SetPollingInterval(TimeSpan.FromSeconds(2));
+            var builder = new NTPDataBuilder();
+            builder.SetNTPMode(NTPMode.Client);
+            builder.SetLeapIndicator(LeapIndicator.NoWarining);
+            builder.SetNTPVersion(NTPVersionNumber.V3);
+            builder.SetPeerClockStratum(3);
+            builder.SetPollingInterval(TimeSpan.FromSeconds(2));
 
 
-                var client = new UdpClient(AddressFamily.InterNetwork);
-                client.Client.SendTimeout = 2000;
-                client.Client.ReceiveTimeout = 2000;
-                client.Client.ReceiveBufferSize = 48;
+            var client = new UdpClient(AddressFamily.InterNetwork);
+            client.Client.SendTimeout = 50;
+            client.Client.ReceiveTimeout = 50;
+            client.Client.ReceiveBufferSize = 48;
 
-                var request = builder.Build();
-                await client.SendAsync(request, request.Length, endpoint);
+            var request = builder.Build();
+            await client.SendAsync(request, request.Length, endpoint);
 
 
-                var result = client.Receive(ref endpoint);
-                
-                return BitConverter.ToUInt64(result, 40);
-;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            var result = client.Receive(ref endpoint);
+
+            return BitConverter.ToUInt64(result, 40);
         }
 
 

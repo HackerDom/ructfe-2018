@@ -139,7 +139,7 @@
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
 				return 0;
 
-			pc_log("Error: poll_send: errno = %d.", result, errno);
+			//pc_log("Error: poll_send: errno = %d.", result, errno);
 			alive = false;
 			return -1;
 		}
@@ -190,7 +190,7 @@
 				if (errno == EWOULDBLOCK || errno == EAGAIN)
 					return 0;
 
-				pc_log("Error: poll_receive: errno = %d.", result, errno);
+				//pc_log("Error: poll_receive: errno = %d.", result, errno);
 				alive = false;
 				return -1;
 			}
@@ -399,13 +399,13 @@
 		if (length >= sizeof(large_buffer))
 			pc_fatal("pc_add_line: history file is too large.");
 
-		pc_log("pc_add_line: length is %d", length);
+		//pc_log("pc_add_line: length is %d", length);
 
 		rewind(f);
 		fread(large_buffer, 1, length, f);
 		large_buffer[length] = 0;
 
-		pc_log("pc_add_line: existing lines: %.128s", large_buffer);
+		//pc_log("pc_add_line: existing lines: %.128s", large_buffer);
 
 		int lines = 0;
 		char *without_first_line = NULL;
@@ -421,21 +421,21 @@
 		if (lines + 1 > HIST_MAX)
 			write_back = without_first_line;
 
-		pc_log("pc_add_line: lines = '%d'.", lines);
+		//pc_log("pc_add_line: lines = '%d'.", lines);
 
 		fclose(f);
 		f = fopen(filename, "w");
 		if (!f)
 			pc_fatal("pc_add_line: failed to open file '%s': %d.", filename, errno);
 
-		pc_log("pc_add_line: writing '%.128s' at %d..", write_back, ftell(f));
+		//pc_log("pc_add_line: writing '%.128s' at %d..", write_back, ftell(f));
 		fwrite(write_back, 1, strlen(write_back), f);
-		pc_log("pc_add_line: strlen(write_back) = %d", strlen(write_back));
+		//pc_log("pc_add_line: strlen(write_back) = %d", strlen(write_back));
 
 		sprintf(large_buffer, "%s\n", line);
-		pc_log("pc_add_line: writing '%.128s' at %d..", large_buffer, ftell(f));
+		//pc_log("pc_add_line: writing '%.128s' at %d..", large_buffer, ftell(f));
 		fwrite(large_buffer, 1, strlen(large_buffer), f);
-		pc_log("pc_add_line: strlen(large_buffer) = %d", strlen(large_buffer));
+		//pc_log("pc_add_line: strlen(large_buffer) = %d", strlen(large_buffer));
 
 		size_t size = ftell(f);
 		fclose(f);
@@ -453,7 +453,7 @@
 		while (!feof(f)) {
 			fgets(line_buffer, sizeof(line_buffer), f);
 			sender(line_buffer);
-			pc_log("pc_send_lines: sent '%s'", line_buffer);
+			//pc_log("pc_send_lines: sent '%s'", line_buffer);
 		}
 
 		fclose(f);

@@ -2,7 +2,7 @@
   "profiles": {
     "Vch.Checker": {
       "commandName": "Project",
-      "commandLineArgs": "get 127.0.0.1:19999 26842842536414 flag1 216.239.35.8"
+      "commandLineArgs": "get 127.0.0.1 11296611306324485236 SUPERFLAG 88.147.254.230 123"
     }
   }
 }
