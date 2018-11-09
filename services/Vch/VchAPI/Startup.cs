@@ -39,7 +39,7 @@ namespace VchAPI
 
             containerBuilder.RegisterType<UserStorage>().As<IUserStorage>().SingleInstance();
             containerBuilder.RegisterType<MessageStorage>().As<IMessageStorage>().SingleInstance();
-            containerBuilder.RegisterType<UUIDProvider>().As<IUUIDProvider>();
+            containerBuilder.RegisterType<UUIDProvider>().As<IUUIDProvider>().SingleInstance();
             containerBuilder.RegisterType<TimeProvider>().As<ITimeProvider>();
             containerBuilder.RegisterType<BoardController>().PropertiesAutowired().SingleInstance();
         }

@@ -43,29 +43,14 @@ namespace NTPTools
 
                 var result = client.Receive(ref endpoint);
                 
-                var ms = GetMilliseconds(result, 40);
-
-
-                return ms;
+                return BitConverter.ToUInt64(result, 40);
+;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw;
             }
-        }
-
-
-        private static ulong GetMilliseconds(byte[] ntpData, byte refOffset)
-        {
-            ulong intPart = BitConverter.ToUInt32(ntpData, refOffset);
-            ulong fractPart = BitConverter.ToUInt32(ntpData, refOffset + 4);
-
-            intPart = SwapEndianness(intPart);
-            fractPart = SwapEndianness(intPart);
-
-            var milliseconds = (intPart * 1000) + ((fractPart * 1000) / 0x100000000L);
-            return milliseconds;
         }
 
 

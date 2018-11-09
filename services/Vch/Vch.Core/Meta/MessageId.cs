@@ -6,8 +6,8 @@ namespace Vch.Core.Meta
 {
     public class MessageId
     {
-	    [JsonConstructor]
-		public MessageId(ulong id)
+        [JsonConstructor]
+        public MessageId(ulong id)
         {
             Id = id;
         }
@@ -19,23 +19,23 @@ namespace Vch.Core.Meta
 
         public UInt64 Id { get; set; }
 
-        public static IEqualityComparer<MessageId> IdComparer { get; } = new IdEqualityComparer();
 
-        private sealed class IdEqualityComparer : IEqualityComparer<MessageId>
+        protected bool Equals(MessageId other)
         {
-            public bool Equals(MessageId x, MessageId y)
-            {
-                if (ReferenceEquals(x, y)) return true;
-                if (ReferenceEquals(x, null)) return false;
-                if (ReferenceEquals(y, null)) return false;
-                if (x.GetType() != y.GetType()) return false;
-                return x.Id == y.Id;
-            }
+            return Id == other.Id;
+        }
 
-            public int GetHashCode(MessageId obj)
-            {
-                return obj.Id.GetHashCode();
-            }
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((MessageId) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
         }
     }
 }
