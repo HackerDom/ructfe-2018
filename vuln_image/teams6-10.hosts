@@ -1,0 +1,5 @@
+team6 ansible_host=10.60.6.2 ansible_port=22 ansible_user=root
+team7 ansible_host=10.60.7.2 ansible_port=22 ansible_user=root
+team8 ansible_host=10.60.8.2 ansible_port=22 ansible_user=root
+team9 ansible_host=10.60.9.2 ansible_port=22 ansible_user=root
+team10 ansible_host=10.60.10.2 ansible_port=22 ansible_user=root
