@@ -96,9 +96,6 @@
 			this->addr = &addr;
 			reconnect();
 		}
-		~connection() {
-			pc_log("connection::tick: they killed me!");
-		}
 		void reconnect() {
 			if (addr) {
 				pc_log("connection::reconnect: connecting to remote endpoint..");
@@ -141,7 +138,6 @@
 
 				if (cmd->needs_response()) {
 					executing_commands[cmd->cmd_id] = cmd;
-					pc_log("connection::tick: saved a command with id %d..", cmd->cmd_id);
 				}
 				else
 					delete cmd;
@@ -163,7 +159,6 @@
 		}
 
 		void flush(int id) {
-			pc_log("connection::flush() id = %d", id);
 			tick();
 			while (alive() && (conn.is_sending() || !pending_commands.empty() || executing_commands.find(id) != executing_commands.end()))
 				tick();
@@ -334,7 +329,6 @@
 
 				for (int i = 0; i < CON_CT; i++) {
 					if (state.controllers[i]) {
-						pc_log("say_command::execute: saying '%s' to a controller..", this->text);
 						state.controllers[i]->send<say_command>(this->text);
 					}
 				}
