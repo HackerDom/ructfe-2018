@@ -15,9 +15,9 @@ namespace Vch.Checker
         {
             var checkerArgs = new CheckerArgs(args);
 
-            if (!checkerArgs.Mode.Equals("info", StringComparison.InvariantCultureIgnoreCase))
+            if (!checkerArgs.Mode.Equals("info", StringComparison.InvariantCultureIgnoreCase)) 
             {
-                client = new VchClient(new Uri($"http://{checkerArgs.Host}"));
+                client = new VchClient(new Uri($"http://{checkerArgs.Host}:19999"));
 
             }
 

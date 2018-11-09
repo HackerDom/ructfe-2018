@@ -21,20 +21,21 @@ namespace Vch.Core.Sorages
         public Message AddOrUpdateMessage(MessageId id, UserInfo userInfo, string text)
         {
             return messages.AddOrUpdate(id, messageId =>
-	            {
-		            var message = Message.Create(text, userInfo, messageId);
-					messagesCollection.InsertOneAsync(message).Wait();
-					return message;
-	            },
+                {
+                    var message = Message.Create(text, userInfo, messageId);
+                    messagesCollection.InsertOneAsync(message).Wait();
+                    return message;
+                },
                 (messageId, message) =>
                 {
                     message.Text = text;
-	                messagesCollection.UpdateOneAsync(_ => _.MessageId.Equals(messageId), new ObjectUpdateDefinition<Message>(message)).Wait();
-					return message;
+                    var update = Builders<Message>.Update.Set(message1 => message1.Text, text);
+                    messagesCollection.UpdateOneAsync(message1 => message1.MessageId.Equals(messageId), update).Wait();
+                    return message;
                 });
         }
 
-	    public IEnumerable<Message> GetAllMessages()
+        public IEnumerable<Message> GetAllMessages()
 	    {
 		    return messages.Values;
 	    }

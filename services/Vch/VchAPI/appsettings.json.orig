@@ -4,7 +4,11 @@
       "Default": "Warning"
     }
   },
+<<<<<<< HEAD
   //"ConnectionStrings": { "mongo": "mongodb://%2Frun%2Fmongodb%2Fmongodb-27017.sock/" },
   "ConnectionStrings": { "mongo": "mongodb://localhost" },
+=======
+  "ConnectionStrings": { "mongo": "mongodb://mongo/" },
+>>>>>>> 471c847b02f9018c37b40963240c3dedc8410aa8
   "AllowedHosts": "*"
 }

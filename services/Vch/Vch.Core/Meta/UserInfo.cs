@@ -1,6 +1,7 @@
 ﻿using System;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.IdGenerators;
 using Newtonsoft.Json;
 
 namespace Vch.Core.Meta
@@ -12,10 +13,7 @@ namespace Vch.Core.Meta
             UserId = userId;
         }
 
-        [JsonIgnore]
         [BsonId]
-        public ObjectId Id { get; set; }
-
         public string UserId { get; set; }
 
         public UserMeta Meta { get; set; }

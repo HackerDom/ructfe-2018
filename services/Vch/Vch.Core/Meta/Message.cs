@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.IdGenerators;
 using Newtonsoft.Json;
 
 namespace Vch.Core.Meta
@@ -15,9 +16,6 @@ namespace Vch.Core.Meta
         }
 
         [BsonId]
-		[JsonIgnore]
-        public ObjectId Id;
-
         public MessageId MessageId { get; set; }
         public string Text { get; set; }
         public DateTime CreationTime { get; set; }
