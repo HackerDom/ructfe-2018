@@ -33,7 +33,7 @@ namespace Vch.Core.Meta
 
         public static async Task<Message> Create(string text, UserInfo info, IUUIDProvider uuidProvider)
         {
-            return new Message(new MessageId(await uuidProvider.GetUUID(info.Meta)))
+            return new Message(MessageId.From(await uuidProvider.GetUUID(info.Meta))) 
             {
                 Text = text,
                 userInfo = info,

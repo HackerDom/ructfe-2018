@@ -8,7 +8,7 @@ namespace Vch.Core.Meta
 {
     public class UserInfo
     {
-		public UserInfo(string userId)
+        public UserInfo(string userId)
         {
             UserId = userId;
         }
@@ -17,5 +17,7 @@ namespace Vch.Core.Meta
         public string UserId { get; set; }
 
         public UserMeta Meta { get; set; }
+
+        public DateTime RegistrationDate { get; set; }
     }
 }

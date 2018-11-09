@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
 
 namespace Vch.Core.Meta
@@ -7,22 +8,27 @@ namespace Vch.Core.Meta
     public class MessageId
     {
         [JsonConstructor]
-        public MessageId(ulong id)
+        public MessageId(string id)
         {
             Id = id;
         }
 
         public static MessageId Parse(string id)
         {
-            return new MessageId(UInt64.Parse(id));
+            return new MessageId(id.ToString());
         }
 
-        public UInt64 Id { get; set; }
+        public static MessageId From(UInt64 id)
+        {
+            return new MessageId(id.ToString());
+        }
 
+        [BsonId]
+        public string Id { get; set; }
 
         protected bool Equals(MessageId other)
         {
-            return Id == other.Id;
+            return string.Equals(Id, other.Id, StringComparison.InvariantCultureIgnoreCase);
         }
 
         public override bool Equals(object obj)
@@ -35,7 +41,7 @@ namespace Vch.Core.Meta
 
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return (Id != null ? Id.GetHashCode() : 0);
         }
     }
 }
