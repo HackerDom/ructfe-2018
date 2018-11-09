@@ -12,5 +12,5 @@ class MachineMasterKeyHandler(BaseHandler):
         try:
             vm_id, key = request.body.readline().decode().split()
             return Response(200, bytes(self.vm.get_master_info(int(vm_id), key.encode('ascii'))))
-        except ValueError:
+        except (TypeError, ValueError):
             return Response(400, b'Bad Request')

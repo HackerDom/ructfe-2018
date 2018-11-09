@@ -13,5 +13,5 @@ class GetDataHandler(BaseHandler):
             return Response(200, (self.vm_keys[machine][key]).encode())
         except (IndexError, KeyError):
             return Response(404, b'Not Found')
-        except ValueError:
+        except (TypeError, ValueError):
             return Response(400, b'Bad Request')

@@ -11,5 +11,5 @@ class MachineManufacturerHandler(BaseHandler):
     def handle(self, request: Request) -> Response:
         try:
             return Response(200, bytes(self.vm.get_machine_manufacturer(int(request.body.readline().decode()))))
-        except ValueError:
+        except (TypeError, ValueError):
             return Response(400, b'Bad Request')
