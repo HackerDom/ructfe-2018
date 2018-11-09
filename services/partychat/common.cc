@@ -379,7 +379,6 @@
 		return !strcmp(group, other.group);
 	}
 
-
 // Storage
 
 	#define HIST_MAX 50
@@ -452,9 +451,11 @@
 
 		char line_buffer[CONN_BUFFER_LENGTH];
 		while (!feof(f)) {
-			fread(line_buffer, 1, sizeof(line_buffer), f);
+			fgets(line_buffer, sizeof(line_buffer), f);
 			sender(line_buffer);
+			pc_log("pc_send_lines: sent '%s'", line_buffer);
 		}
 
 		fclose(f);
 	}
+

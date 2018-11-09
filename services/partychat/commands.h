@@ -333,8 +333,10 @@
 				pc_group g(this->text);
 
 				for (int i = 0; i < CON_CT; i++) {
-					if (state.controllers[i])
+					if (state.controllers[i]) {
+						pc_log("say_command::execute: saying '%s' to a controller..", this->text);
 						state.controllers[i]->send<say_command>(this->text);
+					}
 				}
 				pc_add_line(g, this->text);
 			}
@@ -357,6 +359,7 @@
 		virtual const char *name() { return _name(); }
 
 		virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) {
+			pc_log("say_command::execute: saying '%s'..", this->text);
 			printf(": %s\n", this->text);
 		}
 	};
