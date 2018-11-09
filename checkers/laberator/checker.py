@@ -113,7 +113,7 @@ def list_labels(hostname, cookies):
     }))
     response = ws.recv()
     ws.close()
-    return json.loads(response.decode())
+    return json.loads(response)
 
 
 def view_label(hostname, cookies, label_id):
@@ -127,7 +127,7 @@ def view_label(hostname, cookies, label_id):
     }))
     response = ws.recv()
     ws.close()
-    return json.loads(response.decode())
+    return json.loads(response)
 
 
 def get_phrase_data(hostname, cookies):
@@ -148,7 +148,7 @@ def get_last_users(hostname):
     ws.send(create_command_request("last_users", {}))
     response = ws.recv()
     ws.close()
-    return json.loads(response.decode())
+    return json.loads(response)
 
 
 def put_first(hostname, flag_id, flag):
