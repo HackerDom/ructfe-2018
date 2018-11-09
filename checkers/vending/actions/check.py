@@ -5,7 +5,7 @@ from time import sleep
 from random import randint, choice
 
 COUNTER_MAX = 100000
-META_RANGE = slice(16, 128)
+META_RANGE = slice(16, 127)
 
 
 def check(team_host):
