@@ -8,7 +8,7 @@ pub struct Message {
     dpm: i32,
     frequency: i32,
     need_base32: bool,
-    text: String,
+    pub text: String,
     pub password: Option<String>,
     pub datetime: Option<DateTime<UTC>>,
     pub is_private: bool,
@@ -23,6 +23,14 @@ impl Message {
                 base32::Alphabet::RFC4648 { padding: false },
                 self.text.as_bytes(),
             )
+        }
+    }
+    
+    pub fn is_valid(&self) -> bool {
+        let valid_text = self.text.len() < 100;
+        match &self.password { 
+            Some(p) => valid_text & (p.len() < 100),
+            None => valid_text
         }
     }
 }
