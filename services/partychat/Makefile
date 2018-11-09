@@ -16,6 +16,7 @@ node: $(NODE_OBJS)
 CHECKER_OBJS = checker.o common.o
 checker: $(CHECKER_OBJS)
 	g++ -o checker $(CHECKER_OBJS)
+	cp checker ../../checkers/partychat/
 
 clean:
 	rm -rf partychat* checker *.o histories

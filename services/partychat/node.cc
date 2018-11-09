@@ -59,23 +59,28 @@ int main(int argc, char **argv) {
 
 	fds[0].fd = server_sock;
 	fds[0].events = POLLIN;
-	fds[1].fd = state.uplink.master_conn.conn.socket;
-	fds[1].events = POLLIN;
 
 	while (true) {
 
 		state.uplink.tick();
+
 		pc_log("Master: %s", state.uplink.hb.master_available ? "available" : "unavailable");
+
+		if (!state.uplink.master_conn.alive()) {
+			sleep(1);
+			continue;
+		}
+
+		fds[1].fd = state.uplink.master_conn.conn.socket;
+		fds[1].events = POLLIN;
 
 		int result = poll(fds, used_fds, 1000);
 		if (result < 0)
 			pc_fatal("main: poll() failed unexpectedly.");
 
 		for (int i = 0; i < used_fds; i++) {
-			if (fds[i].revents != POLLIN)
-				continue;
 
-			if (i == 0) {
+			if (i == 0 && fds[0].revents == POLLIN) {
 				int client_idx = find_empty_slot(fds + SRV_CT, CON_CT);
 				
 				if (client_idx >= 0) {
@@ -96,10 +101,12 @@ int main(int argc, char **argv) {
 				}
 				continue;
 			}
-			if (i == 1)
+			if (i < SRV_CT)
 				continue;
 
 			int con_idx = i - SRV_CT;
+			if (!state.controllers[con_idx])
+				continue;
 			if (!state.controllers[con_idx]->tick()) {
 				delete state.controllers[con_idx];
 				state.controllers[con_idx] = NULL;

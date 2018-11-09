@@ -96,9 +96,6 @@
 			this->addr = &addr;
 			reconnect();
 		}
-		~connection() {
-			pc_log("connection::tick: they killed me!");
-		}
 		void reconnect() {
 			if (addr) {
 				pc_log("connection::reconnect: connecting to remote endpoint..");
@@ -141,7 +138,6 @@
 
 				if (cmd->needs_response()) {
 					executing_commands[cmd->cmd_id] = cmd;
-					pc_log("connection::tick: saved a command with id %d..", cmd->cmd_id);
 				}
 				else
 					delete cmd;
@@ -163,7 +159,6 @@
 		}
 
 		void flush(int id) {
-			pc_log("connection::flush() id = %d", id);
 			tick();
 			while (alive() && (conn.is_sending() || !pending_commands.empty() || executing_commands.find(id) != executing_commands.end()))
 				tick();
@@ -333,8 +328,9 @@
 				pc_group g(this->text);
 
 				for (int i = 0; i < CON_CT; i++) {
-					if (state.controllers[i])
+					if (state.controllers[i]) {
 						state.controllers[i]->send<say_command>(this->text);
+					}
 				}
 				pc_add_line(g, this->text);
 			}
@@ -342,8 +338,9 @@
 				pc_log("say_command::execute: saying '%s'..", this->text);
 				pc_group g(this->text);
 
-				state.uplink.master_conn.send<say_command>(this->text);
-				conn.flush(conn.send<say_command>(this->text));
+				char buffer[CONN_BUFFER_LENGTH];
+				snprintf(buffer, sizeof(buffer), "%s says: %s", state.uplink.hb.nick, this->text);
+				state.uplink.master_conn.send<say_command>(buffer);
 			}
 		}
 	};
@@ -356,6 +353,7 @@
 		virtual const char *name() { return _name(); }
 
 		virtual void execute(responder<face_state> &rsp, connection<face_state> &conn, face_state &state) {
+			pc_log("say_command::execute: saying '%s'..", this->text);
 			printf(": %s\n", this->text);
 		}
 	};

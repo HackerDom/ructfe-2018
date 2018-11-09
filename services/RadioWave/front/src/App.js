@@ -3,6 +3,7 @@ import logo from "./logo.svg";
 import Input from "./components/Input";
 import "./App.css";
 import { Formik, Form, Field } from "formik";
+import debounce from "lodash.debounce"
 
 const host = window.location.host;
 
@@ -32,19 +33,19 @@ class App extends Component {
       const radioSocket = new WebSocket(`ws://${host}/radio/${ch}`);
       radioSocket.binaryType = "arraybuffer";
       radioSocket.onmessage = this.handleRadioMsg;
-     
+
       radioSocket.onerror = () => {
-        if (ch == currentChanel) {
+        if (ch === currentChanel) {
           setTimeout(this.tryConnectRadio, 1000)
         }
-          
+
       };
       radioSocket.onclose = () => {
-        if (ch == currentChanel) {
+        if (ch === currentChanel) {
           setTimeout(this.tryConnectRadio, 1000)
         }
       };
-      
+
 
       this.radioSocket = radioSocket;
     } catch (e) {
@@ -77,12 +78,12 @@ class App extends Component {
     return fs;
   };
 
-  changeChannel = e => {
+  changeChannel = debounce(e => {
     if (this.radioSocket.readyState === WebSocket.OPEN)
       this.radioSocket.close();
     this.tryConnectRadio(e.target.value);
     currentChanel = e.target.value;
-  };
+  }, 300);
 
   tryConnectNews = () => {
     try {
