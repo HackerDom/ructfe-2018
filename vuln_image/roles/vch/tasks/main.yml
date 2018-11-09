@@ -3,11 +3,12 @@
   apt:
     deb: https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
 
-- name: Install .NET Core 2.1 and MongoDB
+- name: Install .NET Core 2.1 and MongoDB and NTP server
   apt:
     name:
      - dotnet-sdk-2.1
      - mongodb
+     - ntp
     state: latest
     update_cache: yes
 
