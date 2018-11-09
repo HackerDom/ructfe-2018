@@ -1,24 +1,43 @@
 ---
-- name: Install dotnet repo keys
-  apt:
-    deb: https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
-
-- name: Install .NET Core 2.1 and MongoDB and NTP server
+- name: Install prerequisites for docker
   apt:
     name:
-     - dotnet-sdk-2.1
-     - mongodb
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: latest
+    update_cache: yes
+
+- name:    Add Docker GPG key
+  apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+
+- name:    Add Docker APT repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+
+- name: Install Docker and NTP server
+  apt:
+    name:
+     - docker-ce
      - ntp
     state: latest
     update_cache: yes
+
+- name: Install Docker Compose
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/1.23.1/docker-compose-Linux-x86_64"
+    dest: "/usr/local/bin/docker-compose"
+    force: true
+    owner: "root"
+    group: "root"
+    mode: "0755"
 
 - name: Create user
   user:
     name: vch
     createhome: yes
     system: yes
-    groups: mongodb
-    append: yes
     shell: /usr/sbin/nologin
 
 - name: Copy sources
@@ -32,15 +51,13 @@
     - 'NTPTools'
     - 'VchAPI'
     - 'Vch.Core'
+    - 'docker-compose.yml'
   notify: restart vch service
 
-- name: Build service
-  become_user: vch
-  shell: |
-      dotnet build -c Release
+- name: Build service in docker
+  shell: docker-compose run vch dotnet build -c Release
   args:
-    chdir: /home/vch/VchAPI/
-  notify: restart vch service
+    chdir: /home/vch/
 
 - name: Install systemd units
   copy:
@@ -49,7 +66,6 @@
   notify: restart vch service
   with_items:
     - vch.service
-    - mongodb.service
 
 - name: Enable services
   systemd:
@@ -59,5 +75,4 @@
     daemon_reload: yes
   with_items:
     - vch
-    - mongodb
 
