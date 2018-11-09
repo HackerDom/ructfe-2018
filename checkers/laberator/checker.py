@@ -42,6 +42,8 @@ def signup(hostport, login, password, phrase):
         headers=generate_headers(),
         timeout=10
     )
+    if r.status_code // 100 == 5:
+        exit(DOWN)
     r.raise_for_status()
     return r.cookies
 
@@ -57,6 +59,8 @@ def signin(hostport, login, password):
         headers=generate_headers(),
         timeout=10
     )
+    if r.status_code // 100 == 5:
+        exit(DOWN)
     r.raise_for_status()
     return r.cookies
 
@@ -136,6 +140,8 @@ def get_phrase_data(hostname, cookies):
         headers=generate_headers(),
         cookies=cookies
     )
+    if r.status_code // 100 == 5:
+        exit(DOWN)
     r.raise_for_status()
     return PHRASE_PATTERN.findall(r.content.decode())
 
