@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Tuple
+from io import BufferedReader
 
 
 @dataclass(frozen=True)
@@ -13,5 +14,5 @@ class Response:
 class Request:
     method: str
     path: str
-    body: str
+    body: BufferedReader
     headers: Tuple[Tuple[str, str]] = field(default=())

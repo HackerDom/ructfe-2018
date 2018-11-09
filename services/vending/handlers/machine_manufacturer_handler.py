@@ -10,6 +10,6 @@ class MachineManufacturerHandler(BaseHandler):
 
     def handle(self, request: Request) -> Response:
         try:
-            return Response(200, bytes(self.vm.get_machine_manufacturer(int(str(request.body)))))
+            return Response(200, bytes(self.vm.get_machine_manufacturer(int(request.body.readline().decode()))))
         except ValueError:
             return Response(400, b'Bad Request')

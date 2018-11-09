@@ -30,7 +30,7 @@ namespace Transmitter.Utils
 				seed ^= 0x4497bd8dcfbc24e5L;
 				state = new byte[8];
 				for(var i = 0; i < 64; i += 8)
-					state[i] = (byte)(seed >> i);
+					state[i >> 3] = (byte)(seed >> i);
 			}
 
 			public ulong Next()

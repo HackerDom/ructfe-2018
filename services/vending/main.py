@@ -4,16 +4,17 @@ from http_helpers.objects import Request
 
 from handlers import index_handler, machine_name_handler, \
     create_machine_handler, machine_manufacturer_handler, \
-    machine_master_key_handler, machine_meta_handler
+    machine_master_key_handler, machine_meta_handler, \
+    create_vending_keys_handler, get_data_handler
 
 from vmf import VendingMachinesFactory
+from vmkeys import VMKeys
+from dumper import Dumper
 
 
 VENDING_MACHINES = VendingMachinesFactory()
-
-# todo
-# CREATE_VENDING_KEYS = 4  # (id, k1-v1, ..., kN-vN -> key1, ..., keyN)
-# GET_DATA_BY_VENDING_KEY = 5  # (id, k -> bit)
+VM_KEYS = VMKeys()
+DUMPER = Dumper(VENDING_MACHINES, VM_KEYS).start()
 
 
 def create_route_table():
@@ -24,6 +25,8 @@ def create_route_table():
         Route("GET", "/machine_manufacturer", machine_manufacturer_handler.MachineManufacturerHandler(VENDING_MACHINES)),
         Route("GET", "/machine_meta", machine_meta_handler.MachineMetaHandler(VENDING_MACHINES)),
         Route("GET", "/machine_master_key", machine_master_key_handler.MachineMasterKeyHandler(VENDING_MACHINES)),
+        Route("CREATE", "/vending_item", create_vending_keys_handler.CreateVendingKeysHandler(VM_KEYS)),
+        Route("GET", "/vending_item", get_data_handler.GetDataHandler(VM_KEYS))
     )
 
 
@@ -37,7 +40,7 @@ class ServiceHttpHandler(BaseHTTPRequestHandler):
         return self.__getattribute__(item)
 
     def handle_request(self):
-        response = self.router.handle(Request(self.command, self.path, self.headers, self.rfile))
+        response = self.router.handle(Request(self.command, self.path, self.rfile, self.headers))
         self.send_response(response.code)
         for header in response.headers:
             self.send_header(header[0], header[1])
@@ -52,7 +55,7 @@ class ConfigurableThreadingHTTPServer(ThreadingHTTPServer):
 
 
 if __name__ == '__main__':
-    port = 1883  # https://en.wikipedia.org/wiki/Vending_machine#Modern_vending_machines
+    port = 11883  # https://en.wikipedia.org/wiki/Vending_machine#Modern_vending_machines
     print("Starting server...")
     server = ConfigurableThreadingHTTPServer(
         ('', port),
@@ -60,5 +63,5 @@ if __name__ == '__main__':
         500
     )
     print("Server started!")
-    print(f"Listening for 'http://localhost:{port}/'...")
+    print(f"Listening for 'http://127.0.0.1:{port}/'...")
     server.serve_forever()

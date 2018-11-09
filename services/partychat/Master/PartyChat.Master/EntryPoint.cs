@@ -35,7 +35,7 @@ namespace PartyChat.Master
 
                 var sessionLog = log.ForContext($"Session({client.RemoteEndPoint})");
                 sessionLog.Info("Accepted new client.");
-                var session = new Session(new Link(client), new CommandHandler(sessionStorage, heartbeatStorage, sessionLog), sessionLog);
+                var session = new Session(new Link(client, sessionLog), new CommandHandler(sessionStorage, heartbeatStorage, sessionLog), sessionLog);
                 session.Run();
             }
         }

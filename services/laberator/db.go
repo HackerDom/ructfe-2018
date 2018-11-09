@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
@@ -9,7 +10,7 @@ import (
 	"github.com/werelaxe/fast-hash"
 )
 
-const ListingLimit = 10
+const ListingLimit = 20
 
 type User struct {
 	ID           uint `gorm:"primary_key"`
@@ -62,7 +63,11 @@ func (api *DBApi) Register(login, password, phrase *string) error {
 	if len(users) != 0 {
 		return DBApiError(fmt.Sprintf("User with login '%s' is already exist", *login))
 	}
-	passwordHash := hasher.GetHash(([]byte)(*password))
+	decodedPassword, err := base64.StdEncoding.DecodeString(*password)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	passwordHash := hasher.GetHash(decodedPassword)
 	phraseObj := Phrase{Value: *phrase}
 	phraseObjId := api.db.Create(&phraseObj).Value.(*Phrase).ID
 	user := User{Login: *login, PasswordHash: passwordHash[:], PhraseID: phraseObjId}
@@ -85,7 +90,11 @@ func (api *DBApi) Validate(login, password *string) bool {
 	if len(users) != 1 {
 		return false
 	}
-	passwordHash := hasher.GetHash([]byte(*password))
+	decodedPassword, err := base64.StdEncoding.DecodeString(*password)
+	if err != nil {
+		return false
+	}
+	passwordHash := hasher.GetHash(decodedPassword)
 	if bytes.Equal(users[0].PasswordHash, passwordHash[:]) {
 		return true
 	}
@@ -129,7 +138,7 @@ func (api *DBApi) CheckLabelOwner(owner string, labelId uint64) bool {
 
 func (api *DBApi) Init(config *PostgresConfig) {
 	var err error
-	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=localhost port=%d user=%s dbname=%s password=%s", config.Port, config.User, config.DBName, config.Password))
+	api.db, err = gorm.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s", config.Host, config.Port, config.User, config.DBName, config.Password))
 	if err != nil {
 		panic(fmt.Sprintf("failed to connect database: %s", err))
 	}

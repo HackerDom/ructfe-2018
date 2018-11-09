@@ -24,13 +24,13 @@
     chdir: /home/radiowave/
     warn: False
 
-- name: Copy RadioWave sources
+- name: Copy RadioWave Database sources
   copy:
-    src: ../services/RadioWave/
+    src: ../services/RadioWave/database
     dest: /home/radiowave/
     owner: radiowave
     group: radiowave
-    mode: u+rwX,g=,o=
+    mode: u=rwX,g=,o=
   notify: restart radiowave service
 
 - name: Cargo build (RadioWave/database)
@@ -40,12 +40,33 @@
     chdir: /home/radiowave/database
   notify: restart radiowave service
 
-- name: Build RadioWave Transmitter
-  command: dotnet build -c Release
+- name: Copy RadioWave Transmitter sources
+  copy:
+    src: ../services/RadioWave/Transmitter/
+    dest: /run/ansible_tmp/build_transmitter/
+    owner: radiowave
+    group: radiowave
+    mode: u=rwX,g=,o=
+
+- name: Build service
   become_user: radiowave
+  shell: |
+      dotnet build -c Release
+      cd bin/Release/netcoreapp2.*
+      mkdir -p /home/radiowave/Transmitter
+      cp -r -t /home/radiowave/Transmitter mappings *.dll *.json *.config
+      chmod -R u=rwX,g=,o= /home/radiowave
   args:
-    chdir: /home/radiowave/Transmitter
+    chdir: /run/ansible_tmp/build_transmitter
   notify: restart radiowave service
+
+- name: Copy RadioWave Front
+  copy:
+    src: ../services/RadioWave/static
+    dest: /var/www/radiowave
+    owner: www-data
+    group: www-data
+    mode: u=rwX,g=rX,o=rX
 
 - name: Install radiowave-database systemd service
   copy: src=radiowave-database.service dest=/etc/systemd/system/radiowave-database.service

@@ -1,8 +1,8 @@
 {
-  "db_host": "127.0.0.1:8888",
-  "ws_host": "127.0.0.1:7777",
-  "cleanup_sec": 120,
-  "ttl_sec": 180,
-  "snapshot_sec": 15,
+  "db_host": "127.0.0.1:17778",
+  "ws_host": "127.0.0.1:17777",
+  "cleanup_sec": 300,
+  "ttl_sec": 1800,
+  "snapshot_sec": 60,
   "threads": 64
 }

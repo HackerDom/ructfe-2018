@@ -3,6 +3,8 @@ import struct
 from array import array
 from threading import Lock
 
+STRUCT_MAX_SIZE = 100000
+
 
 class VendingMachinesFactory:
     def __init__(self):
@@ -39,6 +41,7 @@ class VendingMachinesFactory:
             counter = self.vms_counter
             self.vms.extend(0 for _ in range(self.struct_size))
             self.vms_counter += 1
+            self.vms_counter %= STRUCT_MAX_SIZE
 
         with memoryview(self.vms) as mv:
             struct.pack_into(
@@ -64,5 +67,9 @@ class VendingMachinesFactory:
         key_len = self.slice_range(self.__key)
         if struct.pack(f"{key_len}s", key[:key_len]) == vm[self.__key]:
             return vm[self.__master_key]
+
+    def load_from(self, io, counter):
+        self.vms.frombytes(io)
+        self.vms_counter = counter
 
     def __len__(self) -> int: return len(self.vms)

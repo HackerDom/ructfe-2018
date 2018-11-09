@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/base64"
-	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/werelaxe/fast-hash"
 	"math/rand"
@@ -17,16 +16,17 @@ type SessionManager struct {
 }
 
 type RedisConfig struct {
-	Host     string
-	Port     uint
+	Addr     string
+	Network  string
 	Password string
 }
 
 func (sm *SessionManager) Init(config *RedisConfig) {
 	sm.client = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", config.Host, config.Port),
+		Addr:     config.Addr,
 		Password: config.Password,
 		DB:       0,
+		Network: config.Network,
 	})
 }
 

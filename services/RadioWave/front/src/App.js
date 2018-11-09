@@ -3,21 +3,26 @@ import logo from "./logo.svg";
 import Input from "./components/Input";
 import "./App.css";
 import { Formik, Form, Field } from "formik";
+import debounce from "lodash.debounce"
 
 const host = window.location.host;
 
+
 const initialState = {
-  text: "RUCTF",
-  DpM: 70,
+  text: "SOS",
+  DpM: 500,
   freq: 1000,
-  ch: "radio"
+  ch: "RUCTFE",
+  password: "",
 };
+
+let currentChanel = initialState.ch;
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      news: ["RUCTF", "RUCTF", "RUCTF", "RUCTF", "RUCTF"]
+      news: ["RUCTFE", "RUCTFE", "RUCTFE", "RUCTFE", "RUCTFE"]
     };
     this.tryConnectRadio(initialState.ch);
     this.tryConnectNews();
@@ -28,8 +33,20 @@ class App extends Component {
       const radioSocket = new WebSocket(`ws://${host}/radio/${ch}`);
       radioSocket.binaryType = "arraybuffer";
       radioSocket.onmessage = this.handleRadioMsg;
-      radioSocket.onerror = () => setTimeout(this.tryConnectRadio, 1000);
-      radioSocket.onclose = () => setTimeout(this.tryConnectRadio, 1000);
+
+      radioSocket.onerror = () => {
+        if (ch === currentChanel) {
+          setTimeout(this.tryConnectRadio, 1000)
+        }
+
+      };
+      radioSocket.onclose = () => {
+        if (ch === currentChanel) {
+          setTimeout(this.tryConnectRadio, 1000)
+        }
+      };
+
+
       this.radioSocket = radioSocket;
     } catch (e) {
       console.log(`💩: ${e.message}`);
@@ -61,11 +78,12 @@ class App extends Component {
     return fs;
   };
 
-  changeChannel = e => {
+  changeChannel = debounce(e => {
     if (this.radioSocket.readyState === WebSocket.OPEN)
       this.radioSocket.close();
     this.tryConnectRadio(e.target.value);
-  };
+    currentChanel = e.target.value;
+  }, 300);
 
   tryConnectNews = () => {
     try {
@@ -113,6 +131,7 @@ class App extends Component {
                   name="ch"
                   component={Input}
                 />
+                <Field name="password" type="password" component={Input} />
                 <button className="App-btn" type="submit">
                   send
                 </button>
@@ -140,7 +159,8 @@ class App extends Component {
         frequency: values.freq,
         text: values.text.toUpperCase(),
         need_base32: false,
-        is_private: false
+        is_private: false,
+        password: values.password,
       })
     });
 }

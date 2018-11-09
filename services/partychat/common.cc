@@ -2,6 +2,7 @@
 #include <time.h>
 #include <vector>
 #include <algorithm>
+#include <sys/stat.h>
 
 #include "common.h"
 
@@ -32,7 +33,7 @@
 
 		va_list args;
 		va_start(args, format);
-		vsprintf(message, format, args);
+		vsnprintf(message, sizeof(message), format, args);
 		va_end(args);
 
 		char buffer[26];
@@ -60,7 +61,7 @@
 
 		va_list args;
 		va_start(args, format);
-		vsprintf(message, format, args);
+		vsnprintf(message, sizeof(message), format, args);
 		va_end(args);
 
 		pc_shutdown_logging();
@@ -75,7 +76,7 @@
 
 		va_list args;
 		va_start(args, format);
-		vsprintf(message, format, args);
+		vsnprintf(message, sizeof(message), format, args);
 		va_end(args);
 
 		pc_shutdown_logging();
@@ -89,14 +90,17 @@
 	pc_connection::pc_connection(int sock) {
 		socket = sock;
 		recv_buffer = new char[CONN_BUFFER_LENGTH];
+		recv_leftover = new char[CONN_BUFFER_LENGTH];
 		send_buffer = new char[CONN_BUFFER_LENGTH];
 		alive = true;
+		bzero(recv_leftover, CONN_BUFFER_LENGTH);
 	}
 
 	pc_connection::~pc_connection() {
 		if (socket) {
 			close(socket);
 			delete[] recv_buffer;
+			delete[] recv_leftover;
 			delete[] send_buffer;
 		}
 	}
@@ -173,27 +177,39 @@
 		if (recv_length == 0)
 			pc_fatal("pc_connection::poll_receive: there is no active receive operation.");
 
-		int result = read(socket, recv_buffer + recv_index, recv_length - recv_index);
-		if (result < 0) {
-			if (errno == EWOULDBLOCK || errno == EAGAIN)
-				return 0;
+		if (recv_leftover[0]) {
+			strcpy(recv_buffer, recv_leftover);
+			bzero(recv_leftover, CONN_BUFFER_LENGTH);
 
-			pc_log("Error: poll_receive: errno = %d.", result, errno);
-			alive = false;
-			return -1;
+			recv_index = strlen(recv_buffer);
 		}
-		if (result == 0) {
-			pc_log("Error: poll_receive: connection was closed.");
-			alive = false;
-			return -1;
-		}
+		else {
 
-		recv_index += result;
+			int result = read(socket, recv_buffer + recv_index, recv_length - recv_index);
+			if (result < 0) {
+				if (errno == EWOULDBLOCK || errno == EAGAIN)
+					return 0;
+
+				pc_log("Error: poll_receive: errno = %d.", result, errno);
+				alive = false;
+				return -1;
+			}
+			if (result == 0) {
+				pc_log("Error: poll_receive: connection was closed.");
+				alive = false;
+				return -1;
+			}
+
+			recv_index += result;
+		}
 
 		recv_buffer[recv_index] = 0;
 		char *endl = strchr(recv_buffer, '\n');
 		if (endl) {
 			*endl = 0;
+			if (recv_buffer + recv_index > endl + 1) {
+				strcpy(recv_leftover, endl + 1);
+			}
 			recv_length = recv_index = 0;
 			return 1;
 		}
@@ -325,18 +341,26 @@
 
 		std::sort(names.begin(), names.end(), [](const char *a, const char *b) { return strcmp(a, b) < 0; });
 
+		std::vector<char *> unique_names;
+		unique_names.push_back(names[0]);
+		for (int i = 1; i < names.size(); i++) {
+			if (!strcmp(names[i], names[i - 1]))
+				continue;
+			unique_names.push_back(names[i]);
+		}
+
 		int length = 0;
-		for (auto s : names) {
+		for (auto s : unique_names) {
 			length += 1 + strlen(s);
 		}
 
 		char *g = new char[length + 1];
 		bzero(g, length + 1);
-		for (auto s : names) {
+		for (auto s : unique_names) {
 			strcat(g, s);
 			strcat(g, " ");
 		}
-		g[length] = 0;
+		g[length - 1] = 0;
 
 		return g;
 	}
@@ -354,4 +378,84 @@
 			return false;
 		return !strcmp(group, other.group);
 	}
-	
+
+// Storage
+
+	#define HIST_MAX 50
+
+	char large_buffer[HIST_MAX * CONN_BUFFER_LENGTH];
+	void pc_add_line(const pc_group &g, const char *line) {
+		mkdir("histories", 0775);
+
+		char filename[256];
+		sprintf(filename, "histories/%s", g.group);
+
+		FILE *f = fopen(filename, "a+");
+		if (!f)
+			pc_fatal("pc_add_line: failed to open file '%s': %d.", filename, errno);
+
+		fseek(f, 0, SEEK_END);
+		size_t length = ftell(f);
+		if (length >= sizeof(large_buffer))
+			pc_fatal("pc_add_line: history file is too large.");
+
+		pc_log("pc_add_line: length is %d", length);
+
+		rewind(f);
+		fread(large_buffer, 1, length, f);
+		large_buffer[length] = 0;
+
+		pc_log("pc_add_line: existing lines: %.128s", large_buffer);
+
+		int lines = 0;
+		char *without_first_line = NULL;
+		for (char *p = large_buffer; *p; p++) {
+			if (*p == '\n') {
+				if (lines == 0)
+					without_first_line = p + 1;
+				lines++;
+			}
+		}
+
+		char *write_back = large_buffer;
+		if (lines + 1 > HIST_MAX)
+			write_back = without_first_line;
+
+		pc_log("pc_add_line: lines = '%d'.", lines);
+
+		fclose(f);
+		f = fopen(filename, "w");
+		if (!f)
+			pc_fatal("pc_add_line: failed to open file '%s': %d.", filename, errno);
+
+		pc_log("pc_add_line: writing '%.128s' at %d..", write_back, ftell(f));
+		fwrite(write_back, 1, strlen(write_back), f);
+		pc_log("pc_add_line: strlen(write_back) = %d", strlen(write_back));
+
+		sprintf(large_buffer, "%s\n", line);
+		pc_log("pc_add_line: writing '%.128s' at %d..", large_buffer, ftell(f));
+		fwrite(large_buffer, 1, strlen(large_buffer), f);
+		pc_log("pc_add_line: strlen(large_buffer) = %d", strlen(large_buffer));
+
+		size_t size = ftell(f);
+		fclose(f);
+	}
+
+	void pc_send_lines(const pc_group &g, std::function<void(const char *)> sender) {
+		char filename[256];
+		sprintf(filename, "histories/%s", g.group);
+
+		FILE *f = fopen(filename, "r");
+		if (!f)
+			return;
+
+		char line_buffer[CONN_BUFFER_LENGTH];
+		while (!feof(f)) {
+			fgets(line_buffer, sizeof(line_buffer), f);
+			sender(line_buffer);
+			pc_log("pc_send_lines: sent '%s'", line_buffer);
+		}
+
+		fclose(f);
+	}
+

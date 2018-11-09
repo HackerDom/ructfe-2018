@@ -8,19 +8,19 @@
     state: latest
     update_cache: yes
 
-- name: Provision postgres  
-  become_user: postgres
-  shell: '{{ item }}'
-  with_items:
-    - psql -c "ALTER USER postgres PASSWORD 'nicepassword'"
-    - (psql --list  | grep laberator) || createdb laberator
-
 - name: Create user
   user:
     name: laberator
     createhome: yes
     system: yes
     shell: /usr/sbin/nologin
+
+- name: Provision postgres
+  become_user: postgres
+  shell: '{{ item }}'
+  with_items:
+    - createuser laberator || true
+    - (psql --list  | grep laberator) || createdb --owner=laberator laberator
 
 - name: chmod home
   file: dest=/home/laberator mode='o='

@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>PARTYCHAT</title>
+    <style type="text/css">
+    	@charset "UTF-8";
+
+		body {
+		  font-size: 14px;
+		  line-height: 1.6;
+		  color: #333;
+		  overflow-x: hidden;
+		  margin: 0;
+		  padding: 0;
+		  font-family: Helvetica, arial, freesans, clean, sans-serif;
+		  font-size: 1em;
+		  line-height: 1.5em;
+		}
+		body>*: first-child {
+		  margin-top: 0 !important
+		}
+		body>*: last-child {
+		  margin-bottom: 0 !important
+		}
+		h1,h2,h3,h4,h5,h6 {
+		  margin: 20px 0 10px;
+		  padding: 0;
+		  font-weight: bold;
+		  -webkit-font-smoothing: antialiased;
+		  cursor: text;
+		  position: relative
+		}
+		h1 {
+		  font-size: 28px;
+		  color: #000
+		}
+		h2 {
+		  font-size: 24px;
+		  border-bottom: 1px solid #ccc;
+		  color: #000
+		}
+		h3 {
+		  font-size: 18px
+		}
+		h4 {
+		  font-size: 16px
+		}
+		h5 {
+		  font-size: 14px
+		}
+		h6 {
+		  color: #777;
+		  font-size: 14px
+		}
+		p,blockquote,ul,ol,pre {
+		  margin: 15px 0
+		}
+		li p.first {
+		  display: inline-block
+		}
+		ul,ol {
+		  padding-left: 30px
+		}
+		ul li>: first-child,ul li ul: first-of-type,ol li>: first-child,ol li ul: first-of-type {
+		  margin-top: 0px
+		}
+		ul ul,ul ol,ol ol,ol ul {
+		  margin-bottom: 0
+		}
+		blockquote {
+		  border-left: 4px solid #DDD;
+		  padding: 0 15px;
+		  color: #777
+		}
+		blockquote>: first-child {
+		  margin-top: 0px
+		}
+		blockquote>: last-child {
+		  margin-bottom: 0px
+		}
+		code,tt {
+		  margin: 0 2px;
+		  padding: 0px 5px;
+		  border: 1px solid #eaeaea;
+		  background-color: #f8f8f8;
+		  border-radius: 3px
+		}
+		code {
+		  white-space: nowrap
+		}
+		pre>code {
+		  margin: 0;
+		  padding: 0;
+		  white-space: pre;
+		  border: none;
+		  background: transparent
+		}
+		pre {
+		  background-color: #f8f8f8;
+		  border: 1px solid #ccc;
+		  font-size: 13px;
+		  line-height: 19px;
+		  overflow: auto;
+		  padding: 6px 10px;
+		  border-radius: 3px
+		}
+		pre code,pre tt {
+		  margin: 0;
+		  padding: 0;
+		  background-color: transparent;
+		  border: none
+		}
+		pre,code {
+		  font-size: 12px;
+		  font-family: Consolas, "Liberation Mono", Courier, monospace;
+		}
+		.container {
+			padding: 30px;
+		}
+    </style>
+  </head>
+  <body> 
+  	<div class="container">
+	    <h1 id="partychat">PARTYCHAT</h1>
+		<p>Welcome to PartyChat, the last group chat!</p>
+		<blockquote>
+		<p>Use <code>./partychat</code> command to fire up the client.  </p>
+		</blockquote>
+		<p>Instructions:</p>
+		<ul>
+		<li>Use <code>!list</code> command to see who&#39;s online.</li>
+		<li>Then just <code>!say</code> something! Everybody mentioned in your message will see it.</li>
+		<li>You can also view <code>!history</code> of a conversation: quite useful if somebody said something while you were offline and couldn&#39;t see it.</li>
+		</ul>
+		<p>Example:</p>
+		<pre><code>(my name is @krait)
+&gt; !list
+- @alice
+- @bob
+- @krait
+&gt; !say hey, @alice ! and you, @bob
+: @krait said: hey, @alice ! and you, @bob
+: @alice said: sup
+: @bob said: 
+: @bob said: damn partychat ate my message again, i hope the guy who made it burns in hell</code></pre><p>Enjoy!</p>
+		<blockquote>
+		<p>Disclaimer: PartyChat may contain unexpected features.<br>Upon encountering unwanted behavior you are welcome to patch your binaries.</p>
+		</blockquote>
+	</div>
+  </body>
+</html>

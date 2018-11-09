@@ -20,7 +20,9 @@
 
   roles:
     - base_image
+    - front
     - laberator
     - vending
     - partychat
     - radiowave
+    - vch
