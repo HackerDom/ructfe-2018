@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using NTPTools;
 using Vch.Core.Helpers;
 using Vch.Core.Meta;
 using VchUtils;
@@ -18,7 +19,6 @@ namespace Vch.Checker
             if (!checkerArgs.Mode.Equals("info", StringComparison.InvariantCultureIgnoreCase)) 
             {
                 client = new VchClient(new Uri($"http://{checkerArgs.Host}:19999"));
-
             }
 
             var modes = new Dictionary<string, Func<CheckerArgs, Task<int>>>(StringComparer.InvariantCultureIgnoreCase)
@@ -35,16 +35,51 @@ namespace Vch.Checker
             }
             catch (Exception e)
             {
-                Console.Write(e.ToJson());
+                Console.Write(e);
                 return (int) ServiceState.CheckerError;
             }
-
         }
 
-        private static IPAddress GetTimeSource()
+        private static IEnumerable<IPAddress> GetTimeSource()
+        {
+            for (int index = 1; index < 352; index++)
+            {
+                yield return IPAddress.Parse($"10.{60 + index / 256}.{index % 256}.1");
+            }
+        }
+
+        private static IPAddress GetRandomAlive()
         {
             var random = new Random();
-            return new IPAddress(new byte[] {10, 10, 10, 3});
+            var shuffledIp = GetTimeSource().OrderBy(address => random.Next()).ToArray();
+
+            for (int i = 0; i < 35; i+=10)
+            {
+                var checkTasks = new List<Task<IPAddress>>();
+                for (int j = 0; j < 10; j++)
+                {
+                    var task = CheckIp(shuffledIp[i * j]);
+                    checkTasks.Add(task);
+                }
+                Task.WhenAll(checkTasks).GetAwaiter().GetResult();
+                var result = checkTasks.Where(task1 => task1.Result != null).ToArray();
+                if (result.Any()) return result.First().Result;
+            }
+            return null;
+        }
+
+        private static async Task<IPAddress> CheckIp(IPAddress ipAddress)
+        {
+            try
+            {
+                var ntpClient = new TimeProvider();
+                var result = await ntpClient.GetNetworkTime(new IPEndPoint(ipAddress, 123));
+                return ipAddress;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         private static string GenerateMessage(UserInfo info)
@@ -72,14 +107,16 @@ namespace Vch.Checker
         {
             try
             {
+                var useCustom=  DateTime.Now.Millisecond % 3 == 0;
                 var result = await client.RegisterUser(new UserMeta
                 {
                     FirstName = GenerateFirstName(),
                     LastName = GenerateLastName(),
                     TrackingCode = args.Flag,
-                    VaultTimeSource = args.NTP ?? new IPEndpointWrapper
+                    VaultTimeSource = args.NTP ?? 
+                    new IPEndpointWrapper
                     {
-                        IPAddres = GetTimeSource().ToString(),
+                        IPAddres = (useCustom ? GetRandomAlive() ?? defaultIp : defaultIp).ToString(),
                         Port = 123
                     }
                 });
@@ -88,10 +125,19 @@ namespace Vch.Checker
 
                 Console.Write(result.UserId);
             }
-            catch (Exception e)
+            catch (VchClient.InternalServerError e)
             {
                 Console.Write(e);
                 return (int) ServiceState.MUMBLE;
+            }
+            catch (VchClient.ConntectionFailed e)
+            {
+                return (int)ServiceState.DOWN;
+            }
+            catch (Exception e)
+            {
+                Console.Write("Put  |"  + e);
+                return (int)ServiceState.CheckerError;
             }
 
             return (int) ServiceState.OK;
@@ -102,13 +148,39 @@ namespace Vch.Checker
             try
             {
                 await client.GetAll();
+                var ntpClient = new TimeProvider();
+
+                var addressList = Dns.GetHostEntry(args.Host).AddressList;
+                if (!addressList.Any())
+                {
+                    Console.Write($"Can't resolve ip {args.Host}");
+                    return (int) ServiceState.CheckerError;
+                }
+
+                try
+                {
+                   await ntpClient.GetNetworkTime(new IPEndPoint(addressList.First(), 123));
+                }
+                catch (Exception e)
+                {
+                    return (int) ServiceState.DOWN;
+                }
+
                 return (int)ServiceState.OK;
             }
-            catch (Exception e)
+            catch (VchClient.InternalServerError e)
             {
                 return (int) ServiceState.MUMBLE;
             }
-
+            catch (VchClient.ConntectionFailed e)
+            {
+                return (int)ServiceState.DOWN;
+            }
+            catch (Exception e)
+            {
+                Console.Write("Check  |" + e);
+                return (int)ServiceState.CheckerError;
+            }
         }
 
         public static async Task<int> Get(CheckerArgs args)
@@ -116,15 +188,26 @@ namespace Vch.Checker
             try
             {
                 var result = await client.GetUserMessages(UInt64.Parse(args.FlagId));
-                return (int)(result.All(message => message?.userInfo?.Meta?.TrackingCode == args.Flag) ? ServiceState.OK : ServiceState.Corrupt);
+               return  (int) (result.Any() && result.All(message => message?.userInfo?.Meta?.TrackingCode == args.Flag)
+                    ? ServiceState.OK
+                    : ServiceState.Corrupt);
+            }
+            catch (VchClient.InternalServerError e)
+            {
+                return (int) ServiceState.MUMBLE;
+            }
+            catch (VchClient.ConntectionFailed e)
+            {
+                return (int) ServiceState.DOWN;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                return (int)ServiceState.MUMBLE;
+                Console.Write("Get  |" + e);
+                return (int) ServiceState.CheckerError;
             }
         }
 
+        private static IPAddress defaultIp = new IPAddress(new byte[] {10, 10, 10, 10});
         private static VchClient client;
 
         internal class CheckerArgs

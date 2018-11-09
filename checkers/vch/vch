@@ -1,0 +1,2 @@
+#!/bin/bash -e
+dotnet Vch.Checker.dll $1 $2 $3 $4
