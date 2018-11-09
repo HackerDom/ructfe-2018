@@ -2,6 +2,7 @@ from typing import Tuple
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from socket import timeout as TIMEOUT_ERR
+from http.client import RemoteDisconnected
 from useragents import get
 
 
@@ -13,7 +14,7 @@ class VendingClient:
     def create_machine(self, name: str, inventor: str, meta: str, key: str, flag: str) -> str:
         req = self.create_request(
             "CREATE", "/vending_machine", ("{} {} {} {} {}".format(name, inventor, meta, key, flag)).encode())
-        return self.retry_request(req)
+        return self.retry_request(req).split(":")[1]
 
     def get_machine_name(self, vm_id: str) -> str:
         req = self.create_request(
@@ -38,7 +39,8 @@ class VendingClient:
     def create_vending_item(self, flag: str) -> Tuple[str, str, str, str, str]:
         req = self.create_request(
             "CREATE", "/vending_item", flag.encode())
-        return tuple(self.retry_request(req).split())
+        data = self.retry_request(req)
+        return data.split(":")
 
     def get_vending_item(self, vm_id: str, access_key: str) -> str:
         req = self.create_request(
@@ -48,7 +50,7 @@ class VendingClient:
     def retry_request(self, req: Request) -> str or None:
         try:
             resp = urlopen(req, timeout=self.timeout).read().decode().strip()
-        except (HTTPError, URLError, TIMEOUT_ERR):
+        except (HTTPError, URLError, TIMEOUT_ERR, RemoteDisconnected):
             try:
                 resp = urlopen(req, timeout=self.timeout).read().decode().strip()
             except Exception as e:
