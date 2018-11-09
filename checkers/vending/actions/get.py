@@ -13,7 +13,7 @@ def get(command_ip, flag_id, flag, vuln=None):
 
 def get_from_struct(command_ip, flag_id, flag):
     vending_client = VendingClient(command_ip)
-    flag_rcv = vending_client.get_vending_item(*flag_id.split(":"))
+    flag_rcv = vending_client.get_machine_master_key(*flag_id.split(":"))
     if flag_rcv and flag_rcv.startswith(flag):
         return {"code": OK}
     else:
