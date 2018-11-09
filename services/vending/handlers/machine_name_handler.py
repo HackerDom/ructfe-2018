@@ -10,6 +10,6 @@ class MachineNameHandler(BaseHandler):
 
     def handle(self, request: Request) -> Response:
         try:
-            self.vm.get_machine_name(int(request.body.readline().decode()))
+            return Response(200, bytes(self.vm.get_machine_name(int(request.body.readline().decode()))))
         except ValueError:
             return Response(400, b"Bad Request")

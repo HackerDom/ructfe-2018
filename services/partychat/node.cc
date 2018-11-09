@@ -59,13 +59,20 @@ int main(int argc, char **argv) {
 
 	fds[0].fd = server_sock;
 	fds[0].events = POLLIN;
-	fds[1].fd = state.uplink.master_conn.conn.socket;
-	fds[1].events = POLLIN;
 
 	while (true) {
 
 		state.uplink.tick();
+
 		pc_log("Master: %s", state.uplink.hb.master_available ? "available" : "unavailable");
+
+		if (!state.uplink.master_conn.alive()) {
+			sleep(1);
+			continue;
+		}
+
+		fds[1].fd = state.uplink.master_conn.conn.socket;
+		fds[1].events = POLLIN;
 
 		int result = poll(fds, used_fds, 1000);
 		if (result < 0)
