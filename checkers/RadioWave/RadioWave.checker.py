@@ -54,7 +54,7 @@ async def handler_put_pass(hostname, id, flag):
 	message = get_message(password=flag, is_private=True)
 	state = State(hostname, PORT)
 	await state.post('/db/{}'.format(id), message)
-	checker.ok()
+	checker.ok(message=id)
 
 async def handler_get_pass(hostname, id, flag):
 	checker.log('get pass')
@@ -75,7 +75,7 @@ async def handler_put_channel(hostname, id, flag):
 	message = get_message(is_private=True)
 	state = State(hostname, PORT)
 	await state.post('/db/{}'.format(flag), message)
-	checker.ok()
+	checker.ok(message=id)
 
 async def handler_get_channel(hostname, id, flag):
 	checker.log('get channel')
