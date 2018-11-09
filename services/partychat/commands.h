@@ -342,8 +342,9 @@
 				pc_log("say_command::execute: saying '%s'..", this->text);
 				pc_group g(this->text);
 
-				state.uplink.master_conn.send<say_command>(this->text);
-				conn.flush(conn.send<say_command>(this->text));
+				char buffer[CONN_BUFFER_LENGTH];
+				snprintf(buffer, sizeof(buffer), "%s says: %s", state.uplink.hb.nick, this->text);
+				state.uplink.master_conn.send<say_command>(buffer);
 			}
 		}
 	};
