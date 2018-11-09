@@ -46,7 +46,7 @@ def ported_ip(command_ip):
 
 
 def on_info(*args):
-    close(OK, "vulns: 1:2")
+    close(OK, "vulns: 1:3")
 
 
 COMMANDS = {
