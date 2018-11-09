@@ -56,7 +56,7 @@ namespace PartyChat.Master
                 
                 case Commands.History:
                     group = Group.ExtractGroup(command.Text);
-                    group.Add(nick);
+                    group = group.Add(nick);
                     
                     log.Info("The history of group ({group}) was requested. Collecting..", group);
                     

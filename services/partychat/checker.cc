@@ -25,17 +25,29 @@ void make_name(char *buffer) {
 	sprintf(buffer, "@%s%s%d", pt1, pt2, rand() % 1000);
 }
 
-bool get_team_name(char *host, char *buffer) {
+bool resolve_ip(const char *host, char *ip) {
+	addrinfo *addr;
+	if (getaddrinfo(host, NULL, NULL, &addr) != 0)
+		return false;
+	char *result = inet_ntoa(((sockaddr_in *)addr->ai_addr)->sin_addr);
+	strcpy(ip, result);
+	return true;
+}
+
+bool get_team_name(const char *host, char *buffer) {
 	char buf[256];
-	strcpy(buf, host);
+	resolve_ip(host, buf);
 
-	strtok(host, ".");
-	char *part = strtok(NULL, ".");
+	strtok(buf, ".");
+	char *part1 = strtok(NULL, ".");
+	char *part2 = strtok(NULL, ".");
 
-	if (!part)
+	if (!part1 || !part2)
 		return false;
 
-	strcpy(buffer, part);
+	int team_num = ((atoi(part1) - 60) * 256) % 1024 + atoi(part2);
+
+	sprintf(buffer, "@team%d", team_num);
 	return true;
 }
 
@@ -69,13 +81,11 @@ void handle_check(int argc, char ** argv) {
 	char team_name[64];
 	if (!get_team_name(host, team_name))
 		checker_fail(CHECKER_ERROR, "check: failed to extract team name from host '%s'\n", host);
-	char team_nick[64];
-	sprintf(team_nick, "@%s", team_name);
 
 	char checker_name[64];
 	make_name(checker_name);
 
-	checker_state state(team_nick);
+	checker_state state(team_name);
 	connection<checker_state> conn(*get_master_addr(), state);
 	conn.flush(conn.send<hb_command<checker_state>>(checker_name));
 	conn.flush(conn.send<list_command<checker_state>>(""));
@@ -83,7 +93,7 @@ void handle_check(int argc, char ** argv) {
 	if (state.team_listed)
 		checker_pass();
 	else
-		checker_fail(DOWN, "check: team '%s' was not listed\n", team_nick);
+		checker_fail(DOWN, "check: team '%s' was not listed\n", team_name);
 }
 
 void handle_put(int argc, char **argv) {
@@ -100,16 +110,14 @@ void handle_put(int argc, char **argv) {
 	char team_name[64];
 	if (!get_team_name(host, team_name))
 		checker_fail(CHECKER_ERROR, "put: failed to extract team name from host '%s'\n", host);
-	char team_nick[64];
-	sprintf(team_nick, "@%s", team_name);
 
 	char checker_name[64];
 	make_name(checker_name);
 
 	char text[64];
-	sprintf(text, "%s %s", flag, team_nick);
+	sprintf(text, "%s %s", flag, team_name);
 
-	checker_state state(team_nick);
+	checker_state state(team_name);
 	connection<checker_state> conn(*get_master_addr(), state);
 	conn.flush(conn.send<hb_command<checker_state>>(checker_name));
 	conn.flush(conn.send<say_command<checker_state>>(text));
@@ -135,13 +143,11 @@ void handle_get(int argc, char **argv) {
 	char team_name[64];
 	if (!get_team_name(host, team_name))
 		checker_fail(CHECKER_ERROR, "get: failed to extract team name from host '%s'\n", host);
-	char team_nick[64];
-	sprintf(team_nick, "@%s", team_name);
 
-	checker_state state(team_nick, flag);
+	checker_state state(team_name, flag);
 	connection<checker_state> conn(*get_master_addr(), state);
 	conn.flush(conn.send<hb_command<checker_state>>(flag_id));
-	conn.flush(conn.send<history_command<checker_state>>(team_nick));
+	conn.flush(conn.send<history_command<checker_state>>(team_name));
 
 	if (state.flag_found)
 		checker_pass();

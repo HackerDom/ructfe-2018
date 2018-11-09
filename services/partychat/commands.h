@@ -435,7 +435,7 @@
 			if (!response || strlen(response) == 0)
 				return true;
 
-			if (!strncmp(response, state.flag, strlen(state.flag))) {
+			if (strstr(response, state.flag)) {
 				state.flag_found = true;
 				return true;
 			}
