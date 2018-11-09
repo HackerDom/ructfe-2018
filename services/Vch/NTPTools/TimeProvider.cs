@@ -22,26 +22,37 @@ namespace NTPTools
 
         public async Task<ulong> GetNetworkTime(IPEndPoint endpoint)
         {
-            var builder = new NTPDataBuilder();
-            builder.SetNTPMode(NTPMode.Client);
-            builder.SetLeapIndicator(LeapIndicator.NoWarining);
-            builder.SetNTPVersion(NTPVersionNumber.V3);
-            builder.SetPeerClockStratum(3);
-            builder.SetPollingInterval(TimeSpan.FromSeconds(2));
+            try
+            {
+                var builder = new NTPDataBuilder();
+                builder.SetNTPMode(NTPMode.Client);
+                builder.SetLeapIndicator(LeapIndicator.NoWarining);
+                builder.SetNTPVersion(NTPVersionNumber.V3);
+                builder.SetPeerClockStratum(3);
+                builder.SetPollingInterval(TimeSpan.FromSeconds(2));
 
 
-            var client = new UdpClient(AddressFamily.InterNetwork);
-            client.Client.SendTimeout = 1000;
-            client.Client.ReceiveTimeout = 1000;
-            client.Client.ReceiveBufferSize = 48;
+                var client = new UdpClient(AddressFamily.InterNetwork);
+                client.Client.SendTimeout = 2000;
+                client.Client.ReceiveTimeout = 2000;
+                client.Client.ReceiveBufferSize = 48;
 
-            var request = builder.Build();
-            await client.SendAsync(request, request.Length, endpoint);
+                var request = builder.Build();
+                await client.SendAsync(request, request.Length, endpoint);
 
 
-            var result = client.Receive(ref endpoint);
+                var result = client.Receive(ref endpoint);
+                
+                var ms = GetMilliseconds(result, 40);
 
-            return GetMilliseconds(result, 40);
+
+                return ms;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
 
@@ -50,8 +61,8 @@ namespace NTPTools
             ulong intPart = BitConverter.ToUInt32(ntpData, refOffset);
             ulong fractPart = BitConverter.ToUInt32(ntpData, refOffset + 4);
 
-            intPart = SwapEndianness(SwapEndianness(SwapEndianness(intPart)));
-            fractPart = SwapEndianness(SwapEndianness(SwapEndianness(intPart)));
+            intPart = SwapEndianness(intPart);
+            fractPart = SwapEndianness(intPart);
 
             var milliseconds = (intPart * 1000) + ((fractPart * 1000) / 0x100000000L);
             return milliseconds;
