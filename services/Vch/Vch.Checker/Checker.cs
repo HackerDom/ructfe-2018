@@ -150,16 +150,9 @@ namespace Vch.Checker
                 await client.GetAll();
                 var ntpClient = new TimeProvider();
 
-                var addressList = Dns.GetHostEntry(args.Host).AddressList;
-                if (!addressList.Any())
-                {
-                    Console.Write($"Can't resolve ip {args.Host}");
-                    return (int) ServiceState.CheckerError;
-                }
-
                 try
                 {
-                   await ntpClient.GetNetworkTime(new IPEndPoint(addressList.First(), 123));
+                   await ntpClient.GetNetworkTime(new IPEndPoint(IPAddress.Parse(args.Host), 123));
                 }
                 catch (Exception e)
                 {
