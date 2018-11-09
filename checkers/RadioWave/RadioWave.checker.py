@@ -45,7 +45,7 @@ def get_second_message(freq, **kwargs):
 		while 0.5 <= f / freq <= 2:
 			f = random.randint(50, 3999)
 	return get_message(freq=f, **kwargs)
-	
+
 async def handler_check(hostname):
 	checker.ok()
 
@@ -82,7 +82,7 @@ async def handler_get_channel(hostname, id, flag):
 	message = get_message(is_private=True)
 	state = State(hostname, PORT)
 	finder = SoundFinder()
-	listener = state.get_binary_dumper('/radio/{}'.format(flag), finder.get_new_data)
+	listener = WSHelperBinaryHanlder('/radio/{}'.format(flag), state, finder.get_new_data)
 	listener.start()
 	await asyncio.sleep(10)
 	await listener.close()
@@ -114,7 +114,7 @@ async def handler_get_morse(hostname, id, flag):
 	id = json.loads(id)
 	state = State(hostname, PORT)
 	parser = MorseParser(id['freq'])
-	listener = state.get_binary_dumper('/radio/{}'.format(id['channel']), parser.save)
+	listener = WSHelperBinaryHanlder('/radio/{}'.format(id['channel']), state, parser.save)
 	listener.start()
 
 	flag = base64.b32encode(flag.encode('ascii')).decode('ascii')

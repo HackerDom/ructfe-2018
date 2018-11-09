@@ -67,7 +67,7 @@ class State:
 		except Exception as ex:
 			checker.down(error='{}\n{}'.format(log_info, data), exception=ex)
 
-	def get_binary_dumper(self, url, process):
+	def get_connection(self, url):
 		url = self.get_url(url, proto='ws')
 		log_info = get_log_info(self.name, url)
 		try:
@@ -75,5 +75,4 @@ class State:
 			checker.log(log_info + ' connected')
 		except Exception as ex:
 			checker.down(error=log_info, exception=ex)
-		helper = WSHelperBinaryHanlder(connection, process)
-		return helper
+		return log_info,  connection

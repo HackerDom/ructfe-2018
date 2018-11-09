@@ -6,8 +6,10 @@ import sys
 import matplotlib.pyplot as plt
 
 class WSHelper:
-	def __init__(self, connection, type):
-		self.connection = connection
+	def __init__(self, url, state, type):
+		log_info, conn = state.get_connection(url)
+		self.log_info = log_info
+		self.connection = conn
 		self.closed = False
 		self.type = type
 	def start(self):
@@ -17,7 +19,7 @@ class WSHelper:
 			async with self.connection as ws:
 				async for msg in ws:
 					if msg.type == self.type:
-						checker.log('get data, length: {}'.format(len(msg.data)))
+						checker.log(self.log_info + 'get data, length: {}'.format(len(msg.data)))
 						try:
 							await self.process(msg)
 						except Exception as ex:
@@ -33,37 +35,27 @@ class WSHelper:
 		self.connection.close()
 
 class WSHelperBinaryHanlder(WSHelper):
-	def __init__(self, connection, handle):
-		WSHelper.__init__(self, connection, aiohttp.WSMsgType.BINARY)
+	def __init__(self, url, state, handle):
+		WSHelper.__init__(self, url, state, aiohttp.WSMsgType.BINARY)
 		self.specs = []
 		self.handle = handle
 	async def process(self, msg):
 		self.handle(msg.data)
 
-class WSHelperSearchJson(WSHelper):
-	def __init__(self, connection, fields, required):
-		WSHelper.__init__(self, connection, aiohttp.WSMsgType.TEXT)
+class WSHelperSearchText(WSHelper):
+	def __init__(self, url, state):
+		WSHelper.__init__(self, url, state, aiohttp.WSMsgType.TEXT)
 		self.queue = asyncio.Queue()
 		self.wanted = set()
 		self.fields = fields
 		self.required = required
 	async def process(self, msg):
-		data = msg.json(loads = lambda s : checker.parse_json(s, self.fields, self.required))
-		await self.queue.put(data)
+		await self.queue.put(msg.data)
 	def want(self, point):
-		self.wanted.add(json.dumps(data, sort_keys=True))
+		self.wanted.add(data)
 	async def finish(self):
 		while len(self.wanted) > 0:
 			top = await self.queue.get()
-			top = json.dumps(top, sort_keys=True)
 			if top in self.wanted:
 				self.wanted.remove(top)
 		self.connection.close()
-	async def find(self, id, field):
-		while True:
-			if self.queue.empty() and self.closed:
-				checker.mumble(error='point not found')
-			top = await self.queue.get()
-			if top[field] == id:
-				self.connection.close()
-				return top
