@@ -228,6 +228,8 @@ def check_users_correctness(users, login):
 
 
 def get_first(hostname, flag_id, flag):
+    if '-' in flag_id:
+        exit(CORRUPT)
     login, password, expected_label_hash = flag_id.split(',')
     exit_code = OK
     try:
@@ -280,6 +282,8 @@ def put_second(hostname, flag_id, flag):
 
 
 def get_second(hostname, flag_id, flag):
+    if '-' in flag_id:
+        exit(CORRUPT)
     login, password, encoded_flag = flag_id.split(',')
     exit_code = OK
     try:
