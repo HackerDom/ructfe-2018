@@ -8,73 +8,81 @@ using Vch.Core.Meta;
 
 namespace Vch.Core.Sorages
 {
-    public class MessageStorage : BaseStorage, IMessageStorage
+    public class MessageStorage : BaseMongoStorage, IMessageStorage
     {
         public MessageStorage(IMongoClient mongoClient) : base(mongoClient)
         {
             messages = new ConcurrentDictionary<MessageId, Message>();
-            messageCollection = GetCollection<Message>(NameReslover.MessageCollectionName);
-            Init().GetAwaiter().GetResult();
-            RemoveOldMessage();
+            messagesCollection = GetOrCreateCollection<Message>(NameReslover.MessagesCollectionName);
+            Init().Wait();
+            InfiniteRemoveOldMessagesAsync();
         }
 
-        public Message UpdateMessage(MessageId id, UserInfo userInfo, string text)
+        public Message AddOrUpdateMessage(MessageId id, UserInfo userInfo, string text)
         {
             return messages.AddOrUpdate(id, messageId =>
 	            {
 		            var message = Message.Create(text, userInfo, messageId);
-					 messageCollection.InsertOneAsync(message).Wait();
+					messagesCollection.InsertOneAsync(message).Wait();
 					return message;
 	            },
                 (messageId, message) =>
                 {
                     message.Text = text;
-	                messageCollection.UpdateOneAsync(_ => _.MessageId.Equals(messageId), new ObjectUpdateDefinition<Message>(message)).Wait();
+	                messagesCollection.UpdateOneAsync(_ => _.MessageId.Equals(messageId), new ObjectUpdateDefinition<Message>(message)).Wait();
 					return message;
                 });
         }
 
-        public DeleteResult DeleteMessage(MessageId messageId)
+	    public IEnumerable<Message> GetAllMessagesOrdered()
+	    {
+		    return GetMessagesOrdered(int.MaxValue);
+	    }
+
+		public IEnumerable<Message> GetMessagesOrdered(int take)
         {
-            messages.Remove(messageId, out var _);
-            return messageCollection.DeleteOne(message => messageId.Equals(message.MessageId));
+            return messages.Values.OrderByDescending(message => message.CreationTime).Take(take);
         }
 
-        public IEnumerable<Message> GetAllMessage()
-        {
-            return messages.Values;
-        }
-
-        public IMessage GetMessage(MessageId messageId)
+        public IMessage FindMessage(MessageId messageId)
         {
             return messages.TryGetValue(messageId, out var message) ? message : null;
         }
 
         private async Task Init()
         {
-            var loadedMessages = await messageCollection.Find(message => true).ToListAsync();
-
+            var loadedMessages = await messagesCollection.Find(_ => true).ToListAsync();
             foreach (var message in loadedMessages)
-            {
                 messages[message.MessageId] = message;
-            }
         }
 
-        private async Task RemoveOldMessage()
+        private async Task InfiniteRemoveOldMessagesAsync()
         {
             while (true)
             {
-                await Task.Delay(new TimeSpan(0, 0, 5, 0));
-                foreach (var message in messages.Where(
-                    pair => (pair.Value.CreationTime - DateTime.UtcNow).TotalMinutes > 30))
-                {
-                    DeleteMessage(message.Value.MessageId);
-                }
-            }
+	            await Task.Delay(TimeSpan.FromSeconds(5));
+				try
+	            {
+		            foreach(var message in messages.Where(pair => (pair.Value.CreationTime - DateTime.UtcNow).TotalMinutes > TTLinMinutes))
+			            DeleteMessage(message.Value.MessageId);
+				}
+	            catch(Exception e)
+	            {
+	            }
+			}
         }
 
+	    public DeleteResult DeleteMessage(MessageId messageId)
+	    {
+		    var result = messagesCollection.DeleteOne(message => messageId.Equals(message.MessageId));
+		    messages.Remove(messageId, out var _);
+		    return result;
+	    }
+
+	    private const int TTLinMinutes = 30;
+
         private readonly ConcurrentDictionary<MessageId, Message> messages;
-        private readonly IMongoCollection<Message> messageCollection;
+        private readonly IMongoCollection<Message> messagesCollection;
     }
     
 }

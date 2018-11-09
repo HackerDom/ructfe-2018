@@ -26,31 +26,31 @@ namespace VchAPI.Controllers
         [HttpGet("messages")]
         public async Task<ActionResult<IEnumerable<PublicMessage>>> GetAllMessages()
         {
-            return messageStorage.GetAllMessage().OrderByDescending(message => message.CreationTime).Select(message => new PublicMessage(message)).ToActionResult();
+            return messageStorage.GetMessagesOrdered(MaxTakeSize).Select(message => new PublicMessage(message)).ToActionResult();
         }
 
         [HttpPost("message/post/{userId}")]
         public async Task<ActionResult<Message>> PostMessageAsync(string userId)
         {
-            var user = userStorage.GetUser(userId);
+            var user = userStorage.FindUser(userId);
             if (user == null)
                 return NotFound();
 
             var text = await ParseContent<string>();
 
             var message = await Message.Create(text, user, uuidProvider);
-            messageStorage.UpdateMessage(new MessageId(await uuidProvider.GetUUID(user.Meta)), user, text);
+            messageStorage.AddOrUpdateMessage(new MessageId(await uuidProvider.GetUUID(user.Meta)), user, text);
             return message.ToActionResult();
         }
 
         [HttpGet("messages/{userId}")]
         public async Task<ActionResult<IEnumerable<Message>>> GetMessagesAsync(string userId)
         {
-            var user = userStorage.GetUser(userId);
+            var user = userStorage.FindUser(userId);
             if (user == null)
                 return NotFound();
 
-            return messageStorage.GetAllMessage().Where(message => message.userInfo.UserId.Equals(userId)).ToActionResult();
+            return messageStorage.GetAllMessagesOrdered().Where(message => message.userInfo.UserId.Equals(userId)).ToActionResult();
         }
 
         [HttpPost("user")]
@@ -60,7 +60,9 @@ namespace VchAPI.Controllers
             return (await userStorage.AddUser(meta)).ToActionResult();
         }
 
-        public async Task<TValue> ParseContent<TValue>() where TValue : class
+	    private const int MaxTakeSize = 5000;
+
+		public async Task<TValue> ParseContent<TValue>() where TValue : class
         {
             using (var memory = new StreamReader(Request.Body))
             {

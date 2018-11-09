@@ -7,10 +7,8 @@ namespace Vch.Core.Meta
 {
     public class UserInfo
     {
-
-        public UserInfo(string userId)
+		public UserInfo(string userId)
         {
-
             UserId = userId;
         }
 
