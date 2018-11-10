@@ -25,6 +25,8 @@ namespace PartyChat.Master
             var garbageCollector = new GarbageCollector(sessionStorage, heartbeatStorage, TimeSpan.FromSeconds(2), log);
             
             var server = new TcpListener(IPAddress.Any, 16770);
+            var adminServer = new AdminServer(16777, sessionStorage, heartbeatStorage);
+            adminServer.Run();
 
             server.Start(100);
             garbageCollector.Start();
