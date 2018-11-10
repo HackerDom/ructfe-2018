@@ -54,9 +54,9 @@ class VendingClient:
         except (HTTPError, URLError, STimeoutError, RemoteDisconnected):
             try:
                 resp = urlopen(req, timeout=self.timeout).read().decode().strip()
-            except (HTTPError, URLError) as e:
+            except HTTPError as e:
                 raise VendingClientException(MUMBLE, "Incorrect page was given!", e)
-            except (STimeoutError, RemoteDisconnected) as e:
+            except (STimeoutError, RemoteDisconnected, URLError) as e:
                 raise VendingClientException(DOWN, "Can't reach server!", e)
         return resp
 
