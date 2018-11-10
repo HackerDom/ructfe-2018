@@ -50,7 +50,17 @@ namespace PartyChat.Master
 
         private static ILog CreateLog(string[] args)
         {
-            var fileLog = new FileLog(new FileLogSettings {FilePath = "master.log"});
+            var fileLog = new FileLog(new FileLogSettings
+            {
+                FilePath = "master.log",
+                RollingStrategy = new RollingStrategyOptions
+                {
+                    MaxFiles = 10,
+                    Period = RollingPeriod.Hour,
+                    MaxSize = 10 * 1024 * 1024,
+                    Type = RollingStrategyType.Hybrid
+                }
+            });
             
             if (args.Contains("--quiet"))
                 return fileLog;
