@@ -42,7 +42,9 @@ def signup(hostport, login, password, phrase):
         headers=generate_headers(),
         timeout=10
     )
+    print_to_stderr("Sign up with {}".format(register_url))
     if r.status_code // 100 == 5:
+        print_to_stderr("Status code for sign up = {}".format(r.status_code))
         exit(DOWN)
     r.raise_for_status()
     return r.cookies
@@ -60,6 +62,7 @@ def signin(hostport, login, password):
         timeout=10
     )
     if r.status_code // 100 == 5:
+        print_to_stderr("Status code for sign in = {}".format(r.status_code))
         exit(DOWN)
     r.raise_for_status()
     return r.cookies
@@ -141,6 +144,7 @@ def get_phrase_data(hostname, cookies):
         cookies=cookies
     )
     if r.status_code // 100 == 5:
+        print_to_stderr("Status code for get phrases={}, url=".format(r.status_code, r.url))
         exit(DOWN)
     r.raise_for_status()
     return PHRASE_PATTERN.findall(r.content.decode())
@@ -213,6 +217,7 @@ def check_label_correctness(label, flag, expected_label_hash):
 
 def check_users_correctness(users, login):
     if type(users) != list:
+        print_to_stderr("")
         exit(MUMBLE)
 
     for user in users:
@@ -229,6 +234,7 @@ def check_users_correctness(users, login):
 
 def get_first(hostname, flag_id, flag):
     if '-' in flag_id:
+        print_to_stderr("Corrupt because of invalid flag id with '-'")
         exit(CORRUPT)
     login, password, expected_label_hash = flag_id.split(',')
     exit_code = OK
@@ -283,6 +289,7 @@ def put_second(hostname, flag_id, flag):
 
 def get_second(hostname, flag_id, flag):
     if '-' in flag_id:
+        print_to_stderr("Corrupt because of invalid flag id with '-'")
         exit(CORRUPT)
     login, password, encoded_flag = flag_id.split(',')
     exit_code = OK
@@ -290,12 +297,15 @@ def get_second(hostname, flag_id, flag):
         cookies = signin("{}:{}".format(hostname, PORT), login, password)
         phrase_data = get_phrase_data(hostname, cookies)
         if len(phrase_data) != 1:
+            print_to_stderr("len(phrase_data) != 1")
             exit(CORRUPT)
         phrase = phrase_data[0]
         if phrase != flag:
+            print_to_stderr("phrase != flag")
             exit(CORRUPT)
         last_users = get_last_users(hostname)
         if not check_users_correctness(last_users, login):
+            print_to_stderr("user isn't correct")
             exit(CORRUPT)
 
     except (requests.exceptions.ConnectTimeout, socket.timeout, requests.exceptions.ConnectionError):
