@@ -98,7 +98,7 @@ async def handler_check(hostname):
 
 async def handler_put_pass(hostname, id, flag):
 	checker.log('put pass')
-	message = get_message(password=flag, is_private=True)
+	message = get_message(password=flag, is_private=False)
 	state = State(hostname, PORT)
 	await state.post('/db/{}'.format(id), message)
 	checker.ok(message=id)
