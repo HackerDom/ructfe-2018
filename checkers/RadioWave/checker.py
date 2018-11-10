@@ -83,20 +83,22 @@ def check_object_fields(data, *expected):
 			return
 	else:
 		if len(errors) > 0:
-			mumble(error='not all expected fields have founded in json. last expexted: {}'.format(str(errors)))
+			mumble(message='not all expected fields have founded in json. last expexted: {}'.format(str(errors)))
 
 def parse_json_object(string, *expected):
 	data = parse_json(string)
 	if type(data) is not dict:
-		mumble(error='"{}" is not an object, but {}'.format(string, type(data)))
+		mumble(message='"{}" is not an object, but {}'.format(string, type(data)))
 	check_object_fields(data, *expected)
 	return data
 
 def parse_json_list(string, *expected):
 	data = parse_json(string)
 	if type(data) is not list:
-		mumble(error='"{}" is not a list, but {}'.format(string, type(data)))
+		mumble(message='"{}" is not a list, but {}'.format(string, type(data)))
 	for it in data:
+		if type(it) is not dict:
+			mumble(message='"{}" is not an object'.format(json.dumps(it)))
 		check_object_fields(it, *expected)
 	return data
 

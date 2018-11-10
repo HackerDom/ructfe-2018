@@ -92,6 +92,10 @@ class MorseParser:
 			checker.corrupt(message='No signal')
 
 		bounds = get_bounds(numpy.unique(comp))
+
+		if len(bounds) == 0:
+			checker.mumble(message="Can't understand dot size")
+
 		silence = comp[1::2]
 		signal = comp[0::2]
 		if skiped == 2:
