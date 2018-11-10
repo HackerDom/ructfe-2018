@@ -260,8 +260,15 @@
 	};
 
 	struct checker_state {
+		const char *team_nick;
 		bool team_listed = false;
+
+		const char *flag;
 		bool flag_found = false;
+
+		checker_state(const char *team_nick) : team_nick(team_nick), flag(NULL) { }
+
+		checker_state(const char *team_nick, const char *flag) : team_nick(team_nick), flag(flag) { }
 	};
 
 // Commands (specialized)
@@ -492,10 +499,13 @@
 			//pc_log("history_command::handle_response: %s", response);
 			if (!response || strlen(response) == 0)
 				return true;
-			if (!strcmp(response, "ok")) {
+
+			if (strstr(response, state.flag)) {
 				state.flag_found = true;
+				return true;
 			}
-			return true;
+
+			return false;
 		}
 	};
 
@@ -515,10 +525,12 @@
 			if (!response || strlen(response) == 0)
 				return true;
 
-			if (!strcmp(response, "ok")) {
+			if (!strcmp(response, state.team_nick)) {
 				state.team_listed = true;
+				return true;
 			}
-			return true;
+
+			return false;
 		}
 	};
 
