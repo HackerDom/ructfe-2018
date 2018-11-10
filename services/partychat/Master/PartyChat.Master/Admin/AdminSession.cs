@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace PartyChat.Master
 {
@@ -37,6 +39,29 @@ namespace PartyChat.Master
                         foreach (var nick in sessionStorage.ListAlive())
                         {
                             await link.SendCommand(new Command("-", $"'{nick}': stable = {heartbeatStorage.IsStable(nick)}", -1));
+                        }
+                        break;
+                    case "hist":
+                        var parts = command.Text.Split('|');
+                        var askWho = parts[0];
+                        var askAbout = parts[1];
+                        var session = sessionStorage[askWho];
+                        if (session == null)
+                            await link.SendCommand(new Command("-", "there's no session with " + askWho, -1));
+                        else
+                        {
+                            var watch = Stopwatch.StartNew();
+                            var response = await session.SendCommandWithResponse(Commands.History, askAbout, TimeSpan.FromMinutes(9));
+                            if (response == null)
+                                await link.SendCommand(new Command("-", "timed out", -1));
+                            else
+                            {
+                                await link.SendCommand(new Command("-", "took " + watch.Elapsed, -1));
+                                foreach (var line in response)
+                                {
+                                    await link.SendCommand(new Command("-", line, -1));
+                                }
+                            }
                         }
                         break;
                 }
