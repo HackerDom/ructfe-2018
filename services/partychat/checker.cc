@@ -6,23 +6,29 @@
 #include "commands.h"
 #include "words"
 
-// TODO
-// 1. retry with different names
-// 2. implement 'ready' command
-// 3. handle 'end' and 'die'
-
 #define OK 101
 #define CORRUPT 102
 #define MUMBLE 103
 #define DOWN 104
 #define CHECKER_ERROR 110
 
+FILE *rnd;
+void _srand() {
+	rnd = fopen("/dev/urandom", "r");
+}
+
+int _rand() {
+	int x;
+	fread(&x, sizeof(int), 1, rnd);
+	return x & 0x7fffffff;
+}
+
 void make_name(char *buffer) {
 
-	const char *pt1 = adjs[rand() % 600];
-	const char *pt2 = nouns[rand() % 1100];
+	const char *pt1 = adjs[_rand() % 600];
+	const char *pt2 = nouns[_rand() % 1100];
 
-	sprintf(buffer, "@%s%s%d", pt1, pt2, rand() % 1000);
+	sprintf(buffer, "@%s%s%d", pt1, pt2, _rand() % 1000);
 }
 
 bool resolve_ip(const char *host, char *ip) {
@@ -161,7 +167,7 @@ void handle_get(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-	srand(time(NULL));
+	_srand();
 
 	if (argc < 2)
 		checker_fail(CHECKER_ERROR, 
