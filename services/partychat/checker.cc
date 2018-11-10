@@ -92,10 +92,9 @@ void handle_check(int argc, char ** argv) {
 		char checker_name[64];
 		make_name(checker_name);
 
-		checker_state state(team_name);
+		checker_state state;
 		connection<checker_state> conn(*get_master_addr(), state);
-		conn.flush(conn.send<hb_command<checker_state>>(checker_name));
-		conn.flush(conn.send<list_command<checker_state>>(""));
+		conn.flush(conn.send<list_command<checker_state>>(team_name));
 		conn.close();
 
 		if (state.team_listed)
@@ -127,9 +126,8 @@ void handle_put(int argc, char **argv) {
 		char text[64];
 		sprintf(text, "%s says: have this, %s ! %s", checker_name, team_name, flag);
 
-		checker_state state(team_name);
+		checker_state state;
 		connection<checker_state> conn(*get_master_addr(), state);
-		conn.flush(conn.send<hb_command<checker_state>>(checker_name));
 		conn.flush(conn.send<say_command<checker_state>>(text));
 		conn.close();
 	}
@@ -157,9 +155,10 @@ void handle_get(int argc, char **argv) {
 		checker_fail(CHECKER_ERROR, "get: failed to extract team name from host '%s'\n", host);
 
 	for (int i = 0; i < 5; i++) {
-		checker_state state(team_name, flag);
+		char request[256];
+		sprintf(request, "%s|%s %s|%s", team_name, team_name, flag_id, flag);
+		checker_state state;
 		connection<checker_state> conn(*get_master_addr(), state);
-		conn.flush(conn.send<hb_command<checker_state>>(flag_id));
 		conn.flush(conn.send<history_command<checker_state>>(team_name));
 		conn.close();
 
