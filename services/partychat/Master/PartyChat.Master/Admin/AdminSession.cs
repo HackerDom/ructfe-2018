@@ -33,6 +33,12 @@ namespace PartyChat.Master
                         await link.SendCommand(new Command("-", "killing node " + command.Text, -1));
                         sessionStorage[command.Text]?.Kill(true);
                         break;
+                    case "list":
+                        foreach (var nick in sessionStorage.ListAlive())
+                        {
+                            await link.SendCommand(new Command("-", $"'{nick}': stable = {heartbeatStorage.IsStable(nick)}", -1));
+                        }
+                        break;
                 }
             }
         }
