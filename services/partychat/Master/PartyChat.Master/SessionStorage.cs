@@ -39,9 +39,12 @@ namespace PartyChat.Master
         {
             foreach (var pair in sessions)
             {
-                log.Info("Sessions: '{nick}': {session}", pair.Key, pair.Value);
                 if (!pair.Value.IsAlive)
                     ((ICollection<KeyValuePair<string, Session>>) sessions).Remove(pair);
+            }
+            foreach (var pair in sessions)
+            {
+                log.Info("Sessions: '{nick}': {session}", pair.Key, pair.Value);
             }
         }
 

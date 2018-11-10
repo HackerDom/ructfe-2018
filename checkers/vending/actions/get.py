@@ -1,5 +1,5 @@
 from client import VendingClient, VendingClientException
-from actions import OK, CORRUPT, MUMBLE
+from actions import OK, CORRUPT, MUMBLE, DOWN
 from time import sleep
 from random import randint
 from traceback import format_exc
@@ -50,8 +50,11 @@ def get_from_keys(command_ip, flag_id, flag):
         sleep(randint(1, 15) / 10)
         flag_p4 = vending_client.get_vending_item(keys_holder_addr, p4)
     except VendingClientException as e:
-        if e.private.msg == "Not Found":
-            return {"code": CORRUPT, "public": "Couldn't find flag!"}
+        try:
+            if e.private.msg == "Not Found":
+                return {"code": CORRUPT, "public": "Couldn't find flag!"}
+        except AttributeError:
+                return {"code": DOWN, "private": 'from fix'}
         raise e
 
     if (flag_p1 + flag_p2 + flag_p3 + flag_p4) == flag:
