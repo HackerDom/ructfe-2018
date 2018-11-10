@@ -16,7 +16,7 @@ def get(command_ip, flag_id, flag, vuln=None):
             return get_from_keys(command_ip, flag_id, flag)
     except VendingClientException as e:
         return {"code": e.code, "public": e.public, "private": e.private}
-    except ValueError as e:
+    except (IndexError, ValueError) as e:
         return {"code": MUMBLE, "private": "{} {}".format(e, format_exc())}
 
 
