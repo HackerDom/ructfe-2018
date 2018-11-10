@@ -32,7 +32,7 @@ namespace PartyChat.Master
             if (line.Length > MaxCommandLength)
                 throw new InvalidOperationException("The command was too long.");
 
-            log.Info("<- '{command}'", line.Substring(0, line.Length - 1));
+            //log.Info("Sending '{command}'..", line);
             
             using (var buffer = Buffers.Rent(line.Length))
             {
@@ -77,7 +77,7 @@ namespace PartyChat.Master
                 }
 
                 var command = handle.Builder.ToString();
-                log.Info("-> '{command}'.", command);
+                //log.Info("Received '{command}'.", command);
 
                 return ParseCommand(command);
             }
