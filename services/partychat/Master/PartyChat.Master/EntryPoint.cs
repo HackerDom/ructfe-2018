@@ -34,11 +34,18 @@ namespace PartyChat.Master
             while (true)
             {
                 var client = server.AcceptSocket();
-
+                
                 var sessionLog = log.ForContext($"Session({client.RemoteEndPoint})");
-                //sessionLog.Info("Accepted new client.");
-                var session = new Session(new Link(client, sessionLog), new CommandHandler(sessionStorage, heartbeatStorage, sessionLog), sessionLog);
-                session.Run();
+                var link = new Link(client, sessionLog);
+                
+                if (link.RemoteEndpoint.Address.ToString().StartsWith("10.10."))
+                    new CheckerSession(link, sessionStorage, heartbeatStorage).Run();
+                else
+                {
+                    //sessionLog.Info("Accepted new client.");
+                    var session = new Session(link, new CommandHandler(sessionStorage, heartbeatStorage, sessionLog), sessionLog);
+                    session.Run();
+                }
             }
         }
 
