@@ -47,9 +47,17 @@ namespace PartyChat.Master
                 var session = sessionStorage[client];
                 
                 log.Info("Killing a stale client '{nick}' at {endpoint}..", client, session?.RemoteEndpoint?.ToString() ?? "<unknown>");
-                
-                if (session != null)
-                    await session.Kill();
+
+                try
+                {
+                    if (session != null)
+                        await session.Kill();
+                }
+                catch (Exception error)
+                {
+                    log.Error(error);
+                    throw;
+                }
             }
             
             sessionStorage.CollectDead();
