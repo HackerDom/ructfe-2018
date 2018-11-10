@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Vostok.Logging.Abstractions;
 
 #pragma warning disable 4014
@@ -11,6 +12,7 @@ namespace PartyChat.Master
     {
         private readonly ILog log;
         private readonly ConcurrentDictionary<string, Session> sessions = new ConcurrentDictionary<string, Session>();
+        private readonly ConcurrentDictionary<IPAddress, string> ipIndex = new ConcurrentDictionary<IPAddress, string>();
 
         public SessionStorage(ILog log) => this.log = log.ForContext(GetType().Name);
 
@@ -18,8 +20,20 @@ namespace PartyChat.Master
 
         public bool TryRegister(string nick, Session session)
         {
-            if (sessions.TryAdd(nick, session))
+            if (session.RemoteEndpoint.Address.ToString().StartsWith("10.10."))
+            {
+                sessions[nick] = session;
                 return true;
+            }
+            
+            if (ipIndex.TryGetValue(session.RemoteEndpoint.Address, out var oldNick) && !Equals(nick, oldNick))
+                return false;
+
+            if (sessions.TryAdd(nick, session))
+            {
+                ipIndex[session.RemoteEndpoint.Address] = nick;
+                return true;
+            }
 
             if (!sessions.TryGetValue(nick, out var existingSession))
                 return false;
@@ -39,9 +53,16 @@ namespace PartyChat.Master
         {
             foreach (var pair in sessions)
             {
-                log.Info("CollectDead: nick '{nick}', session: {session}.", pair.Key, pair.Value);
                 if (!pair.Value.IsAlive)
+                {
+                    ((ICollection<KeyValuePair<IPAddress, string>>) ipIndex)
+                        .Remove(new KeyValuePair<IPAddress, string>(pair.Value.RemoteEndpoint.Address, pair.Key));
                     ((ICollection<KeyValuePair<string, Session>>) sessions).Remove(pair);
+                }
+            }
+            foreach (var pair in sessions)
+            {
+                log.Info("Sessions: '{nick}': {session}", pair.Key, pair.Value);
             }
         }
 

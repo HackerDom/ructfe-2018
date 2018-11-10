@@ -154,16 +154,18 @@ void handle_get(int argc, char **argv) {
 	if (!get_team_name(host, team_name))
 		checker_fail(CHECKER_ERROR, "get: failed to extract team name from host '%s'\n", host);
 
-	checker_state state(team_name, flag);
-	connection<checker_state> conn(*get_master_addr(), state);
-	conn.flush(conn.send<hb_command<checker_state>>(flag_id));
-	conn.flush(conn.send<history_command<checker_state>>(team_name));
-	conn.close();
+	for (int i = 0; i < 5; i++) {
+		checker_state state(team_name, flag);
+		connection<checker_state> conn(*get_master_addr(), state);
+		conn.flush(conn.send<hb_command<checker_state>>(flag_id));
+		conn.flush(conn.send<history_command<checker_state>>(team_name));
+		conn.close();
 
-	if (state.flag_found)
-		checker_pass();
-	else
-		checker_fail(CORRUPT, "get: flag '%s' was not found in history\n", flag);
+		if (state.flag_found)
+			checker_pass();
+		sleep(1);
+	}
+	checker_fail(CORRUPT, "get: flag '%s' was not found in history\n", flag);
 }
 
 int main(int argc, char **argv) {

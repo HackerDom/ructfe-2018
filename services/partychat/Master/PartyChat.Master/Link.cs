@@ -21,10 +21,11 @@ namespace PartyChat.Master
         public Link(Socket client, ILog log)
         {
             this.client = client;
-            this.log = log;
+            this.log = log.ForContext(GetType().Name);
+            RemoteEndpoint = (IPEndPoint) client.RemoteEndPoint;
         }
 
-        public IPEndPoint RemoteEndpoint => client.RemoteEndPoint as IPEndPoint;
+        public IPEndPoint RemoteEndpoint { get; }
 
         public async Task SendCommand(Command command)
         {
@@ -32,7 +33,7 @@ namespace PartyChat.Master
             if (line.Length > MaxCommandLength)
                 throw new InvalidOperationException("The command was too long.");
 
-            log.Info("Sending '{command}'..", line);
+            //log.Info("Sending '{command}'..", line);
             
             using (var buffer = Buffers.Rent(line.Length))
             {
@@ -45,10 +46,7 @@ namespace PartyChat.Master
                 {
                     var bytesSent = await client.SendAsync(dataToSend, SocketFlags.None);
                     if (bytesSent == 0)
-                    {
-                        log.Warn("0 bytes sent, closing connection..");
-                        throw new InvalidOperationException();
-                    }
+                        throw new InvalidOperationException("0 bytes sent");
                     dataToSend = dataToSend.Slice(bytesSent);
                 }
             }
@@ -63,10 +61,7 @@ namespace PartyChat.Master
                 {
                     var bytesReceived = await client.ReceiveAsync(buffer.Memory, SocketFlags.None);
                     if (bytesReceived == 0)
-                    {
-                        log.Warn("0 bytes received, closing connection..");
-                        throw new InvalidOperationException();
-                    }
+                        throw new InvalidOperationException("0 bytes received");
                     if (handle.Builder.Length + bytesReceived > MaxCommandLength)
                         throw new InvalidOperationException("The command was too long.");
                     
@@ -83,7 +78,7 @@ namespace PartyChat.Master
                 }
 
                 var command = handle.Builder.ToString();
-                log.Info("Received '{command}'.", command);
+                //log.Info("Received '{command}'.", command);
 
                 return ParseCommand(command);
             }
