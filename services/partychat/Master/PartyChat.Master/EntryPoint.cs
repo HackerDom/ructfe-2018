@@ -25,6 +25,8 @@ namespace PartyChat.Master
             var garbageCollector = new GarbageCollector(sessionStorage, heartbeatStorage, TimeSpan.FromSeconds(2), log);
             
             var server = new TcpListener(IPAddress.Any, 16770);
+            var adminServer = new AdminServer(16777, sessionStorage, heartbeatStorage);
+            adminServer.Run();
 
             server.Start(100);
             garbageCollector.Start();
@@ -34,7 +36,7 @@ namespace PartyChat.Master
                 var client = server.AcceptSocket();
 
                 var sessionLog = log.ForContext($"Session({client.RemoteEndPoint})");
-                sessionLog.Info("Accepted new client.");
+                //sessionLog.Info("Accepted new client.");
                 var session = new Session(new Link(client, sessionLog), new CommandHandler(sessionStorage, heartbeatStorage, sessionLog), sessionLog);
                 session.Run();
             }
@@ -50,7 +52,17 @@ namespace PartyChat.Master
 
         private static ILog CreateLog(string[] args)
         {
-            var fileLog = new FileLog(new FileLogSettings {FilePath = "master.log"});
+            var fileLog = new FileLog(new FileLogSettings
+            {
+                FilePath = "master.log",
+                RollingStrategy = new RollingStrategyOptions
+                {
+                    MaxFiles = 10,
+                    Period = RollingPeriod.Hour,
+                    MaxSize = 10 * 1024 * 1024,
+                    Type = RollingStrategyType.Hybrid
+                }
+            });
             
             if (args.Contains("--quiet"))
                 return fileLog;

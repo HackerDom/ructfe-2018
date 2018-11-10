@@ -2,8 +2,8 @@
     Description=RuCTFE 2018: Laberator
     After=network-online.target
     Wants=network-online.target
-    StartLimitBurst=4
-    StartLimitInterval=60s
+    StartLimitBurst=10
+    StartLimitInterval=100s
 
 [Service]
     Type=simple
@@ -32,15 +32,11 @@
     UMask=0027
 
 # Resource limits
-    TasksMax=2048
+    TasksMax=256
     MemoryMax=1024M
     MemorySwapMax=1024M
     CPUQuota=150%
     LimitNOFILE=65536
-
-# Optional TODO:
-# * IO accounting and limits
-# * network isolation
 
 [Install]
     WantedBy=multi-user.target

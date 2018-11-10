@@ -11,7 +11,7 @@ class CreateMachineHandler(BaseHandler):
     def handle(self, request: Request) -> Response:
         try:
             name, inventor, meta, key, master_key = request.body.readline().decode().strip().split()
-        except ValueError:
+        except (TypeError, ValueError):
             return Response(400, b'Bad request')
         res = self.vm.add_new_machine(name, inventor, meta, key, master_key)
         if res is not None:

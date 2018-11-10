@@ -33,12 +33,28 @@
     group: "root"
     mode: "0755"
 
+- name: Disable systemd-timesyncd (conflicts with ntp)
+  systemd:
+    name: systemd-timesyncd.service
+    enabled: no
+    masked: yes
+    state: stopped
+
+- name: Enable ntp
+  systemd:
+    name: ntp
+    enabled: yes
+    state: started
+
 - name: Create user
   user:
     name: vch
     createhome: yes
     system: yes
     shell: /usr/sbin/nologin
+
+- name: Ensure perm 0750 on home
+  file: path=/home/vch mode='0750'
 
 - name: Copy sources
   copy:

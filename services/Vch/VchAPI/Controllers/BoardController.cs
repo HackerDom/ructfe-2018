@@ -46,10 +46,12 @@ namespace VchAPI.Controllers
                     return NotFound();
 
                 var text = await ParseContent<string>();
-                return messageStorage.AddOrUpdateMessage(new MessageId(await uuidProvider.GetUUID(user.Meta)), user, text).ToActionResult();
+                return messageStorage.AddOrUpdateMessage(MessageId.From(await uuidProvider.GetUUID(user.Meta)), user, text).ToActionResult();
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
+
                 return StatusCode(500, e);
             }
         }

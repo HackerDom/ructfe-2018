@@ -11,5 +11,5 @@ class MachineMetaHandler(BaseHandler):
     def handle(self, request: Request) -> Response:
         try:
             return Response(200, bytes(self.vm.get_machine_meta(*map(int, (request.body.readline().decode().split())))))
-        except ValueError:
+        except (TypeError, ValueError):
             return Response(400, b'Bad Request')

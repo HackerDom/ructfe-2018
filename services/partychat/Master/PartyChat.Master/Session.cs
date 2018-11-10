@@ -116,7 +116,8 @@ namespace PartyChat.Master
                 }
                 catch (Exception error)
                 {
-                    log.Error(error);
+                    IsAlive = false;
+                    //log.Error(error);
                     throw;
                 }
             }
@@ -137,7 +138,8 @@ namespace PartyChat.Master
                 }
                 catch (Exception error)
                 {
-                    log.Error(error);
+                    IsAlive = false;
+                    //log.Error(error);
                     throw;
                 }
             }

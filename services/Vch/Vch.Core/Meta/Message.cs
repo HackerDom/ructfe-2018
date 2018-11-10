@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.IdGenerators;
 using Newtonsoft.Json;
 
 namespace Vch.Core.Meta
@@ -15,9 +16,6 @@ namespace Vch.Core.Meta
         }
 
         [BsonId]
-		[JsonIgnore]
-        public ObjectId Id;
-
         public MessageId MessageId { get; set; }
         public string Text { get; set; }
         public DateTime CreationTime { get; set; }
@@ -35,7 +33,7 @@ namespace Vch.Core.Meta
 
         public static async Task<Message> Create(string text, UserInfo info, IUUIDProvider uuidProvider)
         {
-            return new Message(new MessageId(await uuidProvider.GetUUID(info.Meta)))
+            return new Message(MessageId.From(await uuidProvider.GetUUID(info.Meta))) 
             {
                 Text = text,
                 userInfo = info,

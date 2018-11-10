@@ -21,20 +21,21 @@ namespace Vch.Core.Sorages
         public Message AddOrUpdateMessage(MessageId id, UserInfo userInfo, string text)
         {
             return messages.AddOrUpdate(id, messageId =>
-	            {
-		            var message = Message.Create(text, userInfo, messageId);
-					messagesCollection.InsertOneAsync(message).Wait();
-					return message;
-	            },
+                {
+                    var message = Message.Create(text, userInfo, messageId);
+                    messagesCollection.InsertOneAsync(message).Wait();
+                    return message;
+                },
                 (messageId, message) =>
                 {
                     message.Text = text;
-	                messagesCollection.UpdateOneAsync(_ => _.MessageId.Equals(messageId), new ObjectUpdateDefinition<Message>(message)).Wait();
-					return message;
+                    var update = Builders<Message>.Update.Set(oldMessage => oldMessage.Text, text);
+                    messagesCollection.UpdateOneAsync(oldMessage => oldMessage.MessageId.Equals(messageId), update).Wait();
+                    return message;
                 });
         }
 
-	    public IEnumerable<Message> GetAllMessages()
+        public IEnumerable<Message> GetAllMessages()
 	    {
 		    return messages.Values;
 	    }
@@ -51,8 +52,8 @@ namespace Vch.Core.Sorages
 
         private async Task Init()
         {
-            //messagesCollection.DeleteManyAsync(message => true).Wait();
 
+            //messagesCollection.DeleteMany(info => true);
             var loadedMessages = await messagesCollection.Find(_ => true).ToListAsync();
             foreach (var message in loadedMessages)
                 messages[message.MessageId] = message;
@@ -65,7 +66,7 @@ namespace Vch.Core.Sorages
 	            await Task.Delay(TimeSpan.FromSeconds(5));
 				try
 	            {
-		            foreach(var message in messages.Where(pair => (pair.Value.CreationTime - DateTime.UtcNow).TotalMinutes > TTLinMinutes))
+		            foreach(var message in messages.Where(pair => (DateTime.UtcNow - pair.Value.CreationTime).TotalMinutes > TTLinMinutes))
 			            DeleteMessage(message.Value.MessageId);
 				}
 	            catch(Exception e)
@@ -74,15 +75,13 @@ namespace Vch.Core.Sorages
 			}
         }
 
-	    public DeleteResult DeleteMessage(MessageId messageId)
+	    public void DeleteMessage(MessageId messageId)
 	    {
-		    var result = messagesCollection.DeleteOne(message => messageId.Equals(message.MessageId));
+		    messagesCollection.DeleteOneAsync(message => messageId.Equals(message.MessageId)).Wait();
 		    messages.Remove(messageId, out var _);
-		    return result;
 	    }
 
-	    private const int TTLinMinutes = 30;
-
+        private const int TTLinMinutes = 30;
         private readonly ConcurrentDictionary<MessageId, Message> messages;
         private readonly IMongoCollection<Message> messagesCollection;
     }
