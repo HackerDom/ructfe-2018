@@ -294,6 +294,7 @@ def put_second(hostname, flag_id, flag):
 
 def get_second(hostname, flag_id, flag):
     if '-' in flag_id:
+        print_to_stderr(flag_id)
         print_to_stderr("Corrupt because of invalid flag id with '-'")
         exit(CORRUPT)
     login, password, encoded_flag = flag_id.split(',')
@@ -302,10 +303,12 @@ def get_second(hostname, flag_id, flag):
         cookies = signin("{}:{}".format(hostname, PORT), login, password)
         phrase_data = get_phrase_data(hostname, cookies)
         if len(phrase_data) != 1:
+            print_to_stderr("phrase_data={}".format(phrase_data))
             print_to_stderr("len(phrase_data) != 1")
             exit(CORRUPT)
         phrase = phrase_data[0]
         if phrase != flag:
+            print_to_stderr("phrase={}, flag={}".format(phrase, flag))
             print_to_stderr("phrase != flag")
             exit(CORRUPT)
         last_users = get_last_users(hostname)
