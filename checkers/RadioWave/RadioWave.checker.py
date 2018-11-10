@@ -41,11 +41,36 @@ def get_message(text=None, dpm=None, freq=None, is_private=None, need_base32=Non
 	return data
 
 def get_second_message(freq, **kwargs):
-	f = random.randint(50, 3999) 
+	f = random.randint(50, 2000)
 	if freq is not None:
 		while 0.5 <= f / freq <= 2:
 			f = random.randint(50, 2000)
 	return get_message(freq=f, **kwargs)
+
+def base32(s):
+	return base64.b32encode(s.encode('ascii')).decode('ascii')
+
+def get_or_None(d, f):
+	if f in d:
+		return d[f]
+	return None
+
+def equal(expected, actual, fields):
+	for f in fields:
+		exp = get_or_None(expected, f)
+		act = get_or_None(actual, f)
+		if exp != act:
+			return False
+	return True
+
+def has_equal(messages, message, fields):
+	for m in messages:
+		if equal(message, m, fields):
+			return True
+	return False
+
+FIELDS = ['text', 'frequency', 'dpm', 'need_base32', 'is_private']
+ALL_FIELDS = FIELDS + ['password']
 
 async def check_news(hostname):
 	first = State(hostname, PORT, 'first')
@@ -55,7 +80,14 @@ async def check_news(hostname):
 
 	message = get_message(is_private=False)
 	channel = checker.get_rand_string(30)
-	await first.post('/db/{}'.format(channel), message)
+	response = await first.post('/db/{}'.format(channel), message)
+	messages = checker.parse_json_list(message, FIELDS)
+
+	if message['need_base32']:
+		message['text'] = base32(message['text'])
+
+	if not has_equal(messages, message, ALL_FIELDS):
+		checker.mumble(message="Can't find message. May be you delete my password?")
 
 	listener.want(channel)
 	await listener.finish()
@@ -133,7 +165,7 @@ async def handler_get_morse(hostname, id, flag):
 	listener = await WSHelperBinaryHanlder.create('/radio/{}'.format(id['channel']), state, parser.save)
 	listener.start()
 
-	flag = base64.b32encode(flag.encode('ascii')).decode('ascii')
+	flag = base32(flag)
 
 	await asyncio.sleep(10)
 	await listener.close()
