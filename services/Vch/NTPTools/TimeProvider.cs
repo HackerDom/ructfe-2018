@@ -31,8 +31,8 @@ namespace NTPTools
 
 
             var client = new UdpClient(AddressFamily.InterNetwork);
-            client.Client.SendTimeout = 500;
-            client.Client.ReceiveTimeout = 500;
+            client.Client.SendTimeout = 3000;
+            client.Client.ReceiveTimeout = 3000;
             client.Client.ReceiveBufferSize = 48;
 
             var request = builder.Build();
