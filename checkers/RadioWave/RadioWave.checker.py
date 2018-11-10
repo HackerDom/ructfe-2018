@@ -28,7 +28,7 @@ def get_message(text=None, dpm=None, freq=None, is_private=None, need_base32=Non
 	if dpm is None:
 		dpm = random.randint(35 * 60 // 4, 35 * 60 // 3)
 	if freq is None:
-		freq = random.randint(50, 3999)
+		freq = random.randint(50, 2000)
 	data = {
 		'text': text,
 		'dpm': dpm,
@@ -44,7 +44,7 @@ def get_second_message(freq, **kwargs):
 	f = random.randint(50, 3999) 
 	if freq is not None:
 		while 0.5 <= f / freq <= 2:
-			f = random.randint(50, 3999)
+			f = random.randint(50, 2000)
 	return get_message(freq=f, **kwargs)
 
 async def check_news(hostname):
