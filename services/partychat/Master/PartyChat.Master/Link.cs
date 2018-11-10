@@ -22,9 +22,10 @@ namespace PartyChat.Master
         {
             this.client = client;
             this.log = log.ForContext(GetType().Name);
+            RemoteEndpoint = (IPEndPoint) client.RemoteEndPoint;
         }
 
-        public IPEndPoint RemoteEndpoint => client.RemoteEndPoint as IPEndPoint;
+        public IPEndPoint RemoteEndpoint { get; }
 
         public async Task SendCommand(Command command)
         {

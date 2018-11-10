@@ -216,15 +216,20 @@ def check_label_correctness(label, flag, expected_label_hash):
 
 
 def check_users_correctness(users, login):
+    print_to_stderr("users = {}".format(users))
     if type(users) != list:
-        print_to_stderr("")
+        print_to_stderr("type(users) = {}".format(type(users)))
         exit(MUMBLE)
 
     for user in users:
+        print_to_stderr("user = {}".format(user))
         if type(user) != dict:
+            print_to_stderr("type(user) = {}".format(type(user)))
             exit(MUMBLE)
 
         username = user.get("Login")
+        print_to_stderr("username = {}".format(username))
+        print_to_stderr("type(username) = {}".format(type(username)))
         if type(username) != str:
             exit(MUMBLE)
         if username == login:
