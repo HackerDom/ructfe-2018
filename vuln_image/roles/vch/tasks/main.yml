@@ -33,6 +33,19 @@
     group: "root"
     mode: "0755"
 
+- name: Disable systemd-timesyncd (conflicts with ntp)
+  systemd:
+    name: systemd-timesyncd.service
+    enabled: no
+    masked: yes
+    state: stopped
+
+- name: Enable ntp
+  systemd:
+    name: ntp
+    enabled: yes
+    state: started
+
 - name: Create user
   user:
     name: vch
