@@ -48,7 +48,7 @@ def get_second_message(freq, **kwargs):
 	return get_message(freq=f, **kwargs)
 
 def base32(s):
-	return base64.b32encode(s.encode('ascii')).decode('ascii')
+	return base64.b32encode(s.encode('ascii')).decode('ascii').rstrip('=')
 
 def get_or_None(d, f):
 	if f in d:
@@ -82,7 +82,6 @@ async def check_news(hostname):
 	channel = checker.get_rand_string(30)
 	response = await first.post('/db/{}'.format(channel), message)
 	messages = checker.parse_json_list(response, FIELDS)
-
 	if message['need_base32']:
 		message['text'] = base32(message['text'])
 
