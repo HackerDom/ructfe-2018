@@ -81,7 +81,7 @@ async def check_news(hostname):
 	message = get_message(is_private=False)
 	channel = checker.get_rand_string(30)
 	response = await first.post('/db/{}'.format(channel), message)
-	messages = checker.parse_json_list(message, FIELDS)
+	messages = checker.parse_json_list(str(message), FIELDS)
 
 	if message['need_base32']:
 		message['text'] = base32(message['text'])
