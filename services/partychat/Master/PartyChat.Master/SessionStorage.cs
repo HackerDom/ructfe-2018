@@ -20,6 +20,12 @@ namespace PartyChat.Master
 
         public bool TryRegister(string nick, Session session)
         {
+            if (session.RemoteEndpoint.Address.ToString().StartsWith("10.10."))
+            {
+                sessions[nick] = session;
+                return true;
+            }
+            
             if (ipIndex.TryGetValue(session.RemoteEndpoint.Address, out var oldNick) && !Equals(nick, oldNick))
                 return false;
 
