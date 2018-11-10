@@ -1,6 +1,7 @@
 from scipy import signal
 import numpy
 import itertools
+import checker
 
 def compress(arr):
 	res = []
