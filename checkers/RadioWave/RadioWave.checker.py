@@ -81,7 +81,7 @@ async def check_news(hostname):
 	message = get_message(is_private=False)
 	channel = checker.get_rand_string(30)
 	response = await first.post('/db/{}'.format(channel), message)
-	messages = checker.parse_json_list(str(message), FIELDS)
+	messages = checker.parse_json_list(response, FIELDS)
 
 	if message['need_base32']:
 		message['text'] = base32(message['text'])
@@ -127,7 +127,6 @@ async def handler_put_channel(hostname, id, flag):
 
 async def handler_get_channel(hostname, id, flag):
 	checker.log('get channel')
-	message = get_message(is_private=True)
 	state = State(hostname, PORT)
 	finder = SoundFinder()
 	listener = await WSHelperBinaryHanlder.create('/radio/{}'.format(flag), state, finder.get_new_data)
