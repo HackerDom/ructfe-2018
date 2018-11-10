@@ -51,10 +51,12 @@ int main(int argc, char **argv) {
 	pc_init_logging(log_file, false);
 
 	addrinfo *addr;
-	if (!pc_parse_endpoint("localhost:6666", &addr))
+	if (!pc_parse_endpoint("127.0.0.1:6666", &addr))
 		pc_fatal("Failed to parse node endpoint.");
 
-	pc_log("Establishing connection to node..");
+	pc_log("Connecting to node: %s:%d", 
+                inet_ntoa(((sockaddr_in *)addr->ai_addr)->sin_addr), 
+                ntohs(((sockaddr_in *)addr->ai_addr)->sin_port));
 
 	face_state state;
 	connection<face_state> conn(*addr, state);

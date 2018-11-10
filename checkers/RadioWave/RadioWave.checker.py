@@ -28,7 +28,7 @@ def get_message(text=None, dpm=None, freq=None, is_private=None, need_base32=Non
 	if dpm is None:
 		dpm = random.randint(35 * 60 // 4, 35 * 60 // 3)
 	if freq is None:
-		freq = random.randint(50, 3999)
+		freq = random.randint(50, 2000)
 	data = {
 		'text': text,
 		'dpm': dpm,
@@ -44,7 +44,7 @@ def get_second_message(freq, **kwargs):
 	f = random.randint(50, 3999) 
 	if freq is not None:
 		while 0.5 <= f / freq <= 2:
-			f = random.randint(50, 3999)
+			f = random.randint(50, 2000)
 	return get_message(freq=f, **kwargs)
 
 async def check_news(hostname):
@@ -101,7 +101,7 @@ async def handler_get_channel(hostname, id, flag):
 	listener = await WSHelperBinaryHanlder.create('/radio/{}'.format(flag), state, finder.get_new_data)
 	listener.start()
 	await asyncio.sleep(10)
-	listener.close()
+	await listener.close()
 
 	if not finder.result:
 		checker.corrupt(error='no signal for 10 seconds')
@@ -136,7 +136,7 @@ async def handler_get_morse(hostname, id, flag):
 	flag = base64.b32encode(flag.encode('ascii')).decode('ascii')
 
 	await asyncio.sleep(10)
-	listener.close()
+	await listener.close()
 
 	text = parser.process()
 	if text not in flag:

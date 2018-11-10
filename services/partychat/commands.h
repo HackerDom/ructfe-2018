@@ -450,7 +450,6 @@
 			}
 			else {
 				//pc_log("history_command::execute: getting history from master '%s'..", this->text);
-				pc_group g(this->text);
 
 				state.uplink.master_conn.send<history_command>(this->text);
 			}
@@ -465,7 +464,7 @@
 
 			for (int i = 0; i < CON_CT; i++) {
 				if (state.controllers[i])
-					state.controllers[i]->send<history_command>(this->text);
+					state.controllers[i]->send<history_command>(response);
 			}
 			return false;
 		}
