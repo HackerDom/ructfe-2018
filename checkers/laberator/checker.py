@@ -183,7 +183,8 @@ def put_first(hostname, flag_id, flag):
         requests.exceptions.HTTPError, UnicodeDecodeError, json.decoder.JSONDecodeError,
         TypeError, websocket._exceptions.WebSocketBadStatusException,
         websocket._exceptions.WebSocketConnectionClosedException,
-        requests.exceptions.ReadTimeout
+        requests.exceptions.ReadTimeout,
+        websocket._exceptions.WebSocketTimeoutException
     ):
         traceback.print_exc()
         exit_code = MUMBLE
@@ -260,7 +261,8 @@ def get_first(hostname, flag_id, flag):
         requests.exceptions.HTTPError, UnicodeDecodeError, json.decoder.JSONDecodeError,
         TypeError, websocket._exceptions.WebSocketBadStatusException,
         websocket._exceptions.WebSocketConnectionClosedException,
-        requests.exceptions.ReadTimeout, KeyError
+        requests.exceptions.ReadTimeout, KeyError,
+        websocket._exceptions.WebSocketTimeoutException
     ):
         traceback.print_exc()
         exit_code = MUMBLE
@@ -285,7 +287,8 @@ def put_second(hostname, flag_id, flag):
         requests.exceptions.HTTPError, UnicodeDecodeError, json.decoder.JSONDecodeError,
         TypeError, websocket._exceptions.WebSocketBadStatusException,
         websocket._exceptions.WebSocketConnectionClosedException,
-        requests.exceptions.ReadTimeout, KeyError
+        requests.exceptions.ReadTimeout, KeyError,
+        websocket._exceptions.WebSocketTimeoutException
     ):
         traceback.print_exc()
         exit_code = MUMBLE
@@ -323,7 +326,8 @@ def get_second(hostname, flag_id, flag):
         requests.exceptions.HTTPError, UnicodeDecodeError, json.decoder.JSONDecodeError,
         TypeError, websocket._exceptions.WebSocketBadStatusException,
         websocket._exceptions.WebSocketConnectionClosedException,
-        requests.exceptions.ReadTimeout, KeyError
+        requests.exceptions.ReadTimeout, KeyError,
+        websocket._exceptions.WebSocketTimeoutException
     ):
         traceback.print_exc()
         exit_code = MUMBLE
