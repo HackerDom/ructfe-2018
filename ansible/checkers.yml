@@ -11,6 +11,17 @@
       group: "{{cs_user}}"
       recurse: yes
 
+  - name: Install dotnet repo keys
+    apt:
+      deb: https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+
+  - name: Install .NET Core 2.1
+    apt:
+      name:
+       - dotnet-sdk-2.1
+      state: latest
+      update_cache: yes
+
   - name: install sys deps
     apt: name=python3-pip state=latest
 

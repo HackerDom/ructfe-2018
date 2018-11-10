@@ -13,6 +13,7 @@ import base64
 
 from MorseParser import MorseParser
 from SoundFinder import SoundFinder
+from ws import WSHelperSearchText, WSHelperBinaryHanlder
 
 PORT = 7777
 
@@ -27,7 +28,7 @@ def get_message(text=None, dpm=None, freq=None, is_private=None, need_base32=Non
 	if dpm is None:
 		dpm = random.randint(35 * 60 // 4, 35 * 60 // 3)
 	if freq is None:
-		freq = random.randint(50, 3999)
+		freq = random.randint(50, 2000)
 	data = {
 		'text': text,
 		'dpm': dpm,
@@ -43,10 +44,25 @@ def get_second_message(freq, **kwargs):
 	f = random.randint(50, 3999) 
 	if freq is not None:
 		while 0.5 <= f / freq <= 2:
-			f = random.randint(50, 3999)
+			f = random.randint(50, 2000)
 	return get_message(freq=f, **kwargs)
-	
+
+async def check_news(hostname):
+	first = State(hostname, PORT, 'first')
+	second = State(hostname, PORT, 'second')
+	listener = await WSHelperSearchText.create('/news', second)
+	listener.start()
+
+	message = get_message(is_private=False)
+	channel = checker.get_rand_string(30)
+	await first.post('/db/{}'.format(channel), message)
+
+	listener.want(channel)
+	await listener.finish()
+	await listener.close()
+
 async def handler_check(hostname):
+	await check_news(hostname)
 	checker.ok()
 
 async def handler_put_pass(hostname, id, flag):
@@ -54,7 +70,7 @@ async def handler_put_pass(hostname, id, flag):
 	message = get_message(password=flag, is_private=True)
 	state = State(hostname, PORT)
 	await state.post('/db/{}'.format(id), message)
-	checker.ok()
+	checker.ok(message=id)
 
 async def handler_get_pass(hostname, id, flag):
 	checker.log('get pass')
@@ -75,14 +91,14 @@ async def handler_put_channel(hostname, id, flag):
 	message = get_message(is_private=True)
 	state = State(hostname, PORT)
 	await state.post('/db/{}'.format(flag), message)
-	checker.ok()
+	checker.ok(message=id)
 
 async def handler_get_channel(hostname, id, flag):
 	checker.log('get channel')
 	message = get_message(is_private=True)
 	state = State(hostname, PORT)
 	finder = SoundFinder()
-	listener = state.get_binary_dumper('/radio/{}'.format(flag), finder.get_new_data)
+	listener = await WSHelperBinaryHanlder.create('/radio/{}'.format(flag), state, finder.get_new_data)
 	listener.start()
 	await asyncio.sleep(10)
 	await listener.close()
@@ -114,7 +130,7 @@ async def handler_get_morse(hostname, id, flag):
 	id = json.loads(id)
 	state = State(hostname, PORT)
 	parser = MorseParser(id['freq'])
-	listener = state.get_binary_dumper('/radio/{}'.format(id['channel']), parser.save)
+	listener = await WSHelperBinaryHanlder.create('/radio/{}'.format(id['channel']), state, parser.save)
 	listener.start()
 
 	flag = base64.b32encode(flag.encode('ascii')).decode('ascii')
