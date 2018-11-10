@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Vostok.Logging.Abstractions;
 
@@ -30,7 +31,8 @@ namespace PartyChat.Master
                 case Commands.Heartbeat:
                     if (!TrySetNick(command.Text) || !sessionStorage.TryRegister(nick, session))
                     {
-                        log.Info("Failed to set nick '{nick}' for client at {endpoint}. Nick is already in use. Killing session..", command.Text, session.RemoteEndpoint);
+                        log.Info("Failed to set nick '{nick}' for client at {endpoint}. Nick is already in use. Killing session..", 
+                            command.Text, session.RemoteEndpoint);
                         await session.Kill(true);
                         return;
                     }
@@ -47,7 +49,7 @@ namespace PartyChat.Master
                 case Commands.Say:
                     group = Group.ExtractGroup(command.Text);
                     
-                    log.Info("Saying '{text}' to ({group})..", command.Text, group);
+                    //log.Info("Saying '{text}' to ({group})..", command.Text, group);
                     
                     foreach (var member in group)
                     {
@@ -76,14 +78,14 @@ namespace PartyChat.Master
                         responses.Add(response);
                     }
                     
-                    log.Info("Sending collected and merged history back..");
+                    log.Info("Sending collected and merged history of group ({group}) back..", group);
 
                     var mergedResponse = HistoryMerger.Merge(responses);
                     session.SendResponse(command.Id, mergedResponse);
                     break;
                 
                 case Commands.List:
-                    session.SendResponse(command.Id, sessionStorage.ListAlive());
+                    session.SendResponse(command.Id, new Response(sessionStorage.ListAlive().Where(s => heartbeatStorage.IsStable(s))));
                     break;
             }
         }
