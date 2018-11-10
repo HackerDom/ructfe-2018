@@ -101,7 +101,7 @@ async def handler_get_channel(hostname, id, flag):
 	listener = await WSHelperBinaryHanlder.create('/radio/{}'.format(flag), state, finder.get_new_data)
 	listener.start()
 	await asyncio.sleep(10)
-	listener.close()
+	await listener.close()
 
 	if not finder.result:
 		checker.corrupt(error='no signal for 10 seconds')
@@ -136,7 +136,7 @@ async def handler_get_morse(hostname, id, flag):
 	flag = base64.b32encode(flag.encode('ascii')).decode('ascii')
 
 	await asyncio.sleep(10)
-	listener.close()
+	await listener.close()
 
 	text = parser.process()
 	if text not in flag:

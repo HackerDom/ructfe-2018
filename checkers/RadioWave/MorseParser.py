@@ -72,7 +72,12 @@ class MorseParser:
 		freq, _, Sxx = signal.spectrogram(data, 8000)
 
 		nearest = numpy.abs(freq - self.freq).argmin()
-		return Sxx[nearest - 1] + Sxx[nearest] + Sxx[nearest + 1]
+		res = Sxx[nearest]
+		if nearest != 0:
+			res = res + Sxx[nearest - 1]
+		if nearest != numpy.size(Sxx, 0) - 1:
+			res = res + Sxx[nearest + 1]
+		return res
 
 	def process(self):
 		if len(self.specs) == 0:
