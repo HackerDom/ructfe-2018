@@ -82,19 +82,21 @@ void handle_check(int argc, char ** argv) {
 	if (!get_team_name(host, team_name))
 		checker_fail(CHECKER_ERROR, "check: failed to extract team name from host '%s'\n", host);
 
-	char checker_name[64];
-	make_name(checker_name);
+	for (int i = 0; i < 5; i++) {
+		char checker_name[64];
+		make_name(checker_name);
 
-	checker_state state(team_name);
-	connection<checker_state> conn(*get_master_addr(), state);
-	conn.flush(conn.send<hb_command<checker_state>>(checker_name));
-	conn.flush(conn.send<list_command<checker_state>>(""));
-	conn.close();
+		checker_state state(team_name);
+		connection<checker_state> conn(*get_master_addr(), state);
+		conn.flush(conn.send<hb_command<checker_state>>(checker_name));
+		conn.flush(conn.send<list_command<checker_state>>(""));
+		conn.close();
 
-	if (state.team_listed)
-		checker_pass();
-	else
-		checker_fail(DOWN, "check: team '%s' was not listed\n", team_name);
+		if (state.team_listed)
+			checker_pass();
+	}
+
+	checker_fail(DOWN, "check: team '%s' was not listed\n", team_name);
 }
 
 void handle_put(int argc, char **argv) {
