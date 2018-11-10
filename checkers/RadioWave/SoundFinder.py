@@ -13,10 +13,7 @@ class SoundFinder:
 		_, _, Sxx = signal.spectrogram(data, 8000)
 		mx = numpy.amax(Sxx)
 		mn = numpy.amin(Sxx)
-		print(mx)
-		print(mn)
 		if mx == 0 and mn == 0:
 			return
-		print(abs(mx - mn) / mx)
 		if numpy.log(abs(mx - mn) / mx) >= -1.5:
 			self.result = True

@@ -172,7 +172,7 @@ async def handler_get_morse(hostname, id, flag):
 	if text not in flag:
 		checker.corrupt(error='{} not in {}'.format(text, flag))
 
-	checker.ok(message=text)
+	checker.ok(error=text)
 
 def main(argv):
 	checker = Checker(handler_check, [(handler_put_pass, handler_get_pass), (handler_put_channel, handler_get_channel, 5), (handler_put_morse, handler_get_morse, 2), (handler_put_morse_2, handler_get_morse, 2)])
