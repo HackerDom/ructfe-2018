@@ -22,8 +22,8 @@ cs_worker_checkers_jobs: 128
 cs_worker_checkers_queues: -q checker
 cs_worker_instance: 2
 
-cs_hypnotoad_listen: 127.0.0.1:8080
-cs_hypnotoad_flags_listen: 10.10.10.10:8080
+cs_hypnotoad_listen: 0.0.0.0:8080
+cs_hypnotoad_flags_listen: 0.0.0.0:8080
 cs_hypnotoad_workers: 16
 cs_hypnotoad_accepts: 1024
 cs_nginx_workers: 4
@@ -37,8 +37,8 @@ cs_ctf_name: RuCTFE 2018
 cs_flags_secret: shi4bee4shey
 cs_round_length: 60
 cs_flag_life_time: 15
-cs_time_start: 2018-04-15 14:00:00
-cs_time_stop: 2019-04-15 22:00:00
+cs_time_start: 2018-11-10 16:00:00
+cs_time_stop: 2018-11-11 00:00:00
 cs_time_break_start: 2018-04-15 13:00:00
 cs_time_break_end: 2018-04-15 13:30:00
 
