@@ -1,0 +1,34 @@
+---
+- hosts: all
+  become: yes
+
+  # From http://docs.ansible.com/ansible/latest/intro_installation.html#managed-node-requirements
+  gather_facts: no
+  pre_tasks:
+    - name: 'Install python2'
+      raw: sudo apt-get -y install python-simplejson
+      changed_when: False
+    - name: 'Add universe repo'
+      raw: sudo add-apt-repository universe
+      changed_when: False
+    - name: 'Ensure tmp exists'
+      raw: mkdir -p /run/ansible_tmp/
+      changed_when: False
+    - name: 'Ensure tmp dir rights'
+      raw: chmod a+rwx /run/ansible_tmp/
+      changed_when: False
+
+  post_tasks:
+    - name: 'fucking'
+      raw: systemctl stop systemd-timesyncd
+    - name: 'ntp'
+      raw: systemctl disable systemd-timesyncd
+
+  roles:
+    #- base_image
+    #- front
+    #- laberator
+    #- vending
+    #- partychat
+    #- radiowave
+    - vch
