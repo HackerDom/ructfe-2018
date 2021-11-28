@@ -1,0 +1,8 @@
+version: '3'
+services:
+  vch:
+    image: "microsoft/dotnet:2.1-sdk"
+    command: dotnet run -c Release
+    working_dir: /app/
+    volumes:
+     - ./:/app
